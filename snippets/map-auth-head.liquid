@@ -1,0 +1,157 @@
+<script>
+  window.MAP_API_BASE = 'https://f2e0-2401-4900-8966-af45-8459-4b08-b81c-c245.ngrok-free.app';
+
+  window.MAP_AUTH = (function () {
+    var TOKEN_COOKIE = 'map_token';
+    var EMPLOYEE_COOKIE = 'map_employee';
+
+    function setCookie(name, value, maxAgeSeconds) {
+      var secure = location.protocol === 'https:' ? '; Secure' : '';
+      document.cookie = name + '=' + encodeURIComponent(value) +
+        '; path=/; max-age=' + maxAgeSeconds + '; SameSite=Lax' + secure;
+    }
+
+    function getCookie(name) {
+      var match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+      return match ? decodeURIComponent(match[1]) : null;
+    }
+
+    function deleteCookie(name) {
+      document.cookie = name + '=; path=/; max-age=0';
+    }
+
+    function getTokenExpiry(token) {
+      try {
+        var part = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+        var payload = JSON.parse(atob(part));
+        return payload.exp ? payload.exp * 1000 : null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function logoutSilently() {
+      deleteCookie(TOKEN_COOKIE);
+      deleteCookie(EMPLOYEE_COOKIE);
+    }
+
+    function isLoggedIn() {
+      var token = getCookie(TOKEN_COOKIE);
+      if (!token) return false;
+      var exp = getTokenExpiry(token);
+      if (exp && exp < Date.now()) {
+        logoutSilently();
+        return false;
+      }
+      return true;
+    }
+
+    function getEmployee() {
+      try { return JSON.parse(getCookie(EMPLOYEE_COOKIE) || '{}'); } catch (e) { return {}; }
+    }
+
+    function isAdmin() {
+      return isLoggedIn() && getEmployee().isAdmin === true;
+    }
+
+    function getToken() {
+      return getCookie(TOKEN_COOKIE);
+    }
+
+    function syncEmployeeToCart() {
+      var emp = getEmployee();
+      if (!emp.employeeId) return;
+      fetch('/cart/update.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          attributes: {
+            employeeId: emp.employeeId || '',
+            ticketId: emp.ticketId || '',
+            name: emp.name || '',
+            email: emp.email || '',
+            phone: emp.phone || ''
+          }
+        })
+      }).catch(function () {});
+    }
+
+    function saveLogin(token, employee) {
+      var exp = getTokenExpiry(token);
+      var maxAge = exp ? Math.floor((exp - Date.now()) / 1000) : 7 * 24 * 60 * 60;
+      setCookie(TOKEN_COOKIE, token, maxAge);
+      setCookie(EMPLOYEE_COOKIE, JSON.stringify({
+        email: employee.email || '',
+        employeeId: employee.employeeId || '',
+        ticketId: employee.ticketId || '',
+        name: employee.name || '',
+        phone: employee.phone || '',
+        isAdmin: employee.isAdmin === true
+      }), maxAge);
+      syncEmployeeToCart();
+    }
+
+    function buildCheckoutUrl() {
+      var emp = getEmployee();
+      var params = new URLSearchParams();
+
+      if (emp.email) params.set('checkout[email]', emp.email);
+
+      if (emp.name) {
+        var parts = emp.name.trim().split(/\s+/);
+        var firstName = parts.shift();
+        var lastName = parts.join(' ');
+        params.set('checkout[shipping_address][first_name]', firstName);
+        if (lastName) params.set('checkout[shipping_address][last_name]', lastName);
+      }
+
+      if (emp.phone) params.set('checkout[shipping_address][phone]', emp.phone);
+      params.set('checkout[shipping_address][country]', 'India');
+
+      var query = params.toString();
+      return '/checkout' + (query ? '?' + query : '');
+    }
+
+    function logout() {
+      logoutSilently();
+      fetch('/cart/update.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ attributes: { employeeId: '', ticketId: '', name: '', email: '', phone: '' } })
+      }).finally(function () {
+        window.location.reload();
+      });
+    }
+
+    return {
+      isLoggedIn: isLoggedIn,
+      isAdmin: isAdmin,
+      saveLogin: saveLogin,
+      getEmployee: getEmployee,
+      getToken: getToken,
+      syncEmployeeToCart: syncEmployeeToCart,
+      buildCheckoutUrl: buildCheckoutUrl,
+      logout: logout
+    };
+  })();
+
+  window.mapLogout = window.MAP_AUTH.logout;
+
+  if (!window.MAP_AUTH.isLoggedIn()) {
+    document.documentElement.classList.add('map-locked');
+  } else {
+    document.addEventListener('DOMContentLoaded', window.MAP_AUTH.syncEmployeeToCart);
+  }
+
+  document.addEventListener('submit', function (e) {
+    var submitter = e.submitter;
+    if (!submitter || submitter.name !== 'checkout') return;
+    if (!window.MAP_AUTH.isLoggedIn()) return;
+    e.preventDefault();
+    window.location.href = window.MAP_AUTH.buildCheckoutUrl();
+  }, true);
+</script>
+
+<style>
+  html.map-locked body > *:not(#map-login) { display: none !important; }
+  html:not(.map-locked) #map-login { display: none !important; }</style>

@@ -1,0 +1,429 @@
+{%- if request.design_mode -%}
+  <div class="mae-placeholder">Employee admin panel (visible to MAP admins only)</div>
+{%- endif -%}
+
+<section class="mae" id="mae-root" hidden>
+  <div class="mae__inner">
+    <header class="mae__head">
+      <div>
+        <h2 class="mae__title">Employee Management</h2>
+        <p class="mae__meta"><span id="mae-total">0</span> employees &middot; Signed in as <strong id="mae-admin"></strong></p>
+      </div>
+      <button type="button" class="mae-btn mae-btn--primary" id="mae-add">+ Add Employee</button>
+    </header>
+
+    <input type="search" class="mae-input mae__search" id="mae-search" placeholder="Search by name, email or employee ID" aria-label="Search employees">
+
+    <div id="mae-denied" class="mae-empty" hidden>Access denied</div>
+
+    <div id="mae-body">
+      <div class="mae__tablewrap">
+        <table class="mae__table">
+          <thead>
+            <tr>
+              <th>Employee ID</th><th>Ticket ID</th><th>Name</th><th>Email</th><th>Phone</th><th class="mae__actions-col">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="mae-rows"></tbody>
+        </table>
+      </div>
+      <div class="mae__cards" id="mae-cards"></div>
+
+      <div class="mae-empty" id="mae-empty" hidden>No employees found.</div>
+      <div class="mae-loading" id="mae-loading" hidden><span class="mae-spinner"></span> Loading...</div>
+
+      <footer class="mae__pager">
+        <span id="mae-range">&nbsp;</span>
+        <div>
+          <button type="button" class="mae-btn" id="mae-prev" disabled>Previous</button>
+          <button type="button" class="mae-btn" id="mae-next" disabled>Next</button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <dialog class="mae-dialog" id="mae-form-dialog">
+    <form id="mae-form" novalidate>
+      <h3 id="mae-form-title">Add Employee</h3>
+      <div class="mae-field"><label for="mae-f-name">Name</label><input class="mae-input" id="mae-f-name" name="name" autocomplete="off"><small class="mae-err" data-err="name"></small></div>
+      <div class="mae-field"><label for="mae-f-email">Email</label><input class="mae-input" id="mae-f-email" name="email" type="email" autocomplete="off"><small class="mae-err" data-err="email"></small></div>
+      <div class="mae-field"><label for="mae-f-employeeId">Employee ID</label><input class="mae-input" id="mae-f-employeeId" name="employeeId" inputmode="numeric" autocomplete="off"><small class="mae-err" data-err="employeeId"></small></div>
+      <div class="mae-field"><label for="mae-f-ticketId">Ticket ID</label><input class="mae-input" id="mae-f-ticketId" name="ticketId" autocomplete="off"><small class="mae-err" data-err="ticketId"></small></div>
+      <div class="mae-field"><label for="mae-f-phone">Phone</label><input class="mae-input" id="mae-f-phone" name="phone" type="tel" autocomplete="off"><small class="mae-err" data-err="phone"></small></div>
+      <div class="mae-field"><label for="mae-f-password" id="mae-pass-label">Password</label><input class="mae-input" id="mae-f-password" name="password" type="password" autocomplete="new-password"><small class="mae-err" data-err="password"></small></div>
+      <p class="mae-err mae-err--form" id="mae-form-error" hidden></p>
+      <div class="mae-dialog__actions">
+        <button type="button" class="mae-btn" id="mae-form-cancel">Cancel</button>
+        <button type="submit" class="mae-btn mae-btn--primary" id="mae-form-save">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="mae-dialog" id="mae-confirm-dialog">
+    <h3>Delete employee</h3>
+    <p id="mae-confirm-text"></p>
+    <p class="mae-err mae-err--form" id="mae-confirm-error" hidden></p>
+    <div class="mae-dialog__actions">
+      <button type="button" class="mae-btn" id="mae-confirm-cancel">Cancel</button>
+      <button type="button" class="mae-btn mae-btn--danger" id="mae-confirm-ok">Delete</button>
+    </div>
+  </dialog>
+
+  <div class="mae-toasts" id="mae-toasts" aria-live="polite"></div>
+</section>
+
+<style>
+  .mae-placeholder { padding: 24px; margin: 16px auto; max-width: 720px; text-align: center; border: 2px dashed currentColor; border-radius: 12px; opacity: .6; }
+  .mae[hidden] { display: none !important; }
+  .mae { color: var(--color-foreground, #111); font-family: var(--font-body--family, inherit); padding: 32px 16px; }
+  .mae__inner { max-width: 1100px; margin: 0 auto; }
+  .mae__head { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+  .mae__title { margin: 0 0 4px; }
+  .mae__meta { margin: 0; opacity: .7; font-size: 14px; }
+  .mae__search { width: 100%; max-width: 420px; margin-bottom: 16px; }
+  .mae-input { width: 100%; box-sizing: border-box; padding: 10px 12px; font: inherit; color: inherit; background: transparent; border: 1px solid rgba(128,128,128,.5); border-radius: 8px; }
+  .mae-input:focus { outline: 2px solid currentColor; outline-offset: 1px; }
+  .mae-btn { padding: 9px 16px; font: inherit; font-size: 14px; color: inherit; background: transparent; border: 1px solid rgba(128,128,128,.6); border-radius: 8px; cursor: pointer; }
+  .mae-btn:disabled { opacity: .45; cursor: not-allowed; }
+  .mae-btn--primary { background: #111; color: #fff; border-color: #111; }
+  .mae-btn--danger { background: #c62828; color: #fff; border-color: #c62828; }
+  .mae-btn--sm { padding: 5px 10px; font-size: 13px; }
+  .mae__tablewrap { overflow-x: auto; }
+  .mae__table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .mae__table th, .mae__table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid rgba(128,128,128,.25); word-break: break-word; }
+  .mae__table th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; opacity: .7; }
+  .mae__actions-col { width: 140px; }
+  .mae__row-actions { display: flex; gap: 6px; }
+  .mae__cards { display: none; }
+  .mae-card { border: 1px solid rgba(128,128,128,.3); border-radius: 12px; padding: 14px; margin-bottom: 12px; font-size: 14px; }
+  .mae-card dl { margin: 0 0 12px; display: grid; grid-template-columns: 100px 1fr; gap: 4px 8px; }
+  .mae-card dt { opacity: .6; }
+  .mae-card dd { margin: 0; word-break: break-word; }
+  .mae-empty, .mae-loading { padding: 32px; text-align: center; opacity: .7; }
+  .mae-spinner { display: inline-block; width: 16px; height: 16px; vertical-align: -3px; margin-right: 6px; border: 2px solid rgba(128,128,128,.4); border-top-color: currentColor; border-radius: 50%; animation: mae-spin .7s linear infinite; }
+  @keyframes mae-spin { to { transform: rotate(360deg); } }
+  .mae__pager { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 16px; font-size: 14px; }
+  .mae__pager div { display: flex; gap: 8px; }
+  .mae-dialog { width: min(480px, calc(100vw - 32px)); padding: 24px; border: 0; border-radius: 14px; color: var(--color-foreground, #111); background: var(--color-background, #fff); box-shadow: 0 10px 40px rgba(0,0,0,.25); }
+  .mae-dialog::backdrop { background: rgba(0,0,0,.5); }
+  .mae-dialog h3 { margin: 0 0 16px; }
+  .mae-field { margin-bottom: 14px; }
+  .mae-field label { display: block; margin-bottom: 4px; font-size: 13px; font-weight: 600; }
+  .mae-err { display: block; min-height: 0; margin-top: 4px; color: #c62828; font-size: 12px; }
+  .mae-err--form { font-size: 13px; margin: 0 0 12px; }
+  .mae-dialog__actions { display: flex; justify-content: flex-end; gap: 8px; }
+  .mae-toasts { position: fixed; right: 16px; bottom: 16px; z-index: 10000; display: flex; flex-direction: column; gap: 8px; }
+  .mae-toast { padding: 12px 16px; border-radius: 8px; color: #fff; background: #2e7d32; font-size: 14px; box-shadow: 0 4px 16px rgba(0,0,0,.25); }
+  .mae-toast--error { background: #c62828; }
+  @media (max-width: 749px) {
+    .mae__tablewrap { display: none; }
+    .mae__cards { display: block; }
+    .mae__head .mae-btn { width: 100%; }
+  }
+</style>
+
+<script>
+  (function () {
+    var root = document.getElementById('mae-root');
+    if (!root) return;
+
+    var auth = window.MAP_AUTH;
+    if (!auth || !auth.isLoggedIn() || !auth.isAdmin()) return;
+
+    var API = (window.MAP_API_BASE || '') + '/api/admin/employees';
+    var EDIT_METHOD = 'PUT'; // Edit endpoint is unconfirmed; change method/path here only
+    var editUrl = function (id) { return API + '/' + encodeURIComponent(id); };
+    var LIMIT = 50;
+
+    var $ = function (id) { return document.getElementById(id); };
+    var state = { q: '', after: '', before: '', start: 0, items: [], pageInfo: null, loadedOnce: false, editing: null, deleting: null, saving: false };
+
+    function toast(msg, isError) {
+      var el = document.createElement('div');
+      el.className = 'mae-toast' + (isError ? ' mae-toast--error' : '');
+      el.textContent = msg;
+      $('mae-toasts').appendChild(el);
+      setTimeout(function () { el.remove(); }, 4000);
+    }
+
+    function request(method, url, body) {
+      var headers = { 'Authorization': 'Bearer ' + auth.getToken(), 'ngrok-skip-browser-warning': 'true' };
+      var opts = { method: method, headers: headers };
+      if (body) {
+        headers['Content-Type'] = 'application/json';
+        opts.body = JSON.stringify(body);
+      }
+      return fetch(url, opts).then(function (res) {
+        return res.text().then(function (text) {
+          var json = null;
+          try { json = text ? JSON.parse(text) : null; } catch (e) { console.error('MAP admin: response is not JSON:', text.slice(0, 300)); }
+          if (res.status === 401) { auth.logout(); throw { handled: true }; }
+          if (res.status === 404) { showDenied(); throw { handled: true }; }
+          if (!res.ok) throw { message: (json && json.message) || ('Request failed (' + res.status + ')') };
+          return json || {};
+        });
+      }, function (err) {
+        console.error('MAP admin network/CORS error:', err);
+        throw { message: 'Could not reach the server. Please try again.' };
+      });
+    }
+
+    function showDenied() {
+      $('mae-body').hidden = true;
+      $('mae-denied').hidden = false;
+      $('mae-add').hidden = true;
+    }
+
+    function extractList(json) {
+      var d = json && json.data;
+      var candidates = [d, d && d.employees, d && d.items, d && d.rows, json && json.employees, json && json.items, json && json.rows];
+      for (var i = 0; i < candidates.length; i++) {
+        if (Array.isArray(candidates[i])) return candidates[i];
+      }
+      return [];
+    }
+
+    function extractPageInfo(json) {
+      var d = json && json.data;
+      return (d && d.pageInfo) || (json && json.pageInfo) || {};
+    }
+
+    function cell(tag, text) {
+      var el = document.createElement(tag);
+      el.textContent = text == null ? '' : String(text);
+      return el;
+    }
+
+    function actionButtons(emp) {
+      var wrap = document.createElement('div');
+      wrap.className = 'mae__row-actions';
+      var edit = cell('button', 'Edit');
+      edit.type = 'button';
+      edit.className = 'mae-btn mae-btn--sm';
+      edit.addEventListener('click', function () { openForm(emp); });
+      var del = cell('button', 'Delete');
+      del.type = 'button';
+      del.className = 'mae-btn mae-btn--sm mae-btn--danger';
+      del.addEventListener('click', function () { openConfirm(emp); });
+      wrap.appendChild(edit);
+      wrap.appendChild(del);
+      return wrap;
+    }
+
+    function render() {
+      var rows = $('mae-rows');
+      var cards = $('mae-cards');
+      rows.textContent = '';
+      cards.textContent = '';
+
+      state.items.forEach(function (emp) {
+        var tr = document.createElement('tr');
+        [emp.employeeId, emp.ticketId, emp.name, emp.email, emp.phone].forEach(function (v) { tr.appendChild(cell('td', v)); });
+        var actions = document.createElement('td');
+        actions.appendChild(actionButtons(emp));
+        tr.appendChild(actions);
+        rows.appendChild(tr);
+
+        var card = document.createElement('div');
+        card.className = 'mae-card';
+        var dl = document.createElement('dl');
+        [['Employee ID', emp.employeeId], ['Ticket ID', emp.ticketId], ['Name', emp.name], ['Email', emp.email], ['Phone', emp.phone]].forEach(function (pair) {
+          dl.appendChild(cell('dt', pair[0]));
+          dl.appendChild(cell('dd', pair[1]));
+        });
+        card.appendChild(dl);
+        card.appendChild(actionButtons(emp));
+        cards.appendChild(card);
+      });
+
+      var info = state.pageInfo || {};
+      var total = typeof info.total === 'number' ? info.total : state.items.length;
+      $('mae-total').textContent = total;
+      $('mae-empty').hidden = state.items.length > 0;
+      $('mae-prev').disabled = !info.hasPreviousPage;
+      $('mae-next').disabled = !info.hasNextPage;
+      $('mae-range').textContent = state.items.length
+        ? 'Showing ' + (state.start + 1) + '–' + (state.start + state.items.length) + ' of ' + total
+        : '';
+    }
+
+    function load() {
+      var params = new URLSearchParams();
+      params.set('limit', LIMIT);
+      if (state.q) params.set('q', state.q);
+      if (state.after) params.set('after', state.after);
+      else if (state.before) params.set('before', state.before);
+
+      $('mae-loading').hidden = false;
+      $('mae-empty').hidden = true;
+      return request('GET', API + '?' + params.toString()).then(function (json) {
+        if (!state.loadedOnce) { console.debug('MAP admin: first list response', json); state.loadedOnce = true; }
+        state.items = extractList(json);
+        state.pageInfo = extractPageInfo(json);
+        render();
+      }).catch(function (err) {
+        if (err && err.handled) return;
+        toast((err && err.message) || 'Failed to load employees', true);
+      }).then(function () {
+        $('mae-loading').hidden = true;
+      });
+    }
+
+    function resetCursor() {
+      state.after = '';
+      state.before = '';
+      state.start = 0;
+    }
+
+    var debounce;
+    $('mae-search').addEventListener('input', function (e) {
+      clearTimeout(debounce);
+      debounce = setTimeout(function () {
+        state.q = e.target.value.trim();
+        resetCursor();
+        load();
+      }, 400);
+    });
+
+    $('mae-next').addEventListener('click', function () {
+      var info = state.pageInfo || {};
+      if (!info.nextCursor) return;
+      state.start += state.items.length;
+      state.after = info.nextCursor;
+      state.before = '';
+      load();
+    });
+
+    $('mae-prev').addEventListener('click', function () {
+      var info = state.pageInfo || {};
+      if (!info.previousCursor) return;
+      state.start = Math.max(0, state.start - LIMIT);
+      state.before = info.previousCursor;
+      state.after = '';
+      load();
+    });
+
+    // Form dialog
+    var form = $('mae-form');
+    var formDialog = $('mae-form-dialog');
+    var FIELDS = ['name', 'email', 'employeeId', 'ticketId', 'phone', 'password'];
+
+    function setFieldError(name, msg) {
+      form.querySelector('[data-err="' + name + '"]').textContent = msg || '';
+    }
+
+    function setFormError(msg) {
+      var box = $('mae-form-error');
+      box.textContent = msg || '';
+      box.hidden = !msg;
+    }
+
+    function openForm(emp) {
+      state.editing = emp || null;
+      form.reset();
+      FIELDS.forEach(function (f) { setFieldError(f, ''); });
+      setFormError('');
+      $('mae-form-title').textContent = emp ? 'Edit Employee' : 'Add Employee';
+      $('mae-pass-label').textContent = emp ? 'New password (leave blank to keep current)' : 'Password';
+      if (emp) {
+        ['name', 'email', 'employeeId', 'ticketId', 'phone'].forEach(function (f) { form.elements[f].value = emp[f] == null ? '' : emp[f]; });
+      }
+      formDialog.showModal();
+      form.elements.name.focus();
+    }
+
+    function validate(values, isEdit) {
+      var errors = {};
+      if (!values.name) errors.name = 'Name is required.';
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) errors.email = 'Enter a valid email.';
+      if (!/^\d{5}$/.test(values.employeeId)) errors.employeeId = 'Employee ID must be exactly 5 digits.';
+      if (!values.ticketId) errors.ticketId = 'Ticket ID is required.';
+      if (!/^(\+91[\s-]?)?\d{10}$/.test(values.phone)) errors.phone = 'Enter a 10-digit phone number (optionally with +91).';
+      if (!isEdit && !values.password) errors.password = 'Password is required.';
+      else if (values.password && values.password.length < 8) errors.password = 'Password must be at least 8 characters.';
+      return errors;
+    }
+
+    function setSaving(on) {
+      state.saving = on;
+      var btn = $('mae-form-save');
+      btn.disabled = on;
+      btn.textContent = on ? 'Saving...' : 'Save';
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (state.saving) return;
+      var isEdit = !!state.editing;
+      var values = {};
+      FIELDS.forEach(function (f) { values[f] = form.elements[f].value.trim(); });
+      // Passwords are not trimmed
+      values.password = form.elements.password.value;
+
+      var errors = validate(values, isEdit);
+      FIELDS.forEach(function (f) { setFieldError(f, errors[f]); });
+      setFormError('');
+      if (Object.keys(errors).length) return;
+
+      var body = { name: values.name, email: values.email, employeeId: values.employeeId, ticketId: values.ticketId, phone: values.phone };
+      if (values.password) body.password = values.password;
+
+      setSaving(true);
+      var req = isEdit ? request(EDIT_METHOD, editUrl(state.editing.id), body) : request('POST', API, body);
+      req.then(function () {
+        formDialog.close();
+        toast(isEdit ? 'Employee updated.' : 'Employee added.');
+        return load();
+      }).catch(function (err) {
+        if (err && err.handled) return;
+        setFormError((err && err.message) || 'Could not save employee.');
+      }).then(function () {
+        setSaving(false);
+      });
+    });
+
+    $('mae-add').addEventListener('click', function () { openForm(null); });
+    $('mae-form-cancel').addEventListener('click', function () { formDialog.close(); });
+
+    // Delete dialog
+    var confirmDialog = $('mae-confirm-dialog');
+
+    function openConfirm(emp) {
+      state.deleting = emp;
+      $('mae-confirm-text').textContent = 'Delete ' + emp.name + ' (' + emp.employeeId + ')? This cannot be undone.';
+      $('mae-confirm-error').hidden = true;
+      $('mae-confirm-ok').disabled = false;
+      confirmDialog.showModal();
+    }
+
+    $('mae-confirm-cancel').addEventListener('click', function () { confirmDialog.close(); });
+    $('mae-confirm-ok').addEventListener('click', function () {
+      var okBtn = $('mae-confirm-ok');
+      if (okBtn.disabled || !state.deleting) return;
+      okBtn.disabled = true;
+      request('DELETE', editUrl(state.deleting.id)).then(function () {
+        confirmDialog.close();
+        toast('Employee deleted.');
+        // Step back a page when the last row of a later page was removed
+        if (state.items.length === 1 && state.pageInfo && state.pageInfo.hasPreviousPage) {
+          state.before = state.pageInfo.previousCursor || '';
+          state.after = '';
+          state.start = Math.max(0, state.start - LIMIT);
+        }
+        return load();
+      }).catch(function (err) {
+        if (err && err.handled) return;
+        var box = $('mae-confirm-error');
+        box.textContent = (err && err.message) || 'Could not delete employee.';
+        box.hidden = false;
+      }).then(function () {
+        okBtn.disabled = false;
+      });
+    });
+
+    // Reveal panel and load data
+    $('mae-admin').textContent = auth.getEmployee().name || '';
+    root.hidden = false;
+    load();
+  })();
+</script>

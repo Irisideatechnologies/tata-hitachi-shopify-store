@@ -1,0 +1,110 @@
+{% doc %}
+  Employee menu for the MAP login. Shows the signed-in employee's name with a dropdown (Employee ID, Log out).
+  Auth state comes from window.MAP_AUTH (see map-auth-head). Hidden until a login is detected.
+
+  @param {string} [variant] - 'header' (default, dropdown button) or 'drawer' (inline block for the mobile menu drawer).
+{% enddoc %}
+
+{%- unless request.design_mode -%}
+  {%- if variant == 'drawer' -%}
+    <div class="mem-drawer" data-mem="drawer" hidden>
+      <p class="mem-drawer__name" data-mem-name></p>
+      <p class="mem-drawer__id" data-mem-id-row hidden>Employee ID: <span data-mem-id></span></p>
+      <button type="button" class="mem-drawer__logout" data-mem-logout>Log out</button>
+    </div>
+  {%- else -%}
+    <div class="mem" data-mem="header" hidden>
+      <button
+        type="button"
+        class="mem__trigger header-actions__action button-unstyled"
+        aria-haspopup="true"
+        aria-expanded="false"
+        data-mem-trigger
+      >
+        <svg width="18" height="18" viewBox="0 0 15 17" fill="none" aria-hidden="true">
+          <path stroke="currentColor" stroke-linejoin="round" stroke-width="1.2" d="M10.375 3.813a3.063 3.063 0 1 1-6.125 0 3.063 3.063 0 0 1 6.125 0ZM7.313 9.5c-3.667 0-6.24 2.691-6.563 6.125h13.125C13.552 12.191 10.979 9.5 7.312 9.5Z"/>
+        </svg>
+        <span class="mem__name" data-mem-name></span>
+      </button>
+      <div class="mem__panel" data-mem-panel hidden>
+        <p class="mem__label">Employee ID</p>
+        <p class="mem__value" data-mem-id></p>
+        <button type="button" class="mem__logout" data-mem-logout>Log out</button>
+      </div>
+    </div>
+  {%- endif -%}
+
+  <style>
+    .mem[hidden], .mem__panel[hidden], .mem-drawer[hidden], .mem-drawer__id[hidden] { display: none !important; }
+    .mem { position: relative; display: flex; align-items: center; }
+    .mem__trigger { display: flex; align-items: center; gap: 8px; padding: 6px 8px; color: var(--color-foreground); cursor: pointer; font: inherit; font-size: 0.875rem; }
+    .mem__name { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mem__panel { position: absolute; top: calc(100% + 8px); right: 0; z-index: 60; min-width: 220px; padding: 16px; background: var(--color-background); color: var(--color-foreground); border: 1px solid var(--color-border, #E5E7EB); border-radius: 8px; box-shadow: 0 12px 32px rgba(17, 24, 39, 0.16); }
+    .mem__label { margin: 0 0 2px; font-size: 0.75rem; opacity: 0.7; }
+    .mem__value { margin: 0 0 12px; font-weight: 600; word-break: break-all; }
+    .mem__logout, .mem-drawer__logout { width: 100%; padding: 10px 14px; border: 1px solid currentColor; border-radius: 8px; background: transparent; color: inherit; font: inherit; font-size: 0.875rem; font-weight: 600; cursor: pointer; }
+    .mem__logout:hover, .mem-drawer__logout:hover { background: var(--color-foreground); color: var(--color-background); }
+    .mem-drawer { margin-top: 24px; padding: 16px 18px 0; border-top: 1px solid var(--color-border, #E5E7EB); }
+    .mem-drawer__name { margin: 0; font-weight: 600; }
+    .mem-drawer__id { margin: 4px 0 12px; font-size: 0.875rem; opacity: 0.7; }
+    .mem-drawer__name + .mem-drawer__logout { margin-top: 12px; }
+    @media screen and (max-width: 749px) {
+      .mem__name { display: none; }
+    }
+  </style>
+
+  <script>
+    (function () {
+      if (window.__memInit) return;
+      window.__memInit = true;
+
+      function closeAll() {
+        document.querySelectorAll('[data-mem-panel]').forEach(function (p) { p.hidden = true; });
+        document.querySelectorAll('[data-mem-trigger]').forEach(function (t) { t.setAttribute('aria-expanded', 'false'); });
+      }
+
+      function init() {
+        if (!window.MAP_AUTH || !window.MAP_AUTH.isLoggedIn()) return;
+        var emp = window.MAP_AUTH.getEmployee();
+        document.querySelectorAll('[data-mem]:not([data-mem-ready])').forEach(function (root) {
+          root.setAttribute('data-mem-ready', '');
+          root.querySelectorAll('[data-mem-name]').forEach(function (el) { el.textContent = emp.name || 'Account'; });
+          root.querySelectorAll('[data-mem-id]').forEach(function (el) { el.textContent = emp.employeeId || '-'; });
+          var row = root.querySelector('[data-mem-id-row]');
+          if (row && emp.employeeId) row.hidden = false;
+          root.hidden = false;
+        });
+      }
+
+      document.addEventListener('click', function (e) {
+        var trigger = e.target.closest('[data-mem-trigger]');
+        if (trigger) {
+          var panel = trigger.parentElement.querySelector('[data-mem-panel]');
+          var open = panel.hidden;
+          closeAll();
+          panel.hidden = !open;
+          trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+          return;
+        }
+        if (e.target.closest('[data-mem-logout]')) {
+          window.mapLogout();
+          return;
+        }
+        if (!e.target.closest('[data-mem-panel]')) closeAll();
+      });
+
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeAll(); });
+
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+      else init();
+
+      // The mobile drawer markup can be inserted after load, so re-run init for late-added nodes
+      var pending = false;
+      new MutationObserver(function () {
+        if (pending) return;
+        pending = true;
+        setTimeout(function () { pending = false; init(); }, 50);
+      }).observe(document.documentElement, { childList: true, subtree: true });
+    })();
+  </script>
+{%- endunless -%}

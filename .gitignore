@@ -1,1 +1,6 @@
 design-check/
+node_modules/
+.shopify/
+*.log
+.DS_Store
+.env

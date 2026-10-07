@@ -137,11 +137,14 @@
 
   window.mapLogout = window.MAP_AUTH.logout;
 
+  
+    {%- unless request.design_mode -%}
   if (!window.MAP_AUTH.isLoggedIn()) {
     document.documentElement.classList.add('map-locked');
   } else {
     document.addEventListener('DOMContentLoaded', window.MAP_AUTH.syncEmployeeToCart);
   }
+  {%- endunless -%}
 
   document.addEventListener('submit', function (e) {
     var submitter = e.submitter;
@@ -152,6 +155,8 @@
   }, true);
 </script>
 
+
 <style>
-  html.map-locked body > *:not(#map-login) { display: none !important; }
-  html:not(.map-locked) #map-login { display: none !important; }</style>
+  html.map-locked:not(.shopify-design-mode) body > *:not(#map-login) { display: none !important; }
+  html:not(.map-locked) #map-login { display: none !important; }
+</style>

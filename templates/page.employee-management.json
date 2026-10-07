@@ -22,10 +22,12 @@
             "alignment": "left",
             "type_preset": "h2",
             "font": "var(--font-body--family)",
+            "font_size": "1rem",
             "line_height": "normal",
             "letter_spacing": "normal",
             "case": "none",
             "wrap": "pretty",
+            "text_color": "",
             "background": false,
             "background_color": "#00000026",
             "corner_radius": 0,
@@ -38,7 +40,9 @@
         },
         "page-content": {
           "type": "page-content",
-          "settings": {},
+          "settings": {
+            "text_color": ""
+          },
           "blocks": {}
         }
       },
@@ -53,9 +57,15 @@
         "padding-block-start": 40,
         "padding-block-end": 80
       }
+    },
+    "map_admin_employees_bdzF7N": {
+      "type": "map-admin-employees",
+      "name": "MAP Employee Admin",
+      "settings": {}
     }
   },
   "order": [
-    "main"
+    "main",
+    "map_admin_employees_bdzF7N"
   ]
 }

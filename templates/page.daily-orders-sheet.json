@@ -63,7 +63,7 @@
       "name": "THCM Daily Orders",
       "settings": {
         "heading": "Daily Orders Export",
-        "note": "Generated automatically every day at 12:00 AM",
+        "note": "",
         "page_size": 10,
         "show_download": true,
         "denied_text": "Access denied"

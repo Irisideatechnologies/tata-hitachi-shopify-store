@@ -247,7 +247,7 @@
               "type": "text",
               "name": "t:names.text",
               "settings": {
-                "text": "<p>FAQ</p>",
+                "text": "<p><a href=\"/pages/faq\" title=\"FAQ\">FAQ</a></p>",
                 "width": "fit-content",
                 "max_width": "normal",
                 "alignment": "left",

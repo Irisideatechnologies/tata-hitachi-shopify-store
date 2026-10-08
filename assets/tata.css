@@ -1,0 +1,314 @@
+/* THCM Merchandise Store: custom styling layer (Adobe Store inspired). Loaded after the theme styles. */
+
+:root {
+  --tata-orange: #c94f0c;
+  --tata-accent: #f26b1d;
+  --tata-text: #111827;
+  --tata-muted: #4b5563;
+  --tata-border: #e5e7eb;
+  --tata-surface: #f5f5f5;
+  --tata-header-h: 64px;
+}
+
+/* ---------- Global ---------- */
+body {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--tata-text);
+}
+
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--tata-orange);
+  outline-offset: 2px;
+}
+
+.button,
+button.button,
+.shopify-challenge__button,
+input[type='submit'] {
+  border-radius: 8px;
+}
+
+/* ---------- Announcement bar ---------- */
+.announcement-bar {
+  min-height: 36px;
+  padding-block: 0;
+  background: var(--tata-text);
+  color: #fff;
+  font-size: 13px;
+  text-align: center;
+}
+
+.announcement-bar :is(p, span, a) {
+  font-size: 13px;
+  line-height: 36px;
+}
+
+@media (max-width: 749px) {
+  .announcement-bar :is(p, span, a) {
+    font-size: 12px;
+    line-height: 1.3;
+  }
+
+  .announcement-bar {
+    padding-block: 7px;
+  }
+}
+
+/* ---------- Header ---------- */
+header-component {
+  background: #fff;
+  border-bottom: 1px solid var(--tata-border);
+  transition: box-shadow 150ms ease;
+}
+
+header-component.tata-scrolled {
+  box-shadow: 0 2px 12px rgba(17, 24, 39, 0.08);
+}
+
+header-component .header__columns {
+  min-height: var(--tata-header-h);
+  align-items: center;
+}
+
+.header__row .header-logo__image-container img,
+.header__row .header-logo__image {
+  max-height: 40px;
+  width: auto;
+}
+
+/* Top-level items */
+.header-menu .menu-list__link {
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--tata-text);
+}
+
+.header-menu .menu-list__link-title {
+  padding-inline: 14px;
+}
+
+/* Keep top-level items readable on hover instead of the theme's subdued state */
+.menu-list:has(.menu-list__list-item:hover) .menu-list__link,
+.menu-list:has(.menu-list__list-item:focus-within) .menu-list__link {
+  color: var(--tata-text);
+}
+
+.menu-list .menu-list__list-item:hover > .menu-list__trigger .menu-list__link,
+.menu-list .menu-list__list-item:hover > .menu-list__link,
+.menu-list .menu-list__list-item:focus-within > .menu-list__trigger .menu-list__link {
+  color: var(--tata-orange);
+}
+
+/* Always-visible chevron next to items that have a submenu */
+.header-menu .menu-list__trigger {
+  align-items: center;
+}
+
+.header-menu .menu-list__disclosure {
+  position: static;
+  opacity: 1;
+  transform: none;
+  padding: 0 14px 0 0;
+  margin-inline-start: -10px;
+  pointer-events: auto;
+  color: var(--tata-text);
+}
+
+.header-menu .menu-list__disclosure-icon {
+  width: 10px;
+  transition: transform 150ms ease;
+}
+
+.header-menu .menu-list__list-item:hover .menu-list__disclosure,
+.header-menu .menu-list__list-item:focus-within .menu-list__disclosure {
+  color: var(--tata-orange);
+}
+
+/* Right side actions */
+.header-actions__action,
+.mem__trigger {
+  color: var(--tata-text);
+}
+
+/* ---------- Desktop dropdown: small box under the parent item ---------- */
+@media (min-width: 990px) {
+  .header-menu .menu-list__list-item:not([slot='overflow']) {
+    position: relative;
+  }
+
+  /* The theme paints a full-width panel behind open mega menus; not used for the small dropdown */
+  .header__underlay-open {
+    display: none !important;
+  }
+
+  .header-menu .menu-list__list-item:not([slot='overflow']) > .menu-list__submenu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: max-content;
+    min-width: 200px;
+    max-width: 320px;
+    padding: 0;
+    clip-path: none;
+    background: transparent;
+    content-visibility: visible;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 150ms ease, visibility 150ms ease;
+  }
+
+  .header-menu .menu-list__list-item:has([aria-expanded='true']) > .menu-list__submenu,
+  .header-menu .menu-list__list-item:not([slot='overflow']) > .menu-list__submenu:hover {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .header-menu .menu-list__list-item:not([slot='overflow']) > .menu-list__submenu .menu-list__submenu-inner {
+    display: block;
+    padding: 8px 0;
+    margin: 0;
+    max-height: none;
+    overflow: visible;
+    opacity: 1;
+    transform: none;
+    background: #fff;
+    border: 1px solid var(--tata-border);
+    border-radius: 4px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  }
+
+  .header-menu .menu-list__submenu :is(.mega-menu, .mega-menu__grid, .mega-menu__list, .mega-menu__column) {
+    display: block;
+    width: auto;
+    margin: 0;
+    padding: 0;
+    grid-template-columns: none;
+    grid-column: auto;
+  }
+
+  .header-menu .menu-list__submenu .mega-menu__link {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 16px;
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--tata-text);
+    transition: background-color 120ms ease, color 120ms ease;
+  }
+
+  .header-menu .menu-list__submenu .mega-menu__link:hover,
+  .header-menu .menu-list__submenu .mega-menu__link:focus-visible {
+    background: #ededed;
+    color: #a8400a; /* darker orange keeps AA contrast on the grey hover background */
+  }
+
+  /* Rotate the chevron while a submenu is open */
+  .header-menu .menu-list__disclosure[aria-expanded='true'] .menu-list__disclosure-icon {
+    transform: rotate(180deg);
+  }
+}
+
+/* ---------- Mobile drawer: spacing and typography ---------- */
+@media (max-width: 989px) {
+  .menu-drawer .menu-drawer__menu-item--mainlist {
+    padding-block: 12px;
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--tata-text);
+  }
+
+  .menu-drawer .menu-drawer__menu-item--parent,
+  .menu-drawer .menu-drawer__menu-item--child {
+    padding-block: 10px;
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--tata-muted);
+  }
+}
+
+/* ---------- Section rhythm ---------- */
+.shopify-section :is(h2, .h2) {
+  font-size: clamp(24px, 2.6vw, 32px);
+  line-height: 1.2;
+  text-align: left;
+}
+
+/* ---------- Product cards (Adobe style) ---------- */
+.product-card {
+  border: 0;
+  box-shadow: none;
+}
+
+.product-card .card-gallery,
+.product-card .product-media-container {
+  background: var(--tata-surface);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.product-card .product-media-container img {
+  object-fit: contain;
+  transition: transform 250ms ease;
+}
+
+.product-card:hover .product-media-container img {
+  transform: scale(1.03);
+}
+
+.product-card .product-card__content .text-block,
+.product-card .product-card__content .text-block p {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--tata-text);
+}
+
+.product-card product-price,
+.product-card product-price * {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--tata-muted);
+}
+
+/* ---------- Collection grid ---------- */
+.product-grid {
+  gap: 32px 16px;
+}
+
+@media (min-width: 990px) {
+  html body .product-grid {
+    --product-grid-columns-desktop: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* ---------- Category tiles ---------- */
+.collection-card {
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.collection-card .collection-card__image {
+  background: var(--tata-surface);
+}
+
+/* ---------- Product page ---------- */
+.product-information .add-to-cart-button,
+.product-form-buttons .add-to-cart-button {
+  background: var(--tata-orange);
+  border-color: var(--tata-orange);
+  color: #fff;
+  border-radius: 8px;
+}
+
+@media (max-width: 749px) {
+  .product-information .add-to-cart-button {
+    width: 100%;
+  }
+}
+
+/* ---------- Footer ---------- */
+footer {
+  border-top: 6px solid var(--tata-orange);
+}

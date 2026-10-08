@@ -202,3 +202,5 @@ Code and JS syntax checked. Not yet browser-tested: the test credentials (`MAP_T
 
 ### Backend conditions
 Not assessed yet (no real response).
+
+- Desktop dropdown custom CSS hata di (hover pe white strip issue). Ab Horizon ka default header menu chalega, styling Customizer se hogi.

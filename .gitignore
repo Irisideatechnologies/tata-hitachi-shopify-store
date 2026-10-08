@@ -5,3 +5,21 @@ node_modules/
 .DS_Store
 .env
 THEME_CHANGES.md
+
+# Testing / Playwright artifacts
+test/
+tests/
+__tests__/
+*.test.*
+*.spec.*
+test-results/
+playwright-report/
+.playwright/
+screenshots/
+
+# Testing docs
+docs/
+TESTING*.md
+TEST*.md
+*-testing.md
+*.test.md

@@ -11,11 +11,7 @@
 }
 
 /* ---------- Global ---------- */
-body {
-  font-size: 15px;
-  line-height: 1.6;
-  color: var(--tata-text);
-}
+
 
 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
   outline: 2px solid var(--tata-orange);
@@ -129,85 +125,6 @@ header-component .header__columns {
 .header-actions__action,
 .mem__trigger {
   color: var(--tata-text);
-}
-
-/* ---------- Desktop dropdown: small box under the parent item ---------- */
-@media (min-width: 990px) {
-  .header-menu .menu-list__list-item:not([slot='overflow']) {
-    position: relative;
-  }
-
-  /* The theme paints a full-width panel behind open mega menus; not used for the small dropdown */
-  .header__underlay-open {
-    display: none !important;
-  }
-
-  .header-menu .menu-list__list-item:not([slot='overflow']) > .menu-list__submenu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: max-content;
-    min-width: 200px;
-    max-width: 320px;
-    padding: 0;
-    clip-path: none;
-    background: transparent;
-    content-visibility: visible;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 150ms ease, visibility 150ms ease;
-  }
-
-  .header-menu .menu-list__list-item:has([aria-expanded='true']) > .menu-list__submenu,
-  .header-menu .menu-list__list-item:not([slot='overflow']) > .menu-list__submenu:hover {
-    opacity: 1;
-    visibility: visible;
-  }
-
-  .header-menu .menu-list__list-item:not([slot='overflow']) > .menu-list__submenu .menu-list__submenu-inner {
-    display: block;
-    padding: 8px 0;
-    margin: 0;
-    max-height: none;
-    overflow: visible;
-    opacity: 1;
-    transform: none;
-    background: #fff;
-    border: 1px solid var(--tata-border);
-    border-radius: 4px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  }
-
-  .header-menu .menu-list__submenu :is(.mega-menu, .mega-menu__grid, .mega-menu__list, .mega-menu__column) {
-    display: block;
-    width: auto;
-    margin: 0;
-    padding: 0;
-    grid-template-columns: none;
-    grid-column: auto;
-  }
-
-  .header-menu .menu-list__submenu .mega-menu__link {
-    display: block;
-    width: 100%;
-    box-sizing: border-box;
-    padding: 10px 16px;
-    font-size: 14px;
-    line-height: 1.4;
-    color: var(--tata-text);
-    transition: background-color 120ms ease, color 120ms ease;
-  }
-
-  .header-menu .menu-list__submenu .mega-menu__link:hover,
-  .header-menu .menu-list__submenu .mega-menu__link:focus-visible {
-    background: #ededed;
-    color: #a8400a; /* darker orange keeps AA contrast on the grey hover background */
-  }
-
-  /* Rotate the chevron while a submenu is open */
-  .header-menu .menu-list__disclosure[aria-expanded='true'] .menu-list__disclosure-icon {
-    transform: rotate(180deg);
-  }
 }
 
 /* ---------- Mobile drawer: spacing and typography ---------- */

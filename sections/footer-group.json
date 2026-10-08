@@ -177,7 +177,7 @@
             "t0": {
               "type": "text",
               "settings": {
-                "text": "<h2>Admin</h2>",
+                "text": "<h2><a href=\"/pages/employee-management\" title=\"Employee Management\">Admin</a></h2>",
                 "width": "100%",
                 "max_width": "normal",
                 "alignment": "left",

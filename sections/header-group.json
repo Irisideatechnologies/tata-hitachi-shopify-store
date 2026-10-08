@@ -125,10 +125,22 @@
         "collection_inverse_logo": false,
         "text_color_transparent_collection": ""
       }
+    },
+    "dailyorderssheet_mjDWqa": {
+      "type": "dailyorderssheet",
+      "name": "THCM Daily Orders",
+      "settings": {
+        "heading": "Daily Orders Export",
+        "note": "Generated automatically every day at 12:00 AM",
+        "page_size": 10,
+        "show_download": true,
+        "denied_text": "Access denied"
+      }
     }
   },
   "order": [
     "header_announcements_9jGBFp",
-    "header_section"
+    "header_section",
+    "dailyorderssheet_mjDWqa"
   ]
 }

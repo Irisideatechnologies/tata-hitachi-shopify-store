@@ -1,0 +1,380 @@
+{% doc %}
+  Client logic for the admin-only "Daily Orders Export" section (sections/dailyorderssheet.liquid).
+  Non-admins never trigger an API call. The response shape of /api/sap/daily-exports is not confirmed, so the
+  first response is logged with console.debug and parsed defensively (data / data.items / data.exports / data.rows).
+  All API data is written with textContent / DOM nodes, never innerHTML.
+  Not rendered in the theme editor (the section shows a static sample table there).
+{% enddoc %}
+
+<script>
+  (function () {
+    var root = document.querySelector('[data-thcm-daily]');
+    if (!root || root.__thcmInit) return;
+    root.__thcmInit = true;
+
+    var auth = window.MAP_AUTH;
+    var api = window.THCM_API;
+    var PAGE_SIZE = parseInt(root.getAttribute('data-page-size'), 10) || 10;
+    var SHOW_DOWNLOAD = root.getAttribute('data-show-download') === 'true';
+    var DENIED_TEXT = root.getAttribute('data-denied-text') || 'Access denied';
+
+    var $ = function (sel) { return root.querySelector(sel); };
+    var gate = $('[data-gate]');
+    var main = $('[data-main]');
+    var tableWrap = $('[data-table-wrap]');
+    var head = $('[data-thead]');
+    var body = $('[data-tbody]');
+    var stateEl = $('[data-state]');
+    var pagerEl = $('[data-pager]');
+    var prevBtn = $('[data-prev]');
+    var nextBtn = $('[data-next]');
+    var rangeEl = $('[data-range]');
+    var fromEl = $('[data-from]');
+    var toEl = $('[data-to]');
+    var clearBtn = $('[data-clear]');
+    var filterEl = $('[data-filters]');
+
+    var state = { rows: [], columns: [], page: 0, server: false, pageInfo: {}, cursor: '', dir: 'after' };
+
+    var dateFmt = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' });
+    var keyFmt = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Asia/Kolkata' });
+    var moneyFmt = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
+
+    function el(tag, cls, text) {
+      var node = document.createElement(tag);
+      if (cls) node.className = cls;
+      if (text !== undefined && text !== null) node.textContent = String(text);
+      return node;
+    }
+    function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); }
+    function lower(v) { return String(v == null ? '' : v).trim().toLowerCase(); }
+    function isScalar(v) { return v == null || typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean'; }
+    function humanize(k) {
+      return String(k).replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[_-]+/g, ' ').replace(/^\w/, function (c) { return c.toUpperCase(); });
+    }
+    function pick(obj, keys) {
+      for (var i = 0; i < keys.length; i++) {
+        var v = obj[keys[i]];
+        if (v !== undefined && v !== null && v !== '') return v;
+      }
+      return null;
+    }
+
+    function showState(msg, tone, withRetry) {
+      tableWrap.hidden = true;
+      pagerEl.hidden = true;
+      stateEl.hidden = false;
+      clear(stateEl);
+      stateEl.className = 'thcm-state' + (tone ? ' thcm-state--' + tone : '');
+      stateEl.setAttribute('role', tone === 'error' ? 'alert' : 'status');
+      stateEl.appendChild(el('p', 'thcm-state__text', msg));
+      if (withRetry) {
+        var b = el('button', 'thcm-btn thcm-btn--primary', 'Retry');
+        b.type = 'button';
+        b.addEventListener('click', function () { load(); });
+        stateEl.appendChild(b);
+      }
+    }
+
+    function showLoading() {
+      tableWrap.hidden = true;
+      pagerEl.hidden = true;
+      stateEl.hidden = false;
+      clear(stateEl);
+      stateEl.className = 'thcm-state thcm-state--loading';
+      stateEl.setAttribute('aria-busy', 'true');
+      for (var i = 0; i < 4; i++) stateEl.appendChild(el('span', 'thcm-skel__line' + (i % 2 ? ' thcm-skel__line--w60' : '')));
+    }
+
+    // ---- response parsing -------------------------------------------------
+    function extractRows(res) {
+      var d = res && res.data;
+      var list = [res, d, d && d.items, d && d.exports, d && d.rows, d && d.data, res && res.items, res && res.exports, res && res.rows];
+      for (var i = 0; i < list.length; i++) if (Array.isArray(list[i])) return list[i];
+      return [];
+    }
+    function extractPageInfo(res) {
+      return (res && res.pageInfo) || (res && res.data && res.data.pageInfo) || {};
+    }
+
+    function dateParts(v) {
+      if (v == null || v === '') return { text: '', key: '' };
+      var s = String(v);
+      var plain = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+      if (plain) {
+        return { text: dateFmt.format(new Date(Date.UTC(Number(plain[1]), Number(plain[2]) - 1, Number(plain[3]), 6))), key: s };
+      }
+      var d = new Date(typeof v === 'number' ? v : s);
+      if (isNaN(d.getTime())) return { text: s, key: '' };
+      return { text: dateFmt.format(d), key: keyFmt.format(d) };
+    }
+
+    function fileUrl(v) {
+      if (!v) return '';
+      var s = String(v);
+      if (/^https?:\/\//i.test(s)) return s;
+      if (s.charAt(0) === '/') return (window.MAP_API_BASE || '') + s;
+      return '';
+    }
+
+    function normalize(raw) {
+      var row = { raw: raw, details: [] };
+      if (raw === null || typeof raw !== 'object') {
+        row.date = dateParts(null);
+        row.generic = { Value: raw };
+        return row;
+      }
+      row.date = dateParts(pick(raw, ['date', 'exportDate', 'exportedAt', 'day', 'forDate', 'reportDate', 'generatedAt', 'createdAt']));
+      var ordersField = pick(raw, ['orders', 'items', 'rows', 'lineItems']);
+      if (Array.isArray(ordersField)) row.details = ordersField;
+      var count = pick(raw, ['ordersCount', 'orderCount', 'totalOrders', 'count', 'rowCount', 'total_orders']);
+      row.count = count != null ? count : (Array.isArray(raw.orders) ? raw.orders.length : null);
+      row.amount = pick(raw, ['totalAmount', 'amount', 'total', 'totalPrice', 'grandTotal', 'totalValue', 'total_amount']);
+      row.status = pick(raw, ['status', 'state', 'syncStatus', 'exportStatus']);
+      row.file = fileUrl(pick(raw, ['fileUrl', 'downloadUrl', 'url', 'file', 'link', 's3Url', 'path', 'fileLink']));
+      row.fileName = pick(raw, ['fileName', 'filename', 'name']);
+      row.generic = {};
+      Object.keys(raw).forEach(function (k) { if (isScalar(raw[k])) row.generic[k] = raw[k]; });
+      return row;
+    }
+
+    function buildColumns(rows) {
+      var has = function (f) { return rows.some(function (r) { return f(r); }); };
+      var cols = [{ key: 'date', label: 'Date' }];
+      if (has(function (r) { return r.count != null; })) cols.push({ key: 'count', label: 'Orders' });
+      if (has(function (r) { return r.amount != null; })) cols.push({ key: 'amount', label: 'Total amount' });
+      if (has(function (r) { return r.status != null; })) cols.push({ key: 'status', label: 'Status' });
+      if (SHOW_DOWNLOAD && has(function (r) { return !!r.file; })) cols.push({ key: 'file', label: 'Download' });
+      if (cols.length === 1 && rows.length) {
+        // nothing recognised: fall back to the first scalar fields we can find
+        var keys = Object.keys(rows[0].generic).filter(function (k) { return rows[0].generic[k] !== null; }).slice(0, 6);
+        if (keys.length) cols = keys.map(function (k) { return { key: 'g:' + k, label: humanize(k) }; });
+      }
+      if (has(function (r) { return r.details.length > 0; })) cols.push({ key: 'details', label: '' });
+      return cols;
+    }
+
+    // ---- rendering ----------------------------------------------------
+    function statusPill(v) {
+      var s = lower(v);
+      var tone = 'grey';
+      if (/(success|complete|done|sent|ok|generated|uploaded)/.test(s)) tone = 'green';
+      else if (/(fail|error|reject)/.test(s)) tone = 'red';
+      else if (/(pend|process|queue|progress)/.test(s)) tone = 'amber';
+      return el('span', 'thcm-badge thcm-badge--' + tone, v);
+    }
+
+    function money(v) {
+      var n = Number(v);
+      return isNaN(n) ? String(v) : moneyFmt.format(n);
+    }
+
+    function detailTable(items) {
+      var objs = items.slice(0, 200);
+      var keys = [];
+      objs.forEach(function (it) {
+        if (it && typeof it === 'object') Object.keys(it).forEach(function (k) { if (isScalar(it[k]) && keys.indexOf(k) === -1) keys.push(k); });
+      });
+      keys = keys.slice(0, 8);
+      var wrap = el('div', 'thcm-table-wrap thcm-table-wrap--inner');
+      var t = el('table', 'thcm-table thcm-table--inner');
+      var tr = el('tr');
+      if (!keys.length) keys = ['value'];
+      keys.forEach(function (k) { tr.appendChild(el('th', '', humanize(k))); });
+      var th = el('thead'); th.appendChild(tr); t.appendChild(th);
+      var tb = el('tbody');
+      objs.forEach(function (it) {
+        var r = el('tr');
+        keys.forEach(function (k) {
+          var v = it && typeof it === 'object' ? it[k] : it;
+          r.appendChild(el('td', '', v == null ? '' : v));
+        });
+        tb.appendChild(r);
+      });
+      t.appendChild(tb);
+      wrap.appendChild(t);
+      return wrap;
+    }
+
+    function cellFor(col, row) {
+      var td = el('td');
+      td.setAttribute('data-label', col.label);
+      switch (col.key) {
+        case 'date': td.textContent = row.date.text; break;
+        case 'count': td.textContent = row.count == null ? '' : row.count; break;
+        case 'amount': td.textContent = row.amount == null ? '' : money(row.amount); break;
+        case 'status': if (row.status != null) td.appendChild(statusPill(row.status)); break;
+        case 'file':
+          if (row.file) {
+            var a = el('a', 'thcm-btn thcm-btn--ghost thcm-btn--sm', 'Download');
+            a.href = row.file;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            td.appendChild(a);
+          }
+          break;
+        case 'details': break;
+        default:
+          if (col.key.indexOf('g:') === 0) {
+            var v = row.generic[col.key.slice(2)];
+            td.textContent = v == null ? '' : v;
+          }
+      }
+      return td;
+    }
+
+    function filteredRows() {
+      var from = fromEl.value;
+      var to = toEl.value;
+      if (!from && !to) return state.rows;
+      return state.rows.filter(function (r) {
+        if (!r.date.key) return false;
+        if (from && r.date.key < from) return false;
+        if (to && r.date.key > to) return false;
+        return true;
+      });
+    }
+
+    function render() {
+      var rows = filteredRows();
+      stateEl.removeAttribute('aria-busy');
+      if (!rows.length) {
+        showState(state.rows.length ? 'No exports match this date range.' : 'No daily exports yet.', '', false);
+        return;
+      }
+      stateEl.hidden = true;
+      tableWrap.hidden = false;
+
+      var total = rows.length;
+      var start = state.server ? 0 : state.page * PAGE_SIZE;
+      var slice = state.server ? rows : rows.slice(start, start + PAGE_SIZE);
+
+      clear(head);
+      var htr = el('tr');
+      state.columns.forEach(function (c) {
+        var th = el('th', c.key === 'details' ? 'thcm-col-narrow' : '', c.label);
+        th.scope = 'col';
+        htr.appendChild(th);
+      });
+      head.appendChild(htr);
+
+      clear(body);
+      var uid = 0;
+      slice.forEach(function (row) {
+        var tr = el('tr', 'thcm-row');
+        state.columns.forEach(function (c) {
+          if (c.key === 'details') {
+            var td = el('td', 'thcm-col-narrow');
+            if (row.details.length) {
+              var id = 'thcm-detail-' + (uid++) + '-' + start;
+              var btn = el('button', 'thcm-expand', 'Details');
+              btn.type = 'button';
+              btn.setAttribute('aria-expanded', 'false');
+              btn.setAttribute('aria-controls', id);
+              var detailRow = el('tr', 'thcm-detail');
+              detailRow.id = id;
+              detailRow.hidden = true;
+              var dtd = el('td');
+              dtd.colSpan = state.columns.length;
+              dtd.appendChild(detailTable(row.details));
+              detailRow.appendChild(dtd);
+              btn.addEventListener('click', function () {
+                var open = detailRow.hidden;
+                detailRow.hidden = !open;
+                btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                btn.classList.toggle('is-open', open);
+              });
+              td.appendChild(btn);
+              tr.appendChild(td);
+              body.appendChild(tr);
+              body.appendChild(detailRow);
+              return;
+            }
+            tr.appendChild(td);
+          } else {
+            tr.appendChild(cellFor(c, row));
+          }
+        });
+        if (!tr.parentNode) body.appendChild(tr);
+      });
+
+      renderPager(total, start, slice.length);
+    }
+
+    function renderPager(total, start, shown) {
+      if (state.server) {
+        var info = state.pageInfo || {};
+        var hasPrev = !!(info.hasPreviousPage && info.previousCursor);
+        var hasNext = !!(info.hasNextPage && info.nextCursor);
+        pagerEl.hidden = !hasPrev && !hasNext;
+        prevBtn.disabled = !hasPrev;
+        nextBtn.disabled = !hasNext;
+        rangeEl.textContent = info.total != null ? 'Showing ' + shown + ' of ' + info.total : '';
+        return;
+      }
+      var pages = Math.ceil(total / PAGE_SIZE);
+      pagerEl.hidden = pages <= 1;
+      prevBtn.disabled = state.page <= 0;
+      nextBtn.disabled = state.page >= pages - 1;
+      rangeEl.textContent = 'Showing ' + (start + 1) + '–' + (start + shown) + ' of ' + total;
+    }
+
+    // ---- loading ------------------------------------------------------
+    var firstResponse = true;
+    function load(cursorParam) {
+      showLoading();
+      var path = '/api/sap/daily-exports';
+      if (cursorParam) path += '?limit=' + PAGE_SIZE + '&' + cursorParam;
+      api.jwtRequest('GET', path).then(function (res) {
+        if (firstResponse) {
+          firstResponse = false;
+          console.debug('THCM daily exports: raw response (shape is unconfirmed)', res);
+        }
+        if (res.denied) { showState(DENIED_TEXT, 'error', false); return; }
+        if (res.success === false) { showState(res.message || 'Could not load daily exports.', 'error', true); return; }
+        var info = extractPageInfo(res);
+        state.pageInfo = info;
+        state.server = !!(info.nextCursor || info.previousCursor || info.hasNextPage || info.hasPreviousPage);
+        var rows = extractRows(res).map(normalize);
+        if (rows.length && rows.every(function (r) { return r.date.key; })) {
+          rows.sort(function (a, b) { return a.date.key < b.date.key ? 1 : a.date.key > b.date.key ? -1 : 0; });
+        }
+        state.rows = rows;
+        state.columns = buildColumns(rows);
+        state.page = 0;
+        filterEl.hidden = !rows.some(function (r) { return r.date.key; });
+        render();
+      }).catch(function (err) {
+        if (err && err.handled) return;
+        showState((err && err.message) || 'Could not load daily exports.', 'error', true);
+      });
+    }
+
+    // ---- start --------------------------------------------------------
+    var isAdmin = !!(auth && auth.isLoggedIn && auth.isLoggedIn() && auth.isAdmin && auth.isAdmin());
+    if (!isAdmin) {
+      gate.hidden = false;
+      main.hidden = true;
+      return;
+    }
+    gate.hidden = true;
+    main.hidden = false;
+
+    [fromEl, toEl].forEach(function (inp) {
+      inp.addEventListener('change', function () { state.page = 0; render(); });
+    });
+    clearBtn.addEventListener('click', function () { fromEl.value = ''; toEl.value = ''; state.page = 0; render(); });
+    prevBtn.addEventListener('click', function () {
+      if (state.server) {
+        if (state.pageInfo.previousCursor) load('before=' + encodeURIComponent(state.pageInfo.previousCursor));
+      } else if (state.page > 0) { state.page--; render(); }
+    });
+    nextBtn.addEventListener('click', function () {
+      if (state.server) {
+        if (state.pageInfo.nextCursor) load('after=' + encodeURIComponent(state.pageInfo.nextCursor));
+      } else { state.page++; render(); }
+    });
+
+    load();
+  })();
+</script>

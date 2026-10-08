@@ -1,0 +1,136 @@
+{% doc %}
+  Daily Orders Export (admin only). Lists the exports the backend generates every night at 12:00 AM.
+  Styling lives in assets/tata.css ("Daily Orders" block); logic in snippets/thcm-daily-orders-js.liquid.
+  Non-admins only see a notice (no API call). In the theme editor a static sample table is shown instead.
+{% enddoc %}
+
+<section
+  class="thcm thcm-daily"
+  data-thcm-daily
+  data-page-size="{{ section.settings.page_size }}"
+  data-show-download="{{ section.settings.show_download }}"
+  data-denied-text="{{ section.settings.denied_text | escape }}"
+  data-section-id="{{ section.id }}"
+>
+  <div class="thcm__wrap">
+    <div class="thcm-gate" data-gate hidden>
+      <p class="thcm-gate__text">This page is only for administrators.</p>
+      <a class="thcm-btn thcm-btn--primary" href="{{ routes.root_url }}">Home</a>
+    </div>
+
+    <div data-main{% unless request.design_mode %} hidden{% endunless %}>
+      <header class="thcm__head">
+        <h1 class="thcm__title">{{ section.settings.heading }}</h1>
+        {%- if section.settings.note != blank -%}
+          <p class="thcm__sub">{{ section.settings.note }}</p>
+        {%- endif -%}
+      </header>
+
+      <div class="thcm-filters" data-filters{% unless request.design_mode %} hidden{% endunless %}>
+        <label class="thcm-field"><span>From</span><input type="date" data-from></label>
+        <label class="thcm-field"><span>To</span><input type="date" data-to></label>
+        <button type="button" class="thcm-btn thcm-btn--ghost thcm-btn--sm" data-clear>Clear</button>
+      </div>
+
+      <div class="thcm-state" data-state hidden></div>
+
+      <div class="thcm-table-wrap" data-table-wrap{% unless request.design_mode %} hidden{% endunless %}>
+        <table class="thcm-table">
+          <thead data-thead>
+            {%- if request.design_mode -%}
+              <tr>
+                <th scope="col">Date</th>
+                <th scope="col">Orders</th>
+                <th scope="col">Total amount</th>
+                <th scope="col">Status</th>
+                {%- if section.settings.show_download -%}<th scope="col">Download</th>{%- endif -%}
+              </tr>
+            {%- endif -%}
+          </thead>
+          <tbody data-tbody>
+            {%- if request.design_mode -%}
+              <tr class="thcm-row">
+                <td data-label="Date">08 Oct 2026</td>
+                <td data-label="Orders">14</td>
+                <td data-label="Total amount">&#8377;18,450.00</td>
+                <td data-label="Status"><span class="thcm-badge thcm-badge--green">Completed</span></td>
+                {%- if section.settings.show_download -%}<td data-label="Download"><span class="thcm-btn thcm-btn--ghost thcm-btn--sm">Download</span></td>{%- endif -%}
+              </tr>
+              <tr class="thcm-row">
+                <td data-label="Date">07 Oct 2026</td>
+                <td data-label="Orders">9</td>
+                <td data-label="Total amount">&#8377;11,200.00</td>
+                <td data-label="Status"><span class="thcm-badge thcm-badge--green">Completed</span></td>
+                {%- if section.settings.show_download -%}<td data-label="Download"><span class="thcm-btn thcm-btn--ghost thcm-btn--sm">Download</span></td>{%- endif -%}
+              </tr>
+              <tr class="thcm-row">
+                <td data-label="Date">06 Oct 2026</td>
+                <td data-label="Orders">3</td>
+                <td data-label="Total amount">&#8377;3,897.00</td>
+                <td data-label="Status"><span class="thcm-badge thcm-badge--amber">Pending</span></td>
+                {%- if section.settings.show_download -%}<td data-label="Download"><span class="thcm-btn thcm-btn--ghost thcm-btn--sm">Download</span></td>{%- endif -%}
+              </tr>
+            {%- endif -%}
+          </tbody>
+        </table>
+      </div>
+
+      <nav class="thcm-pager" data-pager aria-label="Daily exports pagination" hidden>
+        <button type="button" class="thcm-btn thcm-btn--ghost" data-prev>Previous</button>
+        <span class="thcm-pager__range" data-range></span>
+        <button type="button" class="thcm-btn thcm-btn--ghost" data-next>Next</button>
+      </nav>
+    </div>
+  </div>
+</section>
+
+{%- unless request.design_mode -%}
+  {% render 'thcm-daily-orders-js' %}
+{%- endunless -%}
+
+{% schema %}
+{
+  "name": "THCM Daily Orders",
+  "class": "section-wrapper",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Daily Orders Export"
+    },
+    {
+      "type": "text",
+      "id": "note",
+      "label": "Note",
+      "default": "Generated automatically every day at 12:00 AM"
+    },
+    {
+      "type": "range",
+      "id": "page_size",
+      "label": "Rows per page",
+      "min": 5,
+      "max": 50,
+      "step": 5,
+      "default": 10
+    },
+    {
+      "type": "checkbox",
+      "id": "show_download",
+      "label": "Show download column",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "denied_text",
+      "label": "Access denied text",
+      "default": "Access denied"
+    }
+  ],
+  "presets": [
+    {
+      "name": "THCM Daily Orders"
+    }
+  ]
+}
+{% endschema %}

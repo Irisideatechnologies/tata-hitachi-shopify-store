@@ -1,0 +1,442 @@
+{% doc %}
+  Client logic for the "My Orders" section (sections/thcm-my-orders.liquid).
+  Loads the signed-in employee's orders through THCM_API and renders cards, filters, pagination and cancel.
+  All API data is written with textContent / DOM nodes, never innerHTML.
+  Not rendered in the theme editor (the section shows static sample cards there).
+{% enddoc %}
+
+<script>
+  (function () {
+    var root = document.querySelector('[data-thcm-orders]');
+    if (!root || root.__thcmInit) return;
+    root.__thcmInit = true;
+
+    var auth = window.MAP_AUTH;
+    var api = window.THCM_API;
+    var PAGE_SIZE = parseInt(root.getAttribute('data-page-size'), 10) || 10;
+    var EMPTY_TEXT = root.getAttribute('data-empty-text') || 'You have not placed any orders yet';
+    var SHOP_URL = root.getAttribute('data-shop-url') || '/collections/all';
+    var SHOP_LABEL = root.getAttribute('data-shop-label') || 'Shop now';
+    var SUMMARY_PAGE_LIMIT = 50;
+    var SUMMARY_MAX_PAGES = 6;
+
+    var $ = function (sel) { return root.querySelector(sel); };
+    var listEl = $('[data-list]');
+    var pagerEl = $('[data-pager]');
+    var prevBtn = $('[data-prev]');
+    var nextBtn = $('[data-next]');
+    var rangeEl = $('[data-range]');
+    var dialog = $('[data-confirm]');
+    var toastsEl = $('[data-toasts]');
+
+    var state = {
+      filter: 'all',
+      orders: [],
+      pageInfo: {},
+      cursor: { after: '', before: '' },
+      summary: null,
+      requestId: 0
+    };
+
+    var STAGE_LABEL = {
+      pending: 'Awaiting approval',
+      approved: 'Approved',
+      shipped: 'Shipped',
+      delivered: 'Delivered',
+      cancelled: 'Cancelled'
+    };
+    var STEPS = ['Placed', 'Approved', 'Shipped', 'Delivered'];
+    var STEP_INDEX = { pending: 0, approved: 1, shipped: 2, delivered: 3 };
+
+    var dateFmt = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' });
+    var moneyFmt = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
+
+    function el(tag, cls, text) {
+      var node = document.createElement(tag);
+      if (cls) node.className = cls;
+      if (text !== undefined && text !== null) node.textContent = String(text);
+      return node;
+    }
+
+    function lower(v) { return String(v == null ? '' : v).trim().toLowerCase(); }
+
+    function titleCase(v) {
+      return String(v).replace(/[_-]+/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+    }
+
+    function money(v) {
+      var n = Number(v);
+      return isNaN(n) ? String(v == null ? '' : v) : moneyFmt.format(n);
+    }
+
+    function fmtDate(v) {
+      var d = new Date(v);
+      return isNaN(d.getTime()) ? '' : dateFmt.format(d);
+    }
+
+    function safeUrl(u) {
+      return /^https?:\/\//i.test(String(u || '')) ? String(u) : '';
+    }
+
+    function orderNo(o) {
+      var name = String(o.name || '');
+      if (name.charAt(0) === '#') return name;
+      return o.shopifyOrderId ? String(o.shopifyOrderId) : (name || String(o.id || ''));
+    }
+
+    function classify(o) {
+      if (lower(o.status) === 'cancelled' || lower(o.stage) === 'cancelled') return 'cancelled';
+      if (lower(o.deliveryStatus) === 'delivered') return 'delivered';
+      if (lower(o.fulfillmentStatus) === 'fulfilled' || lower(o.stage) === 'fulfilled') return 'shipped';
+      var fin = lower(o.financialStatus);
+      if (fin === 'paid' || fin === 'partially_paid' || lower(o.stage) === 'paid') return 'approved';
+      return 'pending';
+    }
+
+    function paymentBadge(o) {
+      var fin = lower(o.financialStatus);
+      if (!fin || fin === 'pending') return ['Awaiting approval', 'amber'];
+      if (fin === 'paid') return ['Approved', 'green'];
+      if (fin === 'refunded') return ['Refunded', 'grey'];
+      if (fin === 'voided') return ['Voided', 'grey'];
+      if (fin === 'partially_paid') return ['Partially paid', 'amber'];
+      return [titleCase(fin), 'grey'];
+    }
+
+    function fulfillmentBadge(o) {
+      var f = lower(o.fulfillmentStatus);
+      if (!f) return ['Not shipped', 'grey'];
+      if (f === 'fulfilled') return ['Shipped', 'blue'];
+      if (f === 'restocked') return ['Restocked', 'grey'];
+      return [titleCase(f), 'blue'];
+    }
+
+    function deliveryBadge(o) {
+      var d = lower(o.deliveryStatus);
+      if (!d) return ['—', 'grey'];
+      if (d === 'delivered') return ['Delivered', 'green'];
+      return [titleCase(d), 'grey'];
+    }
+
+    function badgeGroup(label, pair) {
+      var wrap = el('div', 'thcm-badge-group');
+      wrap.appendChild(el('small', 'thcm-badge-group__label', label));
+      wrap.appendChild(el('span', 'thcm-badge thcm-badge--' + pair[1], pair[0]));
+      return wrap;
+    }
+
+    function stepper(o, stage) {
+      if (stage === 'cancelled') {
+        var box = el('div', 'thcm-cancelled');
+        box.setAttribute('role', 'status');
+        box.appendChild(el('strong', '', 'Cancelled'));
+        var when = fmtDate(o.closedAt || o.updatedAt);
+        if (when) box.appendChild(el('span', '', ' on ' + when));
+        return box;
+      }
+      var current = STEP_INDEX[stage];
+      var ol = el('ol', 'thcm-steps');
+      ol.setAttribute('aria-label', 'Order progress');
+      STEPS.forEach(function (label, i) {
+        var li = el('li', 'thcm-step' + (i < current ? ' is-done' : '') + (i === current ? ' is-current' : ''));
+        if (i === current) li.setAttribute('aria-current', 'step');
+        li.appendChild(el('span', 'thcm-step__dot'));
+        li.appendChild(el('span', 'thcm-step__label', label));
+        ol.appendChild(li);
+      });
+      return ol;
+    }
+
+    function itemsList(o) {
+      var ul = el('ul', 'thcm-items');
+      (Array.isArray(o.lineItems) ? o.lineItems : []).forEach(function (it) {
+        var li = el('li', 'thcm-item');
+        var main = el('div', 'thcm-item__main');
+        main.appendChild(el('span', 'thcm-item__title', (it.title || 'Item') + ' × ' + (it.quantity == null ? 1 : it.quantity)));
+        if (it.sku) main.appendChild(el('span', 'thcm-item__sku', 'SKU: ' + it.sku));
+        li.appendChild(main);
+        li.appendChild(el('span', 'thcm-item__price', money(it.price)));
+        ul.appendChild(li);
+      });
+      return ul;
+    }
+
+    function card(o) {
+      var stage = classify(o);
+      var c = el('article', 'thcm-card');
+      c.setAttribute('data-stage', stage);
+
+      var head = el('div', 'thcm-card__head');
+      var left = el('div', 'thcm-card__id');
+      left.appendChild(el('span', 'thcm-card__no', 'Order ' + orderNo(o)));
+      var d = fmtDate(o.createdAt);
+      if (d) left.appendChild(el('span', 'thcm-card__date', d));
+      head.appendChild(left);
+      head.appendChild(el('div', 'thcm-card__total', money(o.totalPrice)));
+      c.appendChild(head);
+
+      c.appendChild(itemsList(o));
+
+      var badges = el('div', 'thcm-badges');
+      badges.appendChild(badgeGroup('Payment', paymentBadge(o)));
+      badges.appendChild(badgeGroup('Fulfillment', fulfillmentBadge(o)));
+      badges.appendChild(badgeGroup('Delivery', deliveryBadge(o)));
+      c.appendChild(badges);
+
+      c.appendChild(stepper(o, stage));
+
+      var actions = el('div', 'thcm-actions');
+      var track = safeUrl(o.trackingUrl);
+      if (track) {
+        var a = el('a', 'thcm-btn thcm-btn--ghost');
+        a.href = track;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        var label = 'Track shipment';
+        var extra = [o.carrier, o.trackingNumber].filter(Boolean).join(' · ');
+        a.appendChild(document.createTextNode(label));
+        if (extra) a.appendChild(el('span', 'thcm-btn__meta', extra));
+        actions.appendChild(a);
+      }
+      if (o.canCancel === true && !o.locked && stage !== 'cancelled') {
+        var btn = el('button', 'thcm-btn thcm-btn--danger', 'Cancel order');
+        btn.type = 'button';
+        btn.addEventListener('click', function () { askCancel(o, btn); });
+        actions.appendChild(btn);
+      }
+      if (actions.children.length) c.appendChild(actions);
+      return c;
+    }
+
+    function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); }
+
+    function toast(msg, isError) {
+      var t = el('div', 'thcm-toast' + (isError ? ' thcm-toast--error' : ''), msg);
+      toastsEl.appendChild(t);
+      setTimeout(function () { t.remove(); }, 4500);
+    }
+
+    function showSkeleton() {
+      clear(listEl);
+      pagerEl.hidden = true;
+      for (var i = 0; i < 3; i++) {
+        var s = el('div', 'thcm-card thcm-skel');
+        s.setAttribute('aria-hidden', 'true');
+        s.appendChild(el('span', 'thcm-skel__line thcm-skel__line--w40'));
+        s.appendChild(el('span', 'thcm-skel__line'));
+        s.appendChild(el('span', 'thcm-skel__line thcm-skel__line--w60'));
+        listEl.appendChild(s);
+      }
+      listEl.setAttribute('aria-busy', 'true');
+    }
+
+    function showError(msg) {
+      clear(listEl);
+      pagerEl.hidden = true;
+      listEl.removeAttribute('aria-busy');
+      var box = el('div', 'thcm-state thcm-state--error');
+      box.setAttribute('role', 'alert');
+      box.appendChild(el('p', 'thcm-state__text', msg));
+      var retry = el('button', 'thcm-btn thcm-btn--primary', 'Retry');
+      retry.type = 'button';
+      retry.addEventListener('click', function () { load(); });
+      box.appendChild(retry);
+      listEl.appendChild(box);
+    }
+
+    function showEmpty(filtered) {
+      clear(listEl);
+      var box = el('div', 'thcm-state');
+      if (filtered) {
+        box.appendChild(el('p', 'thcm-state__text', 'No orders in this tab.'));
+      } else {
+        box.appendChild(el('p', 'thcm-state__text', EMPTY_TEXT));
+        var a = el('a', 'thcm-btn thcm-btn--primary', SHOP_LABEL);
+        a.href = SHOP_URL;
+        box.appendChild(a);
+      }
+      listEl.appendChild(box);
+    }
+
+    function renderList() {
+      listEl.removeAttribute('aria-busy');
+      var shown = state.orders.filter(function (o) { return state.filter === 'all' || classify(o) === state.filter; });
+      if (!shown.length) {
+        showEmpty(state.orders.length > 0);
+      } else {
+        clear(listEl);
+        shown.forEach(function (o) { listEl.appendChild(card(o)); });
+      }
+      renderPager();
+    }
+
+    function renderPager() {
+      var info = state.pageInfo || {};
+      var hasPrev = info.hasPreviousPage === true && !!info.previousCursor;
+      var hasNext = info.hasNextPage === true && !!info.nextCursor;
+      pagerEl.hidden = !hasPrev && !hasNext;
+      prevBtn.disabled = !hasPrev;
+      nextBtn.disabled = !hasNext;
+      var total = info.total;
+      rangeEl.textContent = (total != null ? 'Showing ' + state.orders.length + ' of ' + total + ' orders' : '');
+    }
+
+    function renderTabs() {
+      root.querySelectorAll('[data-filter]').forEach(function (b) {
+        var active = b.getAttribute('data-filter') === state.filter;
+        b.classList.toggle('is-active', active);
+        b.setAttribute('aria-selected', active ? 'true' : 'false');
+        b.tabIndex = active ? 0 : -1;
+      });
+    }
+
+    function renderChips() {
+      var s = state.summary;
+      root.querySelectorAll('[data-chip]').forEach(function (chip) {
+        var key = chip.getAttribute('data-chip');
+        var n = chip.querySelector('[data-n]');
+        if (!n) return;
+        if (key === 'total') {
+          n.textContent = s ? s.total : (state.pageInfo && state.pageInfo.total != null ? state.pageInfo.total : '–');
+        } else {
+          n.textContent = s ? s[key] : '–';
+        }
+      });
+    }
+
+    function email() {
+      var emp = auth && auth.getEmployee ? auth.getEmployee() : {};
+      return (emp && emp.email) || '';
+    }
+
+    function path(limit, cursor) {
+      var p = '/api/dashboard/orders?email=' + encodeURIComponent(email()) + '&limit=' + limit;
+      // after and before are never sent together
+      if (cursor && cursor.after) p += '&after=' + encodeURIComponent(cursor.after);
+      else if (cursor && cursor.before) p += '&before=' + encodeURIComponent(cursor.before);
+      return p;
+    }
+
+    function parse(body) {
+      var data = Array.isArray(body.data) ? body.data : (body.data && Array.isArray(body.data.orders) ? body.data.orders : []);
+      return { orders: data, pageInfo: body.pageInfo || (body.data && body.data.pageInfo) || {} };
+    }
+
+    function load(cursor) {
+      if (cursor) state.cursor = cursor;
+      if (!email()) {
+        showError('Please sign in to see your orders.');
+        return;
+      }
+      var id = ++state.requestId;
+      showSkeleton();
+      api.keyRequest('GET', path(PAGE_SIZE, state.cursor)).then(function (body) {
+        if (id !== state.requestId) return;
+        if (body.denied) { showError('Orders could not be found for your account.'); return; }
+        if (body.success === false) { showError(body.message || 'Could not load your orders.'); return; }
+        var parsed = parse(body);
+        state.orders = parsed.orders;
+        state.pageInfo = parsed.pageInfo;
+        renderList();
+        renderChips();
+        if (!state.summary) loadSummary(id);
+      }).catch(function (err) {
+        if (id !== state.requestId || (err && err.handled)) return;
+        showError((err && err.message) || 'Could not load your orders.');
+      });
+    }
+
+    function tally(orders) {
+      var s = { total: 0, pending: 0, approved: 0, delivered: 0, cancelled: 0 };
+      orders.forEach(function (o) {
+        s.total++;
+        var stage = classify(o);
+        if (s[stage] !== undefined) s[stage]++;
+      });
+      return s;
+    }
+
+    // Chip counts need every order, not just the current page, so walk the cursors (capped)
+    function loadSummary(id) {
+      var info = state.pageInfo || {};
+      if (!info.hasNextPage && !info.hasPreviousPage) {
+        state.summary = tally(state.orders);
+        renderChips();
+        return;
+      }
+      var all = [];
+      var pagesLeft = SUMMARY_MAX_PAGES;
+      function step(cursor) {
+        return api.keyRequest('GET', path(SUMMARY_PAGE_LIMIT, cursor)).then(function (body) {
+          var parsed = parse(body);
+          all = all.concat(parsed.orders);
+          var pi = parsed.pageInfo || {};
+          if (pi.hasNextPage && pi.nextCursor && --pagesLeft > 0) return step({ after: pi.nextCursor, before: '' });
+        });
+      }
+      step({ after: '', before: '' }).then(function () {
+        state.summary = tally(all);
+        if (state.pageInfo && state.pageInfo.total != null && state.pageInfo.total > all.length) state.summary.total = state.pageInfo.total;
+        renderChips();
+      }).catch(function (err) {
+        console.error('THCM orders: summary failed', err);
+      });
+    }
+
+    function askCancel(o, trigger) {
+      var no = orderNo(o);
+      dialog.querySelector('[data-confirm-text]').textContent = 'Cancel order ' + no + '? This cannot be undone.';
+      var ok = dialog.querySelector('[data-confirm-ok]');
+      var no_ = dialog.querySelector('[data-confirm-cancel]');
+      ok.disabled = false;
+      ok.textContent = 'Yes, cancel order';
+
+      function close() {
+        ok.onclick = null;
+        no_.onclick = null;
+        if (dialog.open) dialog.close();
+        if (trigger && trigger.isConnected) trigger.focus();
+      }
+      no_.onclick = close;
+      ok.onclick = function () {
+        ok.disabled = true;
+        ok.textContent = 'Cancelling...';
+        api.keyRequest('POST', '/api/map/orders/' + encodeURIComponent(o.shopifyOrderId) + '/cancel').then(function (body) {
+          close();
+          if (body.denied) { toast('This order could not be found.', true); return; }
+          if (body.success === false) { toast(body.message || 'Could not cancel this order.', true); return; }
+          toast('Order ' + no + ' cancelled.');
+          state.summary = null;
+          load();
+        }).catch(function (err) {
+          if (err && err.handled) return;
+          close();
+          toast((err && err.message) || 'Could not cancel this order.', true);
+        });
+      };
+      if (typeof dialog.showModal === 'function') dialog.showModal();
+      else dialog.setAttribute('open', '');
+    }
+
+    root.querySelectorAll('[data-filter]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        state.filter = b.getAttribute('data-filter');
+        renderTabs();
+        renderList();
+      });
+    });
+
+    prevBtn.addEventListener('click', function () {
+      var c = state.pageInfo && state.pageInfo.previousCursor;
+      if (c) load({ after: '', before: c });
+    });
+    nextBtn.addEventListener('click', function () {
+      var c = state.pageInfo && state.pageInfo.nextCursor;
+      if (c) load({ after: c, before: '' });
+    });
+
+    renderTabs();
+    renderChips();
+    load();
+  })();
+</script>

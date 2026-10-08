@@ -2116,5 +2116,21 @@
         "default": "equal-width-buttons"
       }
     ]
+  },
+  {
+    "name": "THCM Portal",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Admin-only links"
+      },
+      {
+        "type": "textarea",
+        "id": "thcm_admin_only_urls",
+        "label": "Admin-only link URLs",
+        "info": "One URL per line. Header and footer links pointing to these URLs are hidden from employees who are not administrators.",
+        "default": "/pages/daily-orders\n/pages/daily-orders-sheet\n/pages/employee-management"
+      }
+    ]
   }
 ]

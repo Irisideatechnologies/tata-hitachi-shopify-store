@@ -1,0 +1,86 @@
+{% doc %}
+  Hides admin-only links (URLs listed in theme setting "Admin-only link URLs") from the header and footer
+  for everyone who is not a MAP administrator. Rendered in <head> after map-auth-head.
+
+  Matching links (and their li / p / heading wrapper when the link is the only content) get
+  [data-thcm-admin-link]. tata.css hides them straight away (no flash); for non-admins they are
+  also removed from the DOM. Admins get html.thcm-is-admin, which keeps them visible.
+  Skipped in the theme editor so merchants can still see and edit every link.
+{% enddoc %}
+
+{%- unless request.design_mode -%}
+  {%- assign thcm_admin_urls = settings.thcm_admin_only_urls | default: '/pages/daily-orders' | newline_to_br | split: '<br />' -%}
+  <script>
+    (function () {
+      if (window.__thcmAdminLinks) return;
+      window.__thcmAdminLinks = true;
+
+      var raw = {{ thcm_admin_urls | json }};
+      var blocked = [];
+      raw.forEach(function (line) {
+        var u = String(line).trim();
+        if (!u) return;
+        blocked.push(normalize(u));
+      });
+      if (!blocked.length) return;
+
+      function normalize(href) {
+        try {
+          var url = new URL(href, window.location.origin);
+          if (url.origin !== window.location.origin) return '';
+          return url.pathname.replace(/\/+$/, '').toLowerCase();
+        } catch (e) {
+          return '';
+        }
+      }
+
+      var auth = window.MAP_AUTH;
+      var isAdmin = !!(auth && auth.isAdmin && auth.isAdmin());
+      if (isAdmin) {
+        document.documentElement.classList.add('thcm-is-admin');
+        return;
+      }
+
+      var WRAPPERS = 'li, p, h1, h2, h3, h4, h5, h6, rte-formatter, .text-block';
+      var SCOPE = 'footer a[href], #header-group a[href], header-component a[href]';
+
+      function mark(link) {
+        var text = link.textContent.trim();
+        link.setAttribute('data-thcm-admin-link', '');
+        var node = link.parentElement;
+        for (var depth = 0; node && depth < 3 && node.matches(WRAPPERS); depth++) {
+          if (node.textContent.trim() !== text) break;
+          node.setAttribute('data-thcm-admin-link', '');
+          node = node.parentElement;
+        }
+      }
+
+      function scan() {
+        document.querySelectorAll(SCOPE).forEach(function (link) {
+          if (link.hasAttribute('data-thcm-admin-link')) return;
+          var path = normalize(link.getAttribute('href') || '');
+          if (path && blocked.indexOf(path) !== -1) mark(link);
+        });
+      }
+
+      function purge() {
+        document.querySelectorAll('[data-thcm-admin-link]').forEach(function (el) { el.remove(); });
+      }
+
+      var queued = false;
+      function schedule() {
+        if (queued) return;
+        queued = true;
+        Promise.resolve().then(function () {
+          queued = false;
+          scan();
+          if (document.readyState !== 'loading') purge();
+        });
+      }
+
+      // Runs for nodes added while parsing (before first paint) and for menus injected later (mobile drawer)
+      new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true });
+      document.addEventListener('DOMContentLoaded', schedule);
+    })();
+  </script>
+{%- endunless -%}

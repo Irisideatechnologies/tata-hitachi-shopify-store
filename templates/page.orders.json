@@ -1,0 +1,19 @@
+{
+  "sections": {
+    "main": {
+      "type": "thcm-my-orders",
+      "settings": {
+        "heading": "My Orders",
+        "subheading": "Track the status of your merchandise orders.",
+        "page_size": 10,
+        "show_summary": true,
+        "show_filters": true,
+        "empty_text": "You have not placed any orders yet",
+        "shop_label": "Shop now"
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

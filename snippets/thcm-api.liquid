@@ -1,0 +1,79 @@
+{% doc %}
+  THCM API helper (window.THCM_API). Single place for every storefront -> backend call.
+  Requires map-auth-head (MAP_API_BASE, MAP_API_KEY, MAP_AUTH) to be rendered first in <head>.
+
+  keyRequest(method, path, body) - sends x-api-key.
+  jwtRequest(method, path, body) - sends Authorization: Bearer <employee token>.
+
+  Both return a Promise:
+    - resolves with the parsed JSON body ({} when empty)
+    - resolves { denied: true } on 404
+    - rejects with an Error (message is user-safe, .status holds the HTTP status when there is one)
+    - on 401 calls MAP_AUTH.logout() and rejects with { handled: true }
+{% enddoc %}
+
+<script>
+  window.THCM_API = (function () {
+    function fail(message, status) {
+      var err = new Error(message);
+      if (status) err.status = status;
+      return err;
+    }
+
+    function send(kind, method, path, body) {
+      var headers = { 'ngrok-skip-browser-warning': 'true' };
+
+      if (kind === 'key') {
+        headers['x-api-key'] = window.MAP_API_KEY || '';
+      } else {
+        var token = window.MAP_AUTH && window.MAP_AUTH.getToken();
+        if (token) headers['Authorization'] = 'Bearer ' + token;
+      }
+
+      var opts = { method: method || 'GET', headers: headers };
+      if (body !== undefined && body !== null) {
+        headers['Content-Type'] = 'application/json';
+        opts.body = JSON.stringify(body);
+      }
+
+      var url = (window.MAP_API_BASE || '') + path;
+
+      return fetch(url, opts).then(
+        function (res) {
+          return res.text().then(function (text) {
+            var json = null;
+            try {
+              json = text ? JSON.parse(text) : null;
+            } catch (e) {
+              console.error('THCM_API: response is not JSON (' + method + ' ' + path + '):', text.slice(0, 300));
+            }
+
+            if (res.status === 401) {
+              console.error('THCM_API: 401 on ' + method + ' ' + path);
+              if (window.MAP_AUTH) window.MAP_AUTH.logout();
+              throw { handled: true, status: 401 };
+            }
+            if (res.status === 404) {
+              console.error('THCM_API: 404 on ' + method + ' ' + path);
+              return { denied: true };
+            }
+            if (!res.ok) {
+              console.error('THCM_API: ' + res.status + ' on ' + method + ' ' + path, json);
+              throw fail((json && json.message) || ('Request failed (' + res.status + ')'), res.status);
+            }
+            return json || {};
+          });
+        },
+        function (err) {
+          console.error('THCM_API network/CORS error (' + method + ' ' + path + '):', err);
+          throw fail('Could not reach the server. Please check your connection and try again.');
+        }
+      );
+    }
+
+    return {
+      keyRequest: function (method, path, body) { return send('key', method, path, body); },
+      jwtRequest: function (method, path, body) { return send('jwt', method, path, body); }
+    };
+  })();
+</script>

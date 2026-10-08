@@ -1,0 +1,186 @@
+{% doc %}
+  My Orders (employee portal). Shows only the signed-in employee's orders.
+  Styling lives in assets/tata.css ("My Orders" block); logic in snippets/thcm-orders-js.liquid.
+  In the theme editor no API call is made: static sample cards are shown instead.
+{% enddoc %}
+
+{%- liquid
+  assign shop_url = section.settings.shop_url | default: '/collections/all'
+-%}
+
+<section
+  class="thcm thcm-orders"
+  data-thcm-orders
+  data-page-size="{{ section.settings.page_size }}"
+  data-empty-text="{{ section.settings.empty_text | escape }}"
+  data-shop-url="{{ shop_url }}"
+  data-shop-label="{{ section.settings.shop_label | escape }}"
+  data-section-id="{{ section.id }}"
+>
+  <div class="thcm__wrap">
+    <header class="thcm__head">
+      <h1 class="thcm__title">{{ section.settings.heading }}</h1>
+      {%- if section.settings.subheading != blank -%}
+        <p class="thcm__sub">{{ section.settings.subheading }}</p>
+      {%- endif -%}
+    </header>
+
+    {%- if section.settings.show_summary -%}
+      <div class="thcm-chips" aria-label="Order summary">
+        <div class="thcm-chip" data-chip="total"><span class="thcm-chip__n" data-n>{% if request.design_mode %}4{% else %}&ndash;{% endif %}</span><span class="thcm-chip__l">Total</span></div>
+        <div class="thcm-chip thcm-chip--amber" data-chip="pending"><span class="thcm-chip__n" data-n>{% if request.design_mode %}1{% else %}&ndash;{% endif %}</span><span class="thcm-chip__l">Awaiting approval</span></div>
+        <div class="thcm-chip thcm-chip--green" data-chip="approved"><span class="thcm-chip__n" data-n>{% if request.design_mode %}1{% else %}&ndash;{% endif %}</span><span class="thcm-chip__l">Approved</span></div>
+        <div class="thcm-chip thcm-chip--green" data-chip="delivered"><span class="thcm-chip__n" data-n>{% if request.design_mode %}1{% else %}&ndash;{% endif %}</span><span class="thcm-chip__l">Delivered</span></div>
+        <div class="thcm-chip thcm-chip--red" data-chip="cancelled"><span class="thcm-chip__n" data-n>{% if request.design_mode %}1{% else %}&ndash;{% endif %}</span><span class="thcm-chip__l">Cancelled</span></div>
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.show_filters -%}
+      <div class="thcm-tabs" role="tablist" aria-label="Filter orders">
+        <button type="button" role="tab" class="thcm-tab is-active" data-filter="all" aria-selected="true">All</button>
+        <button type="button" role="tab" class="thcm-tab" data-filter="pending" aria-selected="false">Awaiting approval</button>
+        <button type="button" role="tab" class="thcm-tab" data-filter="approved" aria-selected="false">Approved</button>
+        <button type="button" role="tab" class="thcm-tab" data-filter="shipped" aria-selected="false">Shipped</button>
+        <button type="button" role="tab" class="thcm-tab" data-filter="delivered" aria-selected="false">Delivered</button>
+        <button type="button" role="tab" class="thcm-tab" data-filter="cancelled" aria-selected="false">Cancelled</button>
+      </div>
+    {%- endif -%}
+
+    <div class="thcm-list" data-list aria-live="polite">
+      {%- if request.design_mode -%}
+        <article class="thcm-card" data-stage="pending">
+          <div class="thcm-card__head">
+            <div class="thcm-card__id"><span class="thcm-card__no">Order #1001</span><span class="thcm-card__date">08 Oct 2026</span></div>
+            <div class="thcm-card__total">&#8377;1,299.00</div>
+          </div>
+          <ul class="thcm-items">
+            <li class="thcm-item"><div class="thcm-item__main"><span class="thcm-item__title">Sample cap &times; 1</span><span class="thcm-item__sku">SKU: CAP-BLK</span></div><span class="thcm-item__price">&#8377;499.00</span></li>
+            <li class="thcm-item"><div class="thcm-item__main"><span class="thcm-item__title">Sample mug &times; 2</span><span class="thcm-item__sku">SKU: MUG-WHT</span></div><span class="thcm-item__price">&#8377;400.00</span></li>
+          </ul>
+          <div class="thcm-badges">
+            <div class="thcm-badge-group"><small class="thcm-badge-group__label">Payment</small><span class="thcm-badge thcm-badge--amber">Awaiting approval</span></div>
+            <div class="thcm-badge-group"><small class="thcm-badge-group__label">Fulfillment</small><span class="thcm-badge thcm-badge--grey">Not shipped</span></div>
+            <div class="thcm-badge-group"><small class="thcm-badge-group__label">Delivery</small><span class="thcm-badge thcm-badge--grey">&mdash;</span></div>
+          </div>
+          <ol class="thcm-steps" aria-label="Order progress">
+            <li class="thcm-step is-current"><span class="thcm-step__dot"></span><span class="thcm-step__label">Placed</span></li>
+            <li class="thcm-step"><span class="thcm-step__dot"></span><span class="thcm-step__label">Approved</span></li>
+            <li class="thcm-step"><span class="thcm-step__dot"></span><span class="thcm-step__label">Shipped</span></li>
+            <li class="thcm-step"><span class="thcm-step__dot"></span><span class="thcm-step__label">Delivered</span></li>
+          </ol>
+          <div class="thcm-actions"><button type="button" class="thcm-btn thcm-btn--danger">Cancel order</button></div>
+        </article>
+        <article class="thcm-card" data-stage="shipped">
+          <div class="thcm-card__head">
+            <div class="thcm-card__id"><span class="thcm-card__no">Order #1000</span><span class="thcm-card__date">02 Oct 2026</span></div>
+            <div class="thcm-card__total">&#8377;2,499.00</div>
+          </div>
+          <ul class="thcm-items">
+            <li class="thcm-item"><div class="thcm-item__main"><span class="thcm-item__title">Sample scale model &times; 1</span><span class="thcm-item__sku">SKU: MODEL-01</span></div><span class="thcm-item__price">&#8377;2,499.00</span></li>
+          </ul>
+          <div class="thcm-badges">
+            <div class="thcm-badge-group"><small class="thcm-badge-group__label">Payment</small><span class="thcm-badge thcm-badge--green">Approved</span></div>
+            <div class="thcm-badge-group"><small class="thcm-badge-group__label">Fulfillment</small><span class="thcm-badge thcm-badge--blue">Shipped</span></div>
+            <div class="thcm-badge-group"><small class="thcm-badge-group__label">Delivery</small><span class="thcm-badge thcm-badge--grey">&mdash;</span></div>
+          </div>
+          <ol class="thcm-steps" aria-label="Order progress">
+            <li class="thcm-step is-done"><span class="thcm-step__dot"></span><span class="thcm-step__label">Placed</span></li>
+            <li class="thcm-step is-done"><span class="thcm-step__dot"></span><span class="thcm-step__label">Approved</span></li>
+            <li class="thcm-step is-current"><span class="thcm-step__dot"></span><span class="thcm-step__label">Shipped</span></li>
+            <li class="thcm-step"><span class="thcm-step__dot"></span><span class="thcm-step__label">Delivered</span></li>
+          </ol>
+          <div class="thcm-actions"><span class="thcm-btn thcm-btn--ghost">Track shipment<span class="thcm-btn__meta">Carrier &middot; 123456789</span></span></div>
+        </article>
+      {%- endif -%}
+    </div>
+
+    <nav class="thcm-pager" data-pager aria-label="Orders pagination" hidden>
+      <button type="button" class="thcm-btn thcm-btn--ghost" data-prev>Previous</button>
+      <span class="thcm-pager__range" data-range></span>
+      <button type="button" class="thcm-btn thcm-btn--ghost" data-next>Next</button>
+    </nav>
+  </div>
+
+  <dialog class="thcm-dialog" data-confirm aria-labelledby="thcm-confirm-title-{{ section.id }}">
+    <h2 class="thcm-dialog__title" id="thcm-confirm-title-{{ section.id }}">Cancel order</h2>
+    <p class="thcm-dialog__text" data-confirm-text></p>
+    <div class="thcm-dialog__actions">
+      <button type="button" class="thcm-btn thcm-btn--ghost" data-confirm-cancel>Keep order</button>
+      <button type="button" class="thcm-btn thcm-btn--danger-solid" data-confirm-ok>Yes, cancel order</button>
+    </div>
+  </dialog>
+
+  <div class="thcm-toasts" data-toasts aria-live="polite"></div>
+</section>
+
+{%- unless request.design_mode -%}
+  {% render 'thcm-orders-js' %}
+{%- endunless -%}
+
+{% schema %}
+{
+  "name": "THCM My Orders",
+  "class": "section-wrapper",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "My Orders"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Track the status of your merchandise orders."
+    },
+    {
+      "type": "range",
+      "id": "page_size",
+      "label": "Orders per page",
+      "min": 10,
+      "max": 50,
+      "step": 5,
+      "default": 10
+    },
+    {
+      "type": "checkbox",
+      "id": "show_summary",
+      "label": "Show summary chips",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_filters",
+      "label": "Show filter tabs",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Empty state"
+    },
+    {
+      "type": "text",
+      "id": "empty_text",
+      "label": "Empty state text",
+      "default": "You have not placed any orders yet"
+    },
+    {
+      "type": "text",
+      "id": "shop_label",
+      "label": "Shop button label",
+      "default": "Shop now"
+    },
+    {
+      "type": "url",
+      "id": "shop_url",
+      "label": "Shop button link"
+    }
+  ],
+  "presets": [
+    {
+      "name": "THCM My Orders"
+    }
+  ]
+}
+{% endschema %}

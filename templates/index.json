@@ -480,7 +480,7 @@
         "max_collections": 4,
         "icons_style": "arrow",
         "icons_shape": "none",
-        "section_width": "page-width",
+        "section_width": "full-width",
         "gap": 12,
         "background_color": "",
         "padding-block-start": 48,

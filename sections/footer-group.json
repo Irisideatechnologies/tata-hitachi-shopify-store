@@ -272,7 +272,7 @@
             "t0": {
               "type": "text",
               "settings": {
-                "text": "<h2>Help</h2>",
+                "text": "<h2><a href=\"/pages/employee-management\" title=\"Employee Management\">Help</a></h2>",
                 "width": "100%",
                 "max_width": "normal",
                 "alignment": "left",

@@ -3,8 +3,8 @@
   for everyone who is not a MAP administrator. Rendered in <head> after map-auth-head.
 
   Matching links (and their li / p / heading wrapper when the link is the only content) get
-  [data-thcm-admin-link]. tata.css hides them straight away (no flash); for non-admins they are
-  also removed from the DOM. Admins get html.thcm-is-admin, which keeps them visible.
+  .thcm-admin-only. tata.css hides them unless html.map-admin is set (map-auth-head, synchronously in <head>),
+  so there is no flash and nothing is removed from the DOM.
   Skipped in the theme editor so merchants can still see and edit every link.
 {% enddoc %}
 
@@ -34,37 +34,28 @@
         }
       }
 
-      var auth = window.MAP_AUTH;
-      var isAdmin = !!(auth && auth.isAdmin && auth.isAdmin());
-      if (isAdmin) {
-        document.documentElement.classList.add('thcm-is-admin');
-        return;
-      }
-
       var WRAPPERS = 'li, p, h1, h2, h3, h4, h5, h6, rte-formatter, .text-block';
       var SCOPE = 'footer a[href], #header-group a[href], header-component a[href]';
 
+      // Links are only tagged, never removed: tata.css hides .thcm-admin-only unless html.map-admin is set
+      // (map-auth-head sets it in <head> from the login cookie), so the visibility follows the auth state.
       function mark(link) {
         var text = link.textContent.trim();
-        link.setAttribute('data-thcm-admin-link', '');
+        link.classList.add('thcm-admin-only');
         var node = link.parentElement;
         for (var depth = 0; node && depth < 3 && node.matches(WRAPPERS); depth++) {
           if (node.textContent.trim() !== text) break;
-          node.setAttribute('data-thcm-admin-link', '');
+          node.classList.add('thcm-admin-only');
           node = node.parentElement;
         }
       }
 
       function scan() {
         document.querySelectorAll(SCOPE).forEach(function (link) {
-          if (link.hasAttribute('data-thcm-admin-link')) return;
+          if (link.classList.contains('thcm-admin-only')) return;
           var path = normalize(link.getAttribute('href') || '');
           if (path && blocked.indexOf(path) !== -1) mark(link);
         });
-      }
-
-      function purge() {
-        document.querySelectorAll('[data-thcm-admin-link]').forEach(function (el) { el.remove(); });
       }
 
       var queued = false;
@@ -74,7 +65,6 @@
         Promise.resolve().then(function () {
           queued = false;
           scan();
-          if (document.readyState !== 'loading') purge();
         });
       }
 

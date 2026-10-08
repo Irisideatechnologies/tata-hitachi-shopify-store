@@ -140,9 +140,12 @@
 
   
     {%- unless request.design_mode -%}
+  // Auth classes are set synchronously in <head>, before first paint (no flash of admin content)
   if (!window.MAP_AUTH.isLoggedIn()) {
     document.documentElement.classList.add('map-locked');
   } else {
+    document.documentElement.classList.add('map-logged-in');
+    if (window.MAP_AUTH.isAdmin()) document.documentElement.classList.add('map-admin');
     document.addEventListener('DOMContentLoaded', window.MAP_AUTH.syncEmployeeToCart);
   }
   {%- endunless -%}

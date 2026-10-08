@@ -1296,8 +1296,8 @@ footer {
 
 /* === Admin-only links ===
    Links listed in theme setting "Admin-only link URLs" are marked by snippets/thcm-admin-links.liquid.
-   They stay hidden unless the visitor is an administrator (html.thcm-is-admin). */
-html:not(.thcm-is-admin) [data-thcm-admin-link] {
+   They stay hidden unless the visitor is an administrator (html.map-admin, set in snippets/map-auth-head.liquid). */
+html:not(.map-admin) .thcm-admin-only {
   display: none !important;
 }
 

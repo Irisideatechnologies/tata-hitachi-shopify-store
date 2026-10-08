@@ -166,3 +166,39 @@ Notes:
 - While testing I found that an open modal `<dialog>` keeps the page inert, which let clicks through the overlay to the dialog. The loader now marks open dialogs `inert` while the overlay is visible and restores them afterwards.
 - One mobile run once reported "fast calls: loader never appeared" as failed; it passed 33/33 on the rerun after I added a settle wait before measuring. I think that was a measurement race in my test (the page-load list call itself had just shown the loader), but I did not reproduce the failure to prove it.
 - The loader hides when response headers arrive, not when the body has been read; the body is read right after, so the gap is a few milliseconds.
+
+---
+
+## 2026-10-08 - Admin state fix
+
+### Problem
+After logging in, the header name appeared at once but admin-only things (footer links, Employee Management panel, Daily Orders data) only showed after a reload. Every admin script reads `isAdmin()` once at page load, and login only removed the `map-locked` class (no reload, no event). `thcm-admin-links` also deleted the admin links from the DOM while logged out, so they could never come back without a reload. The employee name only showed because the login button's text change happened to trigger the menu's MutationObserver.
+
+### Changes
+- `snippets/map-login.liquid`: after `saveLogin` the page now reloads (`window.location.reload()`); the button stays disabled and reads "Signing you in..." until the page unloads.
+- `snippets/map-auth-head.liquid`: sets `html.map-logged-in` and (admins only) `html.map-admin` synchronously in `<head>`. Skipped in the theme editor, as before.
+- `snippets/thcm-admin-links.liquid`: admin-only links are no longer removed from the DOM; they get the class `thcm-admin-only`. The old `thcm-is-admin` / `data-thcm-admin-link` logic is gone. The MutationObserver stays (it tags links as they are parsed and menus injected later, e.g. the mobile drawer) but it no longer purges.
+- `assets/tata.css`: `html:not(.map-admin) .thcm-admin-only { display: none !important; }`.
+- `snippets/map-employee-menu.liquid`: the observer is only created when logged in, watches `body`, and only runs `init()` when an added node is / contains an uninitialised menu (was: whole document, every mutation, 50 ms timer).
+- `map-admin-employees` and `thcm-daily-orders-js` check admin once at load; unchanged for this fix, they now run after the reload with the cookie present.
+
+### Test result
+Code and JS syntax checked. Not yet browser-tested: the test credentials (`MAP_TEST_*`) were not visible to the session (see Daily Orders fix).
+
+---
+
+## 2026-10-08 - Daily Orders fix
+
+### Real API response shape
+**Not captured yet.** The `MAP_TEST_*` environment variables were not visible to the Claude session (set after it started), so `POST /api/auth/login` could not be run and `GET /api/sap/daily-exports` has not been called. Fill this section in from the browser console line `THCM daily exports: raw response` (or rerun the check from a shell that has the variables).
+
+### Changes (no dependency on the response shape)
+- First call now sends `?limit=<rows per page>`; Next/Previous follow `after` / `before` cursors. Next is enabled when `pageInfo.nextCursor` OR `pageInfo.hasNextPage`; Previous likewise (`previousCursor` / `hasPreviousPage`). If the API gives `hasNextPage` without a cursor, the code falls back to `&page=N` (unverified guess).
+- Download: relative paths (with or without leading slash) are joined to `MAP_API_BASE`. Files on the backend are fetched with `Authorization: Bearer` + `ngrok-skip-browser-warning` and saved as a blob; links to other hosts (e.g. pre-signed S3) remain normal links.
+- Status pill: whole-word match. "incomplete" is grey, "broken" no longer counts as "ok". Red is checked before green.
+- `snippets/thcm-api.liquid`: a 404 is "Access denied" only for `/api/admin/` routes or when the body message mentions access/permission/forbidden/admin; every other 404 rejects with "Not found (404)..." (shown with Retry). Network failure message is now "Server not reachable...".
+- `snippets/map-admin-employees.liquid`: same 404 rule (a 404 with no message still counts as denied, since `/api/admin/*` answers 404 to non-admins); network error "Server not reachable".
+- Parser keys (array path, date, count, amount, status, file, pageInfo) are **unchanged** until the real response is known.
+
+### Backend conditions
+Not assessed yet (no real response).

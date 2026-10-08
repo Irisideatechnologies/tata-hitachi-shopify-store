@@ -163,13 +163,18 @@
           var json = null;
           try { json = text ? JSON.parse(text) : null; } catch (e) { console.error('MAP admin: response is not JSON:', text.slice(0, 300)); }
           if (res.status === 401) { auth.logout(); throw { handled: true }; }
-          if (res.status === 404) { showDenied(); throw { handled: true }; }
+          if (res.status === 404) {
+            // /api/admin/* answers 404 to non-admins, so a 404 here means "denied" unless the body says otherwise
+            var denyMsg = (json && json.message) || '';
+            if (!denyMsg || /access|permission|forbidden|not authori[sz]ed|admin/i.test(denyMsg)) { showDenied(); throw { handled: true }; }
+            throw { message: denyMsg };
+          }
           if (!res.ok) throw { message: (json && json.message) || ('Request failed (' + res.status + ')') };
           return json || {};
         });
       }, function (err) {
         console.error('MAP admin network/CORS error:', err);
-        throw { message: 'Could not reach the server. Please try again.' };
+        throw { message: 'Server not reachable. Please try again.' };
       });
     }
 

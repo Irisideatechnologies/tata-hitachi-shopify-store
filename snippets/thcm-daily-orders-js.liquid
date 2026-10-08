@@ -34,7 +34,7 @@
     var clearBtn = $('[data-clear]');
     var filterEl = $('[data-filters]');
 
-    var state = { rows: [], columns: [], page: 0, server: false, pageInfo: {}, cursor: '', dir: 'after' };
+    var state = { rows: [], columns: [], page: 0, server: false, pageInfo: {}, cursor: '', dir: 'after', serverPage: 1 };
 
     var dateFmt = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' });
     var keyFmt = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Asia/Kolkata' });
@@ -111,10 +111,50 @@
 
     function fileUrl(v) {
       if (!v) return '';
-      var s = String(v);
+      var s = String(v).trim();
       if (/^https?:\/\//i.test(s)) return s;
-      if (s.charAt(0) === '/') return (window.MAP_API_BASE || '') + s;
-      return '';
+      var base = (window.MAP_API_BASE || '').replace(/\/+$/, '');
+      // Relative paths (with or without a leading slash) belong to the backend
+      return base ? base + '/' + s.replace(/^\/+/, '') : '';
+    }
+
+    // Backend files may need the JWT, so those are fetched with Bearer and saved as a blob (a plain link cannot send it).
+    // Absolute links to other hosts (e.g. pre-signed S3 URLs) stay normal links.
+    function isBackendUrl(u) {
+      var base = (window.MAP_API_BASE || '').replace(/\/+$/, '');
+      return !!base && u.indexOf(base + '/') === 0;
+    }
+
+    function downloadBlob(row, btn) {
+      var label = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Downloading...';
+      var token = auth && auth.getToken && auth.getToken();
+      var headers = { 'ngrok-skip-browser-warning': 'true' };
+      if (token) headers['Authorization'] = 'Bearer ' + token;
+      fetch(row.file, { headers: headers }).then(function (res) {
+        if (res.status === 401) { if (auth) auth.logout(); throw { handled: true }; }
+        if (!res.ok) throw new Error('Download failed (' + res.status + ')');
+        var cd = res.headers.get('Content-Disposition') || '';
+        var m = /filename\*?=(?:UTF-8'')?"?([^";]+)"?/i.exec(cd);
+        var name = (m && decodeURIComponent(m[1])) || row.fileName || row.file.split('?')[0].split('/').pop() || 'daily-export';
+        return res.blob().then(function (blob) { return { blob: blob, name: name }; });
+      }).then(function (out) {
+        var url = URL.createObjectURL(out.blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = out.name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+      }).catch(function (err) {
+        if (err && err.handled) return;
+        window.alert((err && err.message) || 'Download failed. Please try again.');
+      }).then(function () {
+        btn.disabled = false;
+        btn.textContent = label;
+      });
     }
 
     function normalize(raw) {
@@ -156,11 +196,13 @@
 
     // ---- rendering ----------------------------------------------------
     function statusPill(v) {
-      var s = lower(v);
+      // Whole-word match, so "incomplete" is not green and "broken" is not "ok"
+      var words = lower(v).split(/[^a-z]+/).filter(Boolean);
+      var any = function (list) { return words.some(function (w) { return list.indexOf(w) !== -1; }); };
       var tone = 'grey';
-      if (/(success|complete|done|sent|ok|generated|uploaded)/.test(s)) tone = 'green';
-      else if (/(fail|error|reject)/.test(s)) tone = 'red';
-      else if (/(pend|process|queue|progress)/.test(s)) tone = 'amber';
+      if (any(['failed', 'fail', 'failure', 'error', 'errored', 'rejected', 'reject'])) tone = 'red';
+      else if (any(['success', 'successful', 'succeeded', 'complete', 'completed', 'done', 'sent', 'ok', 'generated', 'uploaded', 'exported', 'synced'])) tone = 'green';
+      else if (any(['pending', 'processing', 'queued', 'progress', 'running', 'waiting', 'partial'])) tone = 'amber';
       return el('span', 'thcm-badge thcm-badge--' + tone, v);
     }
 
@@ -206,11 +248,18 @@
         case 'status': if (row.status != null) td.appendChild(statusPill(row.status)); break;
         case 'file':
           if (row.file) {
-            var a = el('a', 'thcm-btn thcm-btn--ghost thcm-btn--sm', 'Download');
-            a.href = row.file;
-            a.target = '_blank';
-            a.rel = 'noopener noreferrer';
-            td.appendChild(a);
+            if (isBackendUrl(row.file)) {
+              var b = el('button', 'thcm-btn thcm-btn--ghost thcm-btn--sm', 'Download');
+              b.type = 'button';
+              b.addEventListener('click', function () { downloadBlob(row, b); });
+              td.appendChild(b);
+            } else {
+              var a = el('a', 'thcm-btn thcm-btn--ghost thcm-btn--sm', 'Download');
+              a.href = row.file;
+              a.target = '_blank';
+              a.rel = 'noopener noreferrer';
+              td.appendChild(a);
+            }
           }
           break;
         case 'details': break;
@@ -304,8 +353,8 @@
     function renderPager(total, start, shown) {
       if (state.server) {
         var info = state.pageInfo || {};
-        var hasPrev = !!(info.hasPreviousPage && info.previousCursor);
-        var hasNext = !!(info.hasNextPage && info.nextCursor);
+        var hasPrev = !!(info.previousCursor || info.hasPreviousPage || state.serverPage > 1);
+        var hasNext = !!(info.nextCursor || info.hasNextPage);
         pagerEl.hidden = !hasPrev && !hasNext;
         prevBtn.disabled = !hasPrev;
         nextBtn.disabled = !hasNext;
@@ -321,10 +370,11 @@
 
     // ---- loading ------------------------------------------------------
     var firstResponse = true;
-    function load(cursorParam) {
+    function load(cursorParam, page) {
       showLoading();
-      var path = '/api/sap/daily-exports';
-      if (cursorParam) path += '?limit=' + PAGE_SIZE + '&' + cursorParam;
+      state.serverPage = page || 1;
+      var path = '/api/sap/daily-exports?limit=' + PAGE_SIZE;
+      if (cursorParam) path += '&' + cursorParam;
       api.jwtRequest('GET', path).then(function (res) {
         if (firstResponse) {
           firstResponse = false;
@@ -366,12 +416,16 @@
     clearBtn.addEventListener('click', function () { fromEl.value = ''; toEl.value = ''; state.page = 0; render(); });
     prevBtn.addEventListener('click', function () {
       if (state.server) {
-        if (state.pageInfo.previousCursor) load('before=' + encodeURIComponent(state.pageInfo.previousCursor));
+        var pi = state.pageInfo;
+        if (pi.previousCursor) load('before=' + encodeURIComponent(pi.previousCursor), state.serverPage - 1);
+        else if (state.serverPage > 1) load('page=' + (state.serverPage - 1), state.serverPage - 1); // no cursor from the API: page-number fallback (unverified)
       } else if (state.page > 0) { state.page--; render(); }
     });
     nextBtn.addEventListener('click', function () {
       if (state.server) {
-        if (state.pageInfo.nextCursor) load('after=' + encodeURIComponent(state.pageInfo.nextCursor));
+        var ni = state.pageInfo;
+        if (ni.nextCursor) load('after=' + encodeURIComponent(ni.nextCursor), state.serverPage + 1);
+        else if (ni.hasNextPage) load('page=' + (state.serverPage + 1), state.serverPage + 1); // no cursor from the API: page-number fallback (unverified)
       } else { state.page++; render(); }
     });
 

@@ -103,6 +103,7 @@
       button.textContent = 'Please wait...';
 
       var res;
+      var signedIn = false;
       try {
         res = await fetch(LOGIN_URL, {
           method: 'POST',
@@ -139,12 +140,16 @@
 
         window.MAP_AUTH.saveLogin(data.token, data.user || {});
         passInput.value = '';
-        document.documentElement.classList.remove('map-locked');
+        // Reload so every script (admin links, panels, Daily Orders) re-reads the new auth state.
+        // The button stays disabled until the page unloads.
+        signedIn = true;
+        button.textContent = 'Signing you in...';
+        window.location.reload();
       } catch (err) {
         console.error('MAP login error after response:', err);
         showError('Login failed: ' + err.message);
       } finally {
-        resetButton();
+        if (!signedIn) resetButton();
       }
     });
   })();

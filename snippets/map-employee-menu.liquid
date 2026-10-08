@@ -98,13 +98,21 @@
       if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
       else init();
 
-      // The mobile drawer markup can be inserted after load, so re-run init for late-added nodes
-      var pending = false;
-      new MutationObserver(function () {
-        if (pending) return;
-        pending = true;
-        setTimeout(function () { pending = false; init(); }, 50);
-      }).observe(document.documentElement, { childList: true, subtree: true });
+      // The mobile drawer markup can be inserted after load, so init late-added menus.
+      // Login always reloads the page, so nothing to watch while logged out; and the callback only
+      // does work when an added node actually is / contains an un-initialised menu.
+      if (window.MAP_AUTH && window.MAP_AUTH.isLoggedIn()) {
+        var SEL = '[data-mem]:not([data-mem-ready])';
+        new MutationObserver(function (mutations) {
+          for (var i = 0; i < mutations.length; i++) {
+            var added = mutations[i].addedNodes;
+            for (var j = 0; j < added.length; j++) {
+              var n = added[j];
+              if (n.nodeType === 1 && (n.matches(SEL) || n.querySelector(SEL))) { init(); return; }
+            }
+          }
+        }).observe(document.body || document.documentElement, { childList: true, subtree: true });
+      }
     })();
   </script>
 {%- endunless -%}

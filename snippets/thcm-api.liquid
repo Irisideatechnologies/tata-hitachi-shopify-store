@@ -9,7 +9,8 @@
 
   Both return a Promise:
     - resolves with the parsed JSON body ({} when empty)
-    - resolves { denied: true } on 404
+    - resolves { denied: true } on 404 only for /api/admin/ routes or when the body message mentions access/permission;
+      any other 404 rejects with an Error ("Not found...") so callers can show it with Retry
     - rejects with an Error (message is user-safe, .status holds the HTTP status when there is one)
     - on 401 calls MAP_AUTH.logout() and rejects with { handled: true }
 {% enddoc %}
@@ -59,8 +60,14 @@
               throw { handled: true, status: 401 };
             }
             if (res.status === 404) {
-              console.error('THCM_API: 404 on ' + method + ' ' + path);
-              return { denied: true };
+              console.error('THCM_API: 404 on ' + method + ' ' + path, json);
+              // The backend hides admin routes from non-admins with a 404, so only treat it as "denied"
+              // for admin routes or when the body says so. Any other 404 is a real "not found".
+              var msg = (json && json.message) || '';
+              if (/^\/api\/admin\//.test(path) || /access|permission|forbidden|not authori[sz]ed|admin/i.test(msg)) {
+                return { denied: true };
+              }
+              throw fail(msg || 'Not found (404). The requested data or server route does not exist.', 404);
             }
             if (!res.ok) {
               console.error('THCM_API: ' + res.status + ' on ' + method + ' ' + path, json);
@@ -71,7 +78,7 @@
         },
         function (err) {
           console.error('THCM_API network/CORS error (' + method + ' ' + path + '):', err);
-          throw fail('Could not reach the server. Please check your connection and try again.');
+          throw fail('Server not reachable. Please check your connection and try again.');
         }
       );
     }

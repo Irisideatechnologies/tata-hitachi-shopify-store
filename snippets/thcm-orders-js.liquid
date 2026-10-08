@@ -367,7 +367,7 @@
       var all = [];
       var pagesLeft = SUMMARY_MAX_PAGES;
       function step(cursor) {
-        return api.keyRequest('GET', path(SUMMARY_PAGE_LIMIT, cursor)).then(function (body) {
+        return api.keyRequest('GET', path(SUMMARY_PAGE_LIMIT, cursor), null, { silent: true }).then(function (body) {
           var parsed = parse(body);
           all = all.concat(parsed.orders);
           var pi = parsed.pageInfo || {};
@@ -389,6 +389,7 @@
       var ok = dialog.querySelector('[data-confirm-ok]');
       var no_ = dialog.querySelector('[data-confirm-cancel]');
       ok.disabled = false;
+      ok.classList.remove('is-loading');
       ok.textContent = 'Yes, cancel order';
 
       function close() {
@@ -399,9 +400,11 @@
       }
       no_.onclick = close;
       ok.onclick = function () {
+        if (ok.disabled) return;
         ok.disabled = true;
-        ok.textContent = 'Cancelling...';
-        api.keyRequest('POST', '/api/map/orders/' + encodeURIComponent(o.shopifyOrderId) + '/cancel').then(function (body) {
+        ok.classList.add('is-loading');
+        ok.textContent = 'Please wait...';
+        api.keyRequest('POST', '/api/map/orders/' + encodeURIComponent(o.shopifyOrderId) + '/cancel', null, { mode: 'overlay' }).then(function (body) {
           close();
           if (body.denied) { toast('This order could not be found.', true); return; }
           if (body.success === false) { toast(body.message || 'Could not cancel this order.', true); return; }

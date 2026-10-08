@@ -148,6 +148,11 @@
 
     function request(method, url, body) {
       var headers = { 'Authorization': 'Bearer ' + auth.getToken(), 'ngrok-skip-browser-warning': 'true' };
+      // Add / edit / delete are user actions: full-screen overlay (THCM_LOADER strips this header before sending). Lists use the default top bar.
+      if (method !== 'GET' && window.THCM_LOADER) {
+        var hints = window.THCM_LOADER.headers({ mode: 'overlay' });
+        Object.keys(hints).forEach(function (k) { headers[k] = hints[k]; });
+      }
       var opts = { method: method, headers: headers };
       if (body) {
         headers['Content-Type'] = 'application/json';
@@ -348,7 +353,8 @@
       state.saving = on;
       var btn = $('mae-form-save');
       btn.disabled = on;
-      btn.textContent = on ? 'Saving...' : 'Save';
+      btn.classList.toggle('is-loading', on);
+      btn.textContent = on ? 'Please wait...' : 'Save';
     }
 
     form.addEventListener('submit', function (e) {
@@ -401,6 +407,8 @@
       var okBtn = $('mae-confirm-ok');
       if (okBtn.disabled || !state.deleting) return;
       okBtn.disabled = true;
+      okBtn.classList.add('is-loading');
+      okBtn.textContent = 'Please wait...';
       request('DELETE', editUrl(state.deleting.id)).then(function () {
         confirmDialog.close();
         toast('Employee deleted.');
@@ -418,6 +426,8 @@
         box.hidden = false;
       }).then(function () {
         okBtn.disabled = false;
+        okBtn.classList.remove('is-loading');
+        okBtn.textContent = 'Delete';
       });
     });
 

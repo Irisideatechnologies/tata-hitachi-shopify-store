@@ -2,8 +2,10 @@
   THCM API helper (window.THCM_API). Single place for every storefront -> backend call.
   Requires map-auth-head (MAP_API_BASE, MAP_API_KEY, MAP_AUTH) to be rendered first in <head>.
 
-  keyRequest(method, path, body) - sends x-api-key.
-  jwtRequest(method, path, body) - sends Authorization: Bearer <employee token>.
+  keyRequest(method, path, body, options) - sends x-api-key.
+  jwtRequest(method, path, body, options) - sends Authorization: Bearer <employee token>.
+  options (optional): { mode: 'overlay' } for user actions (default is the top progress bar), { silent: true } for background calls.
+  The global loader (snippets/thcm-loader.liquid) shows itself for every call; nothing else is needed here.
 
   Both return a Promise:
     - resolves with the parsed JSON body ({} when empty)
@@ -20,8 +22,11 @@
       return err;
     }
 
-    function send(kind, method, path, body) {
+    function send(kind, method, path, body, options) {
       var headers = { 'ngrok-skip-browser-warning': 'true' };
+      // Loader hints (x-thcm-*) are read and removed by THCM_LOADER before the request is sent
+      var hints = window.THCM_LOADER ? window.THCM_LOADER.headers(options) : {};
+      Object.keys(hints).forEach(function (k) { headers[k] = hints[k]; });
 
       if (kind === 'key') {
         headers['x-api-key'] = window.MAP_API_KEY || '';
@@ -72,8 +77,8 @@
     }
 
     return {
-      keyRequest: function (method, path, body) { return send('key', method, path, body); },
-      jwtRequest: function (method, path, body) { return send('jwt', method, path, body); }
+      keyRequest: function (method, path, body, options) { return send('key', method, path, body, options); },
+      jwtRequest: function (method, path, body, options) { return send('jwt', method, path, body, options); }
     };
   })();
 </script>

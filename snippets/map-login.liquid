@@ -76,6 +76,7 @@
 
     function resetButton() {
       button.disabled = false;
+      button.classList.remove('is-loading');
       button.textContent = 'Log in';
     }
 
@@ -96,17 +97,20 @@
         return;
       }
 
+      if (button.disabled) return;
       button.disabled = true;
-      button.textContent = 'Logging in...';
+      button.classList.add('is-loading');
+      button.textContent = 'Please wait...';
 
       var res;
       try {
         res = await fetch(LOGIN_URL, {
           method: 'POST',
-          headers: {
+          // x-thcm-loader is read and stripped by THCM_LOADER (snippets/thcm-loader.liquid) before the request is sent
+          headers: Object.assign({
             'Content-Type': 'application/json',
             'ngrok-skip-browser-warning': 'true'
-          },
+          }, window.THCM_LOADER ? window.THCM_LOADER.headers({ mode: 'overlay' }) : {}),
           body: JSON.stringify({ identifier: identifier, password: password })
         });
       } catch (err) {

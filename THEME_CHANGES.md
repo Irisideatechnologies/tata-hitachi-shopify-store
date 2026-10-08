@@ -99,3 +99,70 @@ Checks that passed (desktop and mobile):
 - Console: only Shopify CDN CORS errors from the local dev origin (`cdn.shopify.com ... origin_trials`) and the existing `shop.app` framing error. Nothing from the new code.
 
 Not fixed / open: see "Known risks", plus the empty `sections/Orders.liquid` to delete by hand, and the Shopify admin steps above (pages and menu links).
+
+---
+
+## 2026-10-08 - Global API loader
+
+### What
+
+One global loader for every call to the MAP backend (`window.MAP_API_BASE`), instead of a loader per feature.
+- **Top progress bar** (3px, #C94F0C, indeterminate): default for page-load data. The existing skeletons / inline states stay; the bar is added on top.
+- **Full-screen overlay** (spinner + "Please wait...", `aria-live="polite"`, `aria-busy`): for user actions. The overlay is a `popover="manual"` element, so it sits above an open modal `<dialog>` and blocks background clicks.
+- `window.fetch` is wrapped once and tracks **only** requests whose URL starts with `MAP_API_BASE`. Shopify `/cart/*.js`, analytics and CDN requests are untouched; the original response / errors are passed through unchanged.
+- Pending counter: the loader hides only when the last parallel call finishes. It appears only after a call takes longer than 200ms and then stays for at least 300ms (fast calls never show it). A call that never finishes is released after 30s (`console.warn`). Errors always release the loader.
+- Not shown in the theme editor (the snippet outputs only a no-op `THCM_LOADER` stub there, so callers do not break).
+
+### MAP API call sites found
+
+| Where | Calls | Loader |
+| --- | --- | --- |
+| `snippets/map-login.liquid` | `POST /api/auth/login` (own `fetch`) | overlay |
+| `snippets/thcm-api.liquid` (`THCM_API`) | every `keyRequest` / `jwtRequest` | bar by default, per-call `options` |
+| `snippets/thcm-orders-js.liquid` | orders list (bar), orders summary walk (**silent**), `POST .../cancel` (overlay) | see left |
+| `snippets/thcm-daily-orders-js.liquid` | `GET /api/sap/daily-exports` | bar |
+| `snippets/map-admin-employees.liquid` | own `fetch`: list GET (bar), POST / PUT / DELETE (overlay) | see left |
+| `snippets/map-auth-head.liquid` | only `/cart/update.js` (Shopify, not tracked); no `MAP_API_BASE` call | none |
+
+No other file calls `MAP_API_BASE` (the `fetch(` calls in `assets/*.js` are Shopify theme requests).
+
+### Files
+
+- `snippets/thcm-loader.liquid` (new): markup, `THCM_LOADER`, fetch wrapper.
+- `layout/theme.liquid` (edited): `{% render 'thcm-loader' %}` right after `<body>`, before `map-login`.
+- `assets/tata.css` (edited): block `THCM Loader` (overlay, spinner, bar, `.is-loading` button state). It also keeps the loader visible while `html.map-locked` hides every other body child (login screen).
+- `snippets/thcm-api.liquid` (edited): optional 4th argument `options` on `keyRequest` / `jwtRequest`.
+- `snippets/map-login.liquid` (edited): overlay header on the login fetch, button -> "Please wait..." + `.is-loading`, guard against a second submit. Auth / cookie logic untouched.
+- `snippets/map-admin-employees.liquid` (edited): non-GET calls ask for the overlay; Save and Delete buttons show "Please wait..." + `.is-loading`. Existing error handling untouched.
+- `snippets/thcm-orders-js.liquid` (edited): cancel uses the overlay; the summary walk is silent; confirm button shows "Please wait..." and ignores a second click.
+
+### How to use
+
+- Normal calls need nothing: any `fetch` to `MAP_API_BASE` shows the top bar automatically.
+- User action (overlay): `THCM_API.keyRequest('POST', path, body, { mode: 'overlay' })`, or for a plain fetch add the headers from `THCM_LOADER.headers({ mode: 'overlay' })`. Also disable the button, set its text to "Please wait..." and add `.is-loading`.
+- Background call (no loader): `THCM_API.keyRequest('GET', path, null, { silent: true })`, or `THCM_LOADER.headers({ silent: true })` on a plain fetch.
+- Wrapping any promise: `THCM_LOADER.track(promise, { mode: 'overlay' | 'bar', label: 'Saving...' })` returns the same promise.
+- Manual: `THCM_LOADER.show('Label')` / `THCM_LOADER.hide()` (overlay, counted).
+- The wrapper reads the two hint headers (`x-thcm-loader`, `x-thcm-silent`) and **removes them before the request is sent**, so the backend and CORS preflight never see them. Always build them with `THCM_LOADER.headers(...)`: it returns `{}` in the theme editor, where there is no wrapper.
+
+### Test result (Global API loader)
+
+Playwright against `shopify theme dev`, backend mocked with route interception and a controllable delay (the same limitation as the portal tests: no `MAP_TEST_*` credentials, so no real login / backend). Desktop 1440: 36/36 checks. Mobile 390: 33/33 (the 30s timeout check runs on desktop only).
+
+- Login (1.5s delay): overlay shows over the login card, button disabled with "Please wait..." + spinner, overlay hides after the response.
+- My Orders load: top bar + the existing skeleton, overlay never shown. Daily Orders load: bar only. Admin employees list: bar only.
+- Cancel order: overlay shows above the open confirm dialog; clicking "Keep order" behind it does nothing; only one cancel request is sent.
+- Admin add (POST) and delete (DELETE): overlay, Save / Delete buttons show "Please wait...".
+- 50ms responses: loader never appears. 500 response: error message shown, loader hidden.
+- Two parallel calls (0.8s and 2.2s): loader stays until both finish.
+- `{ silent: true }`: no loader. `/cart/update.js` (1.5s delay): no loader.
+- `x-thcm-loader` / `x-thcm-silent` never reach the backend (checked on every request and every CORS preflight).
+- A call that hangs forever: loader released after 30s with a `console.warn`.
+- No console errors from the loader code.
+- Screenshots (loader visible): `design-check/screenshots/loader-*-desktop.png` and `loader-*-mobile.png` (login overlay, orders bar, cancel overlay, daily bar, admin add overlay).
+
+Notes:
+- The theme editor was not tested (needs a Shopify admin session). In the editor the snippet only outputs the no-op `THCM_LOADER` stub and no markup, by design.
+- While testing I found that an open modal `<dialog>` keeps the page inert, which let clicks through the overlay to the dialog. The loader now marks open dialogs `inert` while the overlay is visible and restores them afterwards.
+- One mobile run once reported "fast calls: loader never appeared" as failed; it passed 33/33 on the rerun after I added a settle wait before measuring. I think that was a measurement race in my test (the page-load list call itself had just shown the loader), but I did not reproduce the failure to prove it.
+- The loader hides when response headers arrive, not when the body has been read; the body is read right after, so the gap is a few milliseconds.

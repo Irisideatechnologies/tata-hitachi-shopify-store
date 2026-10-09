@@ -1,6 +1,9 @@
 {% doc %}
-  Client logic for the "My Orders" section (sections/thcm-my-orders.liquid).
-  Loads the signed-in employee's orders through THCM_API and renders cards, filters, pagination and cancel.
+  Client logic for the Orders page section (sections/thcm-my-orders.liquid): page tabs (?tab=my|daily),
+  the "My Orders" tab and its day filter (?day=today|yesterday|YYYY-MM-DD).
+  Loads the signed-in employee's orders through THCM_API and renders cards, filters, and pagination.
+  Day filtering is client-side: the orders API has no confirmed date parameter, so every page is fetched (capped)
+  and filtered by createdAt in IST. The Daily Orders tab lives in snippets/thcm-orders-daily-js.liquid.
   All API data is written with textContent / DOM nodes, never innerHTML.
   Not rendered in the theme editor (the section shows static sample cards there).
 {% enddoc %}
@@ -19,6 +22,7 @@
     var SHOP_LABEL = root.getAttribute('data-shop-label') || 'Shop now';
     var SUMMARY_PAGE_LIMIT = 50;
     var SUMMARY_MAX_PAGES = 6;
+    var DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
 
     var $ = function (sel) { return root.querySelector(sel); };
     var listEl = $('[data-list]');
@@ -26,8 +30,8 @@
     var prevBtn = $('[data-prev]');
     var nextBtn = $('[data-next]');
     var rangeEl = $('[data-range]');
-    var dialog = $('[data-confirm]');
     var toastsEl = $('[data-toasts]');
+    var accToggle = $('[data-acc-toggle]');
 
     var state = {
       filter: 'all',
@@ -35,7 +39,11 @@
       pageInfo: {},
       cursor: { after: '', before: '' },
       summary: null,
-      requestId: 0
+      requestId: 0,
+      day: '',
+      all: null,
+      dayOrders: [],
+      page: 0
     };
 
     var STAGE_LABEL = {
@@ -50,6 +58,24 @@
 
     var dateFmt = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' });
     var moneyFmt = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
+    var keyFmt = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Asia/Kolkata' });
+
+    // YYYY-MM-DD in IST (a fixed UTC+5:30 offset, so subtracting 24h is safe)
+    function keyOf(v) {
+      var d = new Date(v);
+      return isNaN(d.getTime()) ? '' : keyFmt.format(d);
+    }
+    function todayKey() { return keyFmt.format(new Date()); }
+    function yesterdayKey() { return keyFmt.format(new Date(Date.now() - 86400000)); }
+    function resolveDay(day) {
+      if (day === 'today') return todayKey();
+      if (day === 'yesterday') return yesterdayKey();
+      return DAY_RE.test(day) ? day : '';
+    }
+    function keyLabel(key) {
+      var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(key);
+      return m ? dateFmt.format(new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], 6))) : key;
+    }
 
     function el(tag, cls, text) {
       var node = document.createElement(tag);
@@ -161,29 +187,39 @@
       return ul;
     }
 
+    var STAGE_TONE = { pending: 'amber', approved: 'green', shipped: 'blue', delivered: 'green', cancelled: 'red' };
+
+    function itemCount(o) {
+      var n = 0;
+      (Array.isArray(o.lineItems) ? o.lineItems : []).forEach(function (it) { n += Number(it.quantity == null ? 1 : it.quantity) || 0; });
+      return n;
+    }
+
+    // Collapsed header + expandable panel (THCM_ACC, snippets/thcm-accordion-js.liquid)
     function card(o) {
       var stage = classify(o);
-      var c = el('article', 'thcm-card');
-      c.setAttribute('data-stage', stage);
 
-      var head = el('div', 'thcm-card__head');
-      var left = el('div', 'thcm-card__id');
-      left.appendChild(el('span', 'thcm-card__no', 'Order ' + orderNo(o)));
+      var no = el('span', 'thcm-acc__title thcm-card__no', 'Order ' + orderNo(o));
+      var metaParts = [];
       var d = fmtDate(o.createdAt);
-      if (d) left.appendChild(el('span', 'thcm-card__date', d));
-      head.appendChild(left);
-      head.appendChild(el('div', 'thcm-card__total', money(o.totalPrice)));
-      c.appendChild(head);
+      if (d) metaParts.push(d);
+      var count = itemCount(o);
+      metaParts.push(count + (count === 1 ? ' item' : ' items'));
+      var meta = el('span', 'thcm-acc__meta', metaParts.join(' · '));
+      var badge = el('span', 'thcm-acc__badge');
+      badge.appendChild(el('span', 'thcm-badge thcm-badge--' + STAGE_TONE[stage], STAGE_LABEL[stage]));
+      var amount = el('span', 'thcm-acc__amount thcm-card__total', money(o.totalPrice));
 
-      c.appendChild(itemsList(o));
+      var body = el('div', 'thcm-acc__body');
+      body.appendChild(itemsList(o));
 
       var badges = el('div', 'thcm-badges');
       badges.appendChild(badgeGroup('Payment', paymentBadge(o)));
       badges.appendChild(badgeGroup('Fulfillment', fulfillmentBadge(o)));
       badges.appendChild(badgeGroup('Delivery', deliveryBadge(o)));
-      c.appendChild(badges);
+      body.appendChild(badges);
 
-      c.appendChild(stepper(o, stage));
+      body.appendChild(stepper(o, stage));
 
       var actions = el('div', 'thcm-actions');
       var track = safeUrl(o.trackingUrl);
@@ -192,19 +228,15 @@
         a.href = track;
         a.target = '_blank';
         a.rel = 'noopener noreferrer';
-        var label = 'Track shipment';
         var extra = [o.carrier, o.trackingNumber].filter(Boolean).join(' · ');
-        a.appendChild(document.createTextNode(label));
+        a.appendChild(document.createTextNode('Track shipment'));
         if (extra) a.appendChild(el('span', 'thcm-btn__meta', extra));
         actions.appendChild(a);
       }
-      if (o.canCancel === true && !o.locked && stage !== 'cancelled') {
-        var btn = el('button', 'thcm-btn thcm-btn--danger', 'Cancel order');
-        btn.type = 'button';
-        btn.addEventListener('click', function () { askCancel(o, btn); });
-        actions.appendChild(btn);
-      }
-      if (actions.children.length) c.appendChild(actions);
+      if (actions.children.length) body.appendChild(actions);
+
+      var c = window.THCM_ACC.build({ cls: 'thcm-card', head: [no, meta, badge, amount], panel: body, open: false });
+      c.setAttribute('data-stage', stage);
       return c;
     }
 
@@ -249,6 +281,9 @@
       var box = el('div', 'thcm-state');
       if (filtered) {
         box.appendChild(el('p', 'thcm-state__text', 'No orders in this tab.'));
+      } else if (state.day) {
+        var dk = resolveDay(state.day);
+        box.appendChild(el('p', 'thcm-state__text', state.day === 'today' ? 'No orders today' : state.day === 'yesterday' ? 'No orders yesterday' : 'No orders on ' + keyLabel(dk)));
       } else {
         box.appendChild(el('p', 'thcm-state__text', EMPTY_TEXT));
         var a = el('a', 'thcm-btn thcm-btn--primary', SHOP_LABEL);
@@ -258,19 +293,31 @@
       listEl.appendChild(box);
     }
 
+    function baseOrders() { return state.day ? state.dayOrders : state.orders; }
+
     function renderList() {
       listEl.removeAttribute('aria-busy');
-      var shown = state.orders.filter(function (o) { return state.filter === 'all' || classify(o) === state.filter; });
+      var shown = baseOrders().filter(function (o) { return state.filter === 'all' || classify(o) === state.filter; });
       if (!shown.length) {
-        showEmpty(state.orders.length > 0);
+        showEmpty(baseOrders().length > 0);
       } else {
         clear(listEl);
-        shown.forEach(function (o) { listEl.appendChild(card(o)); });
+        var slice = state.day ? shown.slice(state.page * PAGE_SIZE, (state.page + 1) * PAGE_SIZE) : shown;
+        slice.forEach(function (o) { listEl.appendChild(card(o)); });
       }
-      renderPager();
+      renderPager(shown.length);
     }
 
-    function renderPager() {
+    function renderPager(shownTotal) {
+      if (state.day) {
+        var pages = Math.ceil(shownTotal / PAGE_SIZE);
+        pagerEl.hidden = pages <= 1;
+        prevBtn.disabled = state.page <= 0;
+        nextBtn.disabled = state.page >= pages - 1;
+        var start = state.page * PAGE_SIZE;
+        rangeEl.textContent = shownTotal ? 'Showing ' + (start + 1) + '–' + Math.min(start + PAGE_SIZE, shownTotal) + ' of ' + shownTotal + ' orders' : '';
+        return;
+      }
       var info = state.pageInfo || {};
       var hasPrev = info.hasPreviousPage === true && !!info.previousCursor;
       var hasNext = info.hasNextPage === true && !!info.nextCursor;
@@ -291,13 +338,13 @@
     }
 
     function renderChips() {
-      var s = state.summary;
+      var s = state.day ? tally(state.dayOrders) : state.summary;
       root.querySelectorAll('[data-chip]').forEach(function (chip) {
         var key = chip.getAttribute('data-chip');
         var n = chip.querySelector('[data-n]');
         if (!n) return;
         if (key === 'total') {
-          n.textContent = s ? s.total : (state.pageInfo && state.pageInfo.total != null ? state.pageInfo.total : '–');
+          n.textContent = s ? s.total : (!state.day && state.pageInfo && state.pageInfo.total != null ? state.pageInfo.total : '–');
         } else {
           n.textContent = s ? s[key] : '–';
         }
@@ -322,7 +369,51 @@
       return { orders: data, pageInfo: body.pageInfo || (body.data && body.data.pageInfo) || {} };
     }
 
+    // Day mode: fetch every page once (capped), then filter, count and paginate in the browser
+    function loadDay() {
+      if (!email()) {
+        showError('Please sign in to see your orders.');
+        return;
+      }
+      if (state.all) { applyDay(); return; }
+      var id = ++state.requestId;
+      showSkeleton();
+      var all = [];
+      var pagesLeft = SUMMARY_MAX_PAGES;
+      function step(cursor) {
+        return api.keyRequest('GET', path(SUMMARY_PAGE_LIMIT, cursor)).then(function (body) {
+          if (id !== state.requestId) return;
+          if (body.denied) throw new Error('Orders could not be found for your account.');
+          if (body.success === false) throw new Error(body.message || 'Could not load your orders.');
+          var parsed = parse(body);
+          all = all.concat(parsed.orders);
+          var pi = parsed.pageInfo || {};
+          if (pi.hasNextPage && pi.nextCursor) {
+            if (--pagesLeft > 0) return step({ after: pi.nextCursor, before: '' });
+            console.warn('THCM orders: stopped after ' + SUMMARY_MAX_PAGES + ' pages; older orders are not included in the day filter');
+          }
+        });
+      }
+      step({ after: '', before: '' }).then(function () {
+        if (id !== state.requestId) return;
+        state.all = all;
+        applyDay();
+      }).catch(function (err) {
+        if (id !== state.requestId || (err && err.handled)) return;
+        showError((err && err.message) || 'Could not load your orders.');
+      });
+    }
+
+    function applyDay() {
+      var key = resolveDay(state.day);
+      state.dayOrders = state.all.filter(function (o) { return keyOf(o.createdAt) === key; });
+      state.page = 0;
+      renderList();
+      renderChips();
+    }
+
     function load(cursor) {
+      if (state.day) { loadDay(); return; }
       if (cursor) state.cursor = cursor;
       if (!email()) {
         showError('Please sign in to see your orders.');
@@ -383,44 +474,6 @@
       });
     }
 
-    function askCancel(o, trigger) {
-      var no = orderNo(o);
-      dialog.querySelector('[data-confirm-text]').textContent = 'Cancel order ' + no + '? This cannot be undone.';
-      var ok = dialog.querySelector('[data-confirm-ok]');
-      var no_ = dialog.querySelector('[data-confirm-cancel]');
-      ok.disabled = false;
-      ok.classList.remove('is-loading');
-      ok.textContent = 'Yes, cancel order';
-
-      function close() {
-        ok.onclick = null;
-        no_.onclick = null;
-        if (dialog.open) dialog.close();
-        if (trigger && trigger.isConnected) trigger.focus();
-      }
-      no_.onclick = close;
-      ok.onclick = function () {
-        if (ok.disabled) return;
-        ok.disabled = true;
-        ok.classList.add('is-loading');
-        ok.textContent = 'Please wait...';
-        api.keyRequest('POST', '/api/map/orders/' + encodeURIComponent(o.shopifyOrderId) + '/cancel', null, { mode: 'overlay' }).then(function (body) {
-          close();
-          if (body.denied) { toast('This order could not be found.', true); return; }
-          if (body.success === false) { toast(body.message || 'Could not cancel this order.', true); return; }
-          toast('Order ' + no + ' cancelled.');
-          state.summary = null;
-          load();
-        }).catch(function (err) {
-          if (err && err.handled) return;
-          close();
-          toast((err && err.message) || 'Could not cancel this order.', true);
-        });
-      };
-      if (typeof dialog.showModal === 'function') dialog.showModal();
-      else dialog.setAttribute('open', '');
-    }
-
     root.querySelectorAll('[data-filter]').forEach(function (b) {
       b.addEventListener('click', function () {
         state.filter = b.getAttribute('data-filter');
@@ -430,16 +483,99 @@
     });
 
     prevBtn.addEventListener('click', function () {
+      if (state.day) { if (state.page > 0) { state.page--; renderList(); } return; }
       var c = state.pageInfo && state.pageInfo.previousCursor;
       if (c) load({ after: '', before: c });
     });
     nextBtn.addEventListener('click', function () {
+      if (state.day) { state.page++; renderList(); return; }
       var c = state.pageInfo && state.pageInfo.nextCursor;
       if (c) load({ after: c, before: '' });
     });
 
+    // ---- URL state (?tab= and ?day=) -----------------------------------
+    function setParam(name, value) {
+      try {
+        var u = new URL(window.location.href);
+        if (value) u.searchParams.set(name, value); else u.searchParams.delete(name);
+        window.history.replaceState(null, '', u.pathname + u.search + u.hash);
+      } catch (e) { /* URL state is a convenience only */ }
+    }
+    function getParam(name) {
+      try { return new URL(window.location.href).searchParams.get(name) || ''; } catch (e) { return ''; }
+    }
+
+    // ---- day filter ------------------------------------------------------
+    var dayInput = $('[data-day-input]');
+    var dayBtns = root.querySelectorAll('[data-day]');
+
+    function paintDay() {
+      dayBtns.forEach(function (b) {
+        var d = b.getAttribute('data-day');
+        var active = d === 'all' ? !state.day : state.day === d;
+        b.classList.toggle('is-active', active);
+        b.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+      dayInput.value = state.day ? resolveDay(state.day) : '';
+    }
+
+    function setDay(day, silent) {
+      state.day = day === 'all' ? '' : day;
+      state.filter = 'all';
+      state.page = 0;
+      paintDay();
+      renderTabs();
+      setParam('day', state.day);
+      if (!silent) load(state.day ? undefined : { after: '', before: '' });
+    }
+
+    dayBtns.forEach(function (b) {
+      b.addEventListener('click', function () { setDay(b.getAttribute('data-day')); });
+    });
+    dayInput.addEventListener('change', function () {
+      if (DAY_RE.test(dayInput.value)) setDay(dayInput.value);
+      else setDay('all');
+    });
+
+    // ---- page tabs ---------------------------------------------------------
+    var isAdmin = !!(auth && auth.isLoggedIn && auth.isLoggedIn() && auth.isAdmin && auth.isAdmin());
+    var mainTabs = root.querySelectorAll('[data-main-tab]');
+    var panels = root.querySelectorAll('[data-panel]');
+    var myLoaded = false;
+    var tabsRow = $('.thcm-tabs--main');
+    if (tabsRow && !isAdmin) tabsRow.hidden = true; // a lone "My Orders" tab is just noise for employees
+
+    mainTabs.forEach(function (b) {
+      if (b.getAttribute('data-main-tab') === 'daily') b.hidden = !isAdmin;
+    });
+
+    function setTab(tab, silent) {
+      if (tab !== 'daily' || !isAdmin) tab = 'my';
+      root.setAttribute('data-active-tab', tab);
+      mainTabs.forEach(function (b) {
+        var on = b.getAttribute('data-main-tab') === tab;
+        b.classList.toggle('is-active', on);
+        b.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      panels.forEach(function (pn) { pn.hidden = pn.getAttribute('data-panel') !== tab; });
+      if (!silent) setParam('tab', tab);
+      if (tab === 'my' && !myLoaded) { myLoaded = true; load(); }
+      root.dispatchEvent(new CustomEvent('thcm:tab', { detail: { tab: tab } }));
+    }
+
+    mainTabs.forEach(function (b) {
+      b.addEventListener('click', function () { setTab(b.getAttribute('data-main-tab')); });
+    });
+
+    var initialDay = getParam('day');
+    if (initialDay === 'today' || initialDay === 'yesterday' || DAY_RE.test(initialDay)) setDay(initialDay, true);
+    else paintDay();
+    if (accToggle) window.THCM_ACC.bindToggle(accToggle, listEl);
     renderTabs();
     renderChips();
-    load();
+    var wantTab = getParam('tab');
+    // Admin lands on Daily Orders, employees on My Orders
+    setTab(wantTab === 'my' ? 'my' : (wantTab === 'daily' || isAdmin ? 'daily' : 'my'), true);
+    if (wantTab === 'daily' && !isAdmin) setParam('tab', '');
   })();
 </script>

@@ -1,0 +1,620 @@
+{% doc %}
+  Client logic for the admin-only "Daily Orders" tab of the Orders page (sections/thcm-my-orders.liquid).
+  Non-admins never run this code and never trigger an API call. The tab itself is opened by snippets/thcm-orders-js.liquid
+  (it sets data-active-tab on the section root and fires a "thcm:tab" event); the data is loaded only when it is shown.
+
+  Data: GET /api/sap/daily-exports?date=YYYY-MM-DD (JWT). The response shape is NOT confirmed, so it is parsed defensively
+  (record per day with an orders/items array, or flat order rows with a date) and the first response is logged with console.debug.
+  Rows are shown as accordions (THCM_ACC). The header and panel read the fields they recognise (order no, employee, items,
+  status, amount, shipping address, payment method, tracking); every other scalar field is listed under the panel's details,
+  and the CSV uses all scalar fields. Nothing is invented.
+  "Today" never calls the API: the nightly export (12:00 AM) does not exist yet and no live admin endpoint is known.
+  Download: a backend file link (fileUrl/downloadUrl) is fetched with the JWT and saved as a blob; otherwise a CSV is built here.
+  All API data is written with textContent / DOM nodes, never innerHTML.
+{% enddoc %}
+
+<script>
+  (function () {
+    var root = document.querySelector('[data-thcm-orders]');
+    if (!root || root.__thcmDailyInit) return;
+    root.__thcmDailyInit = true;
+
+    var auth = window.MAP_AUTH;
+    var api = window.THCM_API;
+    var isAdmin = !!(auth && auth.isLoggedIn && auth.isLoggedIn() && auth.isAdmin && auth.isAdmin());
+    if (!isAdmin) return;
+
+    var PAGE_SIZE = parseInt(root.getAttribute('data-page-size'), 10) || 10;
+    var DENIED_TEXT = root.getAttribute('data-denied-text') || 'Access denied';
+    var DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
+    var FETCH_LIMIT = 100;
+    var MAX_PAGES = 5;
+
+    var $ = function (sel) { return root.querySelector(sel); };
+    var stateEl = $('[data-d-state]');
+    var tableWrap = $('[data-d-list-wrap]');
+    var listEl = $('[data-d-list]');
+    var accToggle = $('[data-d-acc-toggle]');
+    var barEl = $('[data-d-bar]');
+    var pagerEl = $('[data-d-pager]');
+    var prevBtn = $('[data-d-prev]');
+    var nextBtn = $('[data-d-next]');
+    var rangeEl = $('[data-d-range]');
+    var dayInput = $('[data-d-input]');
+    var dayBtns = root.querySelectorAll('[data-d-day]');
+    var dlBtn = $('[data-d-download]');
+    var dlRangeBtn = $('[data-d-download-range]');
+    var fromEl = $('[data-d-from]');
+    var toEl = $('[data-d-to]');
+    var toastsEl = $('[data-toasts]');
+
+    var dateFmt = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' });
+    var keyFmt = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Asia/Kolkata' });
+    var moneyFmt = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
+
+    var state = { day: 'yesterday', lastColumns: [], rows: [], columns: [], record: null, page: 0, requestId: 0, started: false };
+
+    function el(tag, cls, text) {
+      var node = document.createElement(tag);
+      if (cls) node.className = cls;
+      if (text !== undefined && text !== null) node.textContent = String(text);
+      return node;
+    }
+    function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); }
+    function lower(v) { return String(v == null ? '' : v).trim().toLowerCase(); }
+    function isScalar(v) { return v == null || typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean'; }
+    function humanize(k) {
+      return String(k).replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[_-]+/g, ' ').replace(/^\w/, function (c) { return c.toUpperCase(); });
+    }
+    function pick(obj, keys) {
+      for (var i = 0; i < keys.length; i++) {
+        var v = obj[keys[i]];
+        if (v !== undefined && v !== null && v !== '') return v;
+      }
+      return null;
+    }
+    function money(v) {
+      var n = Number(v);
+      return isNaN(n) ? String(v == null ? '' : v) : moneyFmt.format(n);
+    }
+    function toast(msg, isError) {
+      var t = el('div', 'thcm-toast' + (isError ? ' thcm-toast--error' : ''), msg);
+      toastsEl.appendChild(t);
+      setTimeout(function () { t.remove(); }, 4500);
+    }
+
+    // ---- dates (IST) ---------------------------------------------------------
+    function todayKey() { return keyFmt.format(new Date()); }
+    function yesterdayKey() { return keyFmt.format(new Date(Date.now() - 86400000)); }
+    function resolveDay(day) {
+      if (day === 'today') return todayKey();
+      if (day === 'yesterday') return yesterdayKey();
+      return DAY_RE.test(day) ? day : '';
+    }
+    function keyLabel(key) {
+      var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(key);
+      return m ? dateFmt.format(new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], 6))) : key;
+    }
+    function dateKey(v) {
+      if (v == null || v === '') return '';
+      var s = String(v);
+      if (DAY_RE.test(s)) return s;
+      var d = new Date(typeof v === 'number' ? v : s);
+      return isNaN(d.getTime()) ? '' : keyFmt.format(d);
+    }
+
+    // ---- states ------------------------------------------------------------------
+    function showState(msg, tone, withRetry) {
+      tableWrap.hidden = true;
+      pagerEl.hidden = true;
+      stateEl.hidden = false;
+      clear(stateEl);
+      stateEl.removeAttribute('aria-busy');
+      stateEl.className = 'thcm-state' + (tone ? ' thcm-state--' + tone : '');
+      stateEl.setAttribute('role', tone === 'error' ? 'alert' : 'status');
+      stateEl.appendChild(el('p', 'thcm-state__text', msg));
+      if (withRetry) {
+        var b = el('button', 'thcm-btn thcm-btn--primary', 'Retry');
+        b.type = 'button';
+        b.addEventListener('click', function () { load(); });
+        stateEl.appendChild(b);
+      }
+    }
+
+    function showLoading() {
+      tableWrap.hidden = true;
+      pagerEl.hidden = true;
+      stateEl.hidden = false;
+      clear(stateEl);
+      stateEl.className = 'thcm-state thcm-state--loading';
+      stateEl.setAttribute('aria-busy', 'true');
+      for (var i = 0; i < 4; i++) stateEl.appendChild(el('span', 'thcm-skel__line' + (i % 2 ? ' thcm-skel__line--w60' : '')));
+    }
+
+    function setChip(name, text, hidden) {
+      var chip = $('[data-d-chip="' + name + '"]');
+      if (!chip) return;
+      chip.hidden = !!hidden;
+      var n = chip.querySelector('[data-n]');
+      if (n) n.textContent = text;
+    }
+
+    function setSummary(sum) {
+      if (!sum) {
+        setChip('count', '–');
+        setChip('amount', '–');
+        setChip('employees', '–', true);
+        return;
+      }
+      setChip('count', sum.count);
+      setChip('amount', sum.amount == null ? '–' : money(sum.amount));
+      setChip('employees', sum.employees, sum.employees == null);
+    }
+
+    function setDownloadEnabled(on) {
+      if (dlBtn) dlBtn.disabled = !on;
+    }
+
+    // ---- response parsing --------------------------------------------------------
+    function extractRows(res) {
+      var d = res && res.data;
+      var list = [res, d, d && d.items, d && d.exports, d && d.rows, d && d.orders, d && d.data, res && res.items, res && res.exports, res && res.rows, res && res.orders];
+      for (var i = 0; i < list.length; i++) if (Array.isArray(list[i])) return list[i];
+      return [];
+    }
+    function extractPageInfo(res) {
+      return (res && res.pageInfo) || (res && res.data && res.data.pageInfo) || {};
+    }
+
+    function fileUrl(v) {
+      if (!v) return '';
+      var s = String(v).trim();
+      if (/^https?:\/\//i.test(s)) return s;
+      var base = (window.MAP_API_BASE || '').replace(/\/+$/, '');
+      return base ? base + '/' + s.replace(/^\/+/, '') : '';
+    }
+
+    function normalize(raw) {
+      var rec = { raw: raw, details: [], generic: {} };
+      if (raw === null || typeof raw !== 'object') return rec;
+      rec.key = dateKey(pick(raw, ['date', 'exportDate', 'exportedAt', 'day', 'forDate', 'reportDate', 'generatedAt', 'createdAt']));
+      var inner = pick(raw, ['orders', 'items', 'rows', 'lineItems']);
+      if (Array.isArray(inner)) rec.details = inner;
+      var count = pick(raw, ['ordersCount', 'orderCount', 'totalOrders', 'count', 'rowCount', 'total_orders']);
+      rec.count = count != null ? Number(count) : null;
+      rec.amount = pick(raw, ['totalAmount', 'amount', 'total', 'totalPrice', 'grandTotal', 'totalValue', 'total_amount']);
+      rec.employees = pick(raw, ['employeesCount', 'employeeCount', 'totalEmployees', 'uniqueEmployees']);
+      rec.file = fileUrl(pick(raw, ['fileUrl', 'downloadUrl', 'url', 'file', 'link', 's3Url', 'path', 'fileLink']));
+      rec.fileName = pick(raw, ['fileName', 'filename']);
+      Object.keys(raw).forEach(function (k) { if (isScalar(raw[k])) rec.generic[k] = raw[k]; });
+      return rec;
+    }
+
+    var AMOUNT_KEYS = ['totalPrice', 'totalAmount', 'amount', 'total', 'total_amount', 'grandTotal'];
+    var EMPLOYEE_KEYS = ['employeeId', 'employee_id', 'empId', 'employeeCode', 'employeeEmail', 'email'];
+
+    function withRaw(flat, raw) {
+      Object.defineProperty(flat, '__raw', { value: raw, enumerable: false });
+      return flat;
+    }
+
+    function rowObjects(rec) {
+      return rec.details.map(function (d) {
+        if (d && typeof d === 'object') {
+          var o = {};
+          Object.keys(d).forEach(function (k) { if (isScalar(d[k])) o[k] = d[k]; });
+          return withRaw(o, d);
+        }
+        return withRaw({ value: d }, d);
+      });
+    }
+
+    // Works out the rows and summary for one day from whatever records the API returned
+    function compute(key, recs) {
+      var matched = recs.filter(function (r) { return r.key === key; });
+      // A date-filtered response whose rows carry no recognisable date: trust the server's filter
+      if (!matched.length && recs.length && recs.every(function (r) { return !r.key; })) matched = recs;
+      var rows = [];
+      var file = null;
+      var amountSum = null;
+      var countSum = 0;
+      var hasCount = false;
+      var emp = null;
+
+      matched.forEach(function (r) {
+        if (r.details.length) rows = rows.concat(rowObjects(r));
+        else rows.push(withRaw(Object.assign({}, r.generic), r.raw));
+        if (r.count != null && !isNaN(r.count)) { countSum += r.count; hasCount = true; }
+        if (r.amount != null && !isNaN(Number(r.amount))) amountSum = (amountSum || 0) + Number(r.amount);
+        if (r.employees != null && !isNaN(Number(r.employees))) emp = (emp || 0) + Number(r.employees);
+        if (r.file && matched.length === 1) file = { url: r.file, name: r.fileName };
+      });
+
+      if (amountSum == null && !rows.length) amountSum = 0;
+      if (amountSum == null) {
+        rows.forEach(function (row) {
+          var k = AMOUNT_KEYS.filter(function (c) { return row[c] != null && !isNaN(Number(row[c])); })[0];
+          if (k) amountSum = (amountSum || 0) + Number(row[k]);
+        });
+      }
+      if (emp == null && rows.length) {
+        var ek = EMPLOYEE_KEYS.filter(function (c) { return rows.some(function (row) { return row[c] != null && row[c] !== ''; }); })[0];
+        if (ek) {
+          var seen = {};
+          rows.forEach(function (row) { if (row[ek] != null && row[ek] !== '') seen[String(row[ek])] = 1; });
+          emp = Object.keys(seen).length;
+        }
+      }
+      return {
+        rows: rows,
+        file: file,
+        summary: { count: hasCount ? countSum : rows.length, amount: amountSum, employees: emp }
+      };
+    }
+
+    function columnsFor(rows) {
+      var keys = [];
+      rows.forEach(function (row) {
+        Object.keys(row).forEach(function (k) { if (keys.indexOf(k) === -1) keys.push(k); });
+      });
+      return keys.slice(0, 10);
+    }
+
+    // ---- fetching --------------------------------------------------------------------
+    var firstResponse = true;
+    function fetchRecords(query) {
+      var recs = [];
+      var pages = MAX_PAGES;
+      function step(cursor) {
+        var path = '/api/sap/daily-exports?' + query + '&limit=' + FETCH_LIMIT + (cursor ? '&after=' + encodeURIComponent(cursor) : '');
+        return api.jwtRequest('GET', path).then(function (res) {
+          if (firstResponse) {
+            firstResponse = false;
+            console.debug('THCM daily orders: raw response (shape is unconfirmed)', res);
+          }
+          if (res.denied) { var d = new Error(DENIED_TEXT); d.denied = true; throw d; }
+          if (res.success === false) throw new Error(res.message || 'Could not load daily orders.');
+          recs = recs.concat(extractRows(res).map(normalize));
+          var pi = extractPageInfo(res);
+          if (pi.hasNextPage && pi.nextCursor && --pages > 0) return step(pi.nextCursor);
+          if (pi.hasNextPage && pi.nextCursor) console.warn('THCM daily orders: stopped after ' + MAX_PAGES + ' pages');
+          return recs;
+        });
+      }
+      return step('');
+    }
+
+    // ---- accordion rows ---------------------------------------------------------
+    var ORDER_KEYS = ['orderNo', 'orderNumber', 'orderName', 'shopifyOrderId', 'id'];
+    var EMP_NAME_KEYS = ['employeeName', 'empName', 'employee_name', 'customerName'];
+    var EMP_ID_KEYS = ['employeeId', 'employee_id', 'empId', 'employeeCode'];
+    var ITEM_KEYS = ['lineItems', 'line_items', 'items', 'products'];
+    var STATUS_KEYS = ['status', 'financialStatus', 'orderStatus', 'stage'];
+    var ADDRESS_KEYS = ['shippingAddress', 'shipping_address', 'address', 'shipping'];
+    var PAYMENT_KEYS = ['paymentMethod', 'payment_method', 'paymentGateway', 'gateway', 'paymentGatewayNames'];
+    var TRACK_KEYS = ['tracking', 'trackingNumber', 'trackingUrl', 'carrier'];
+
+    function scalarOf(raw, keys) {
+      for (var i = 0; i < keys.length; i++) {
+        var v = raw[keys[i]];
+        if (v !== undefined && v !== null && v !== '' && isScalar(v)) return { key: keys[i], value: v };
+      }
+      return null;
+    }
+
+    function flatText(v) {
+      if (v == null || v === '') return '';
+      if (isScalar(v)) return String(v);
+      if (Array.isArray(v)) return v.map(flatText).filter(Boolean).join(', ');
+      return Object.keys(v).map(function (k) { return isScalar(v[k]) && v[k] !== '' && v[k] !== null ? v[k] : ''; }).filter(Boolean).join(', ');
+    }
+
+    function statusBadge(v) {
+      var words = lower(v).split(/[^a-z]+/).filter(Boolean);
+      var any = function (list) { return words.some(function (w) { return list.indexOf(w) !== -1; }); };
+      var tone = 'grey';
+      if (any(['failed', 'cancelled', 'canceled', 'rejected', 'error'])) tone = 'red';
+      else if (any(['paid', 'approved', 'delivered', 'fulfilled', 'completed', 'success', 'shipped'])) tone = 'green';
+      else if (any(['pending', 'processing', 'partial', 'awaiting'])) tone = 'amber';
+      return el('span', 'thcm-badge thcm-badge--' + tone, v);
+    }
+
+    // Reads the fields it recognises and lists every other scalar field under "Details", so no real field is lost
+    function rowView(row, index) {
+      var raw = row.__raw && typeof row.__raw === 'object' ? row.__raw : row;
+      var used = {};
+      var take = function (res) { if (res) used[res.key] = 1; return res; };
+
+      var orderRes = take(scalarOf(raw, ORDER_KEYS));
+      if (!orderRes && typeof raw.name === 'string' && raw.name.charAt(0) === '#') { used.name = 1; orderRes = { value: raw.name }; }
+      var empName = take(scalarOf(raw, EMP_NAME_KEYS));
+      var empId = take(scalarOf(raw, EMP_ID_KEYS));
+      if (raw.employee && typeof raw.employee === 'object') {
+        if (!empName && raw.employee.name) empName = { value: raw.employee.name };
+        if (!empId && raw.employee.employeeId) empId = { value: raw.employee.employeeId };
+        used.employee = 1;
+      }
+      if (!empName && typeof raw.name === 'string' && raw.name && raw.name.charAt(0) !== '#') { used.name = 1; empName = { value: raw.name }; }
+      var status = take(scalarOf(raw, STATUS_KEYS));
+      var amountKey = AMOUNT_KEYS.filter(function (k) { return raw[k] != null && raw[k] !== '' && isScalar(raw[k]); })[0];
+      if (amountKey) used[amountKey] = 1;
+
+      var itemsKey = ITEM_KEYS.filter(function (k) { return Array.isArray(raw[k]); })[0];
+      var items = itemsKey ? raw[itemsKey] : [];
+      if (itemsKey) used[itemsKey] = 1;
+      var qty = 0;
+      items.forEach(function (it) { qty += Number(it && (it.quantity != null ? it.quantity : (it.qty != null ? it.qty : 1))) || 0; });
+      var countRes = !itemsKey ? take(scalarOf(raw, ['itemCount', 'itemsCount', 'totalQuantity', 'quantity', 'qty'])) : null;
+      var count = itemsKey ? qty : (countRes ? Number(countRes.value) : null);
+
+      // Header
+      var title = el('span', 'thcm-acc__title thcm-card__no', orderRes ? 'Order ' + orderRes.value : 'Order ' + (index + 1));
+      var who = empName ? String(empName.value) + (empId ? ' (' + empId.value + ')' : '') : (empId ? String(empId.value) : '');
+      var metaParts = [];
+      if (who) metaParts.push(who);
+      if (count != null && !isNaN(count)) metaParts.push(count + (count === 1 ? ' item' : ' items'));
+      var meta = el('span', 'thcm-acc__meta', metaParts.join(' · '));
+      var badge = el('span', 'thcm-acc__badge');
+      if (status) badge.appendChild(statusBadge(status.value));
+      var amount = el('span', 'thcm-acc__amount thcm-card__total', amountKey ? money(raw[amountKey]) : '');
+
+      // Panel
+      var body = el('div', 'thcm-acc__body');
+      if (items.length) {
+        var ul = el('ul', 'thcm-items');
+        items.forEach(function (it) {
+          var o = it && typeof it === 'object' ? it : { title: it };
+          var li = el('li', 'thcm-item');
+          var main = el('div', 'thcm-item__main');
+          var t = o.title || o.name || o.productTitle || 'Item';
+          var q = o.quantity != null ? o.quantity : (o.qty != null ? o.qty : null);
+          main.appendChild(el('span', 'thcm-item__title', t + (q != null ? ' × ' + q : '')));
+          var sub = [];
+          var variant = o.variantTitle || o.variant || o.variant_title;
+          if (variant && isScalar(variant)) sub.push(variant);
+          if (o.sku) sub.push('SKU: ' + o.sku);
+          if (sub.length) main.appendChild(el('span', 'thcm-item__sku', sub.join(' · ')));
+          li.appendChild(main);
+          if (o.price != null && o.price !== '') li.appendChild(el('span', 'thcm-item__price', money(o.price)));
+          ul.appendChild(li);
+        });
+        body.appendChild(ul);
+      }
+
+      var dl = el('dl', 'thcm-dl');
+      var addRow = function (label, value) {
+        if (!value) return;
+        dl.appendChild(el('dt', '', label));
+        dl.appendChild(el('dd', '', value));
+      };
+      var addrKey = ADDRESS_KEYS.filter(function (k) { return raw[k] != null && raw[k] !== ''; })[0];
+      if (addrKey) { used[addrKey] = 1; addRow('Shipping address', flatText(raw[addrKey])); }
+      var payKey = PAYMENT_KEYS.filter(function (k) { return raw[k] != null && raw[k] !== ''; })[0];
+      if (payKey) { used[payKey] = 1; addRow('Payment method', flatText(raw[payKey])); }
+      var tracking = [];
+      TRACK_KEYS.forEach(function (k) {
+        if (raw[k] != null && raw[k] !== '') { used[k] = 1; tracking.push(flatText(raw[k])); }
+      });
+      addRow('Tracking', tracking.filter(Boolean).join(' · '));
+      Object.keys(raw).forEach(function (k) {
+        if (used[k] || !isScalar(raw[k]) || raw[k] === '' || raw[k] === null) return;
+        addRow(humanize(k), String(raw[k]));
+      });
+      if (dl.children.length) body.appendChild(dl);
+      if (!body.children.length) body.appendChild(el('p', 'thcm-state__text', 'No more details for this order.'));
+
+      var acc = window.THCM_ACC.build({ cls: 'thcm-card', head: [title, meta, badge, amount], panel: body, open: false });
+      if (status) acc.setAttribute('data-stage', /cancel/i.test(String(status.value)) ? 'cancelled' : 'open');
+      return acc;
+    }
+
+    function renderTable() {
+      var total = state.rows.length;
+      if (!total) { tableWrap.hidden = true; pagerEl.hidden = true; return; }
+      stateEl.hidden = true;
+      tableWrap.hidden = false;
+      var start = state.page * PAGE_SIZE;
+      var slice = state.rows.slice(start, start + PAGE_SIZE);
+
+      // A fresh list every time (day or page change), so everything starts collapsed
+      clear(listEl);
+      slice.forEach(function (row, i) { listEl.appendChild(rowView(row, start + i)); });
+
+      var pages = Math.ceil(total / PAGE_SIZE);
+      pagerEl.hidden = pages <= 1;
+      prevBtn.disabled = state.page <= 0;
+      nextBtn.disabled = state.page >= pages - 1;
+      rangeEl.textContent = 'Showing ' + (start + 1) + '–' + (start + slice.length) + ' of ' + total;
+    }
+
+    // ---- loading a day ----------------------------------------------------------------
+    function load() {
+      var key = resolveDay(state.day);
+      var id = ++state.requestId;
+      state.rows = [];
+      state.columns = [];
+      state.record = null;
+      state.page = 0;
+      barEl.hidden = false;
+
+      if (key === todayKey()) {
+        // No live admin endpoint is known, so no number is shown
+        setSummary(null);
+        setDownloadEnabled(false);
+        showState("Today's orders will be available after the 12:00 AM export.", '', false);
+        return;
+      }
+
+      setDownloadEnabled(false);
+      showLoading();
+      fetchRecords('date=' + encodeURIComponent(key)).then(function (recs) {
+        if (id !== state.requestId) return;
+        var out = compute(key, recs);
+        state.rows = out.rows;
+        state.columns = columnsFor(out.rows);
+        if (state.columns.length) state.lastColumns = state.columns;
+        state.record = out;
+        setSummary(out.summary);
+        setDownloadEnabled(true);
+        if (!out.rows.length) {
+          showState('No orders on ' + keyLabel(key) + '.', '', false);
+          return;
+        }
+        renderTable();
+      }).catch(function (err) {
+        if (id !== state.requestId || (err && err.handled)) return;
+        setSummary(null);
+        if (err && err.denied) { showState(DENIED_TEXT, 'error', false); return; }
+        console.error('THCM daily orders: load failed', err);
+        showState((err && err.message) || 'Could not load daily orders.', 'error', true);
+      });
+    }
+
+    // ---- CSV / download ------------------------------------------------------------------
+    function csvCell(v) {
+      var s = v == null ? '' : String(v);
+      return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    }
+
+    function buildCsv(columns, rows) {
+      var lines = [columns.map(function (c) { return csvCell(humanize(c)); }).join(',')];
+      rows.forEach(function (row) {
+        lines.push(columns.map(function (c) { return csvCell(row[c]); }).join(','));
+      });
+      // BOM so Excel reads UTF-8 (the rupee sign) correctly
+      return '﻿' + lines.join('\r\n') + '\r\n';
+    }
+
+    function saveBlob(blob, name) {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+    }
+
+    function isBackendUrl(u) {
+      var base = (window.MAP_API_BASE || '').replace(/\/+$/, '');
+      return !!base && u.indexOf(base + '/') === 0;
+    }
+
+    // Backend files may need the JWT, so they are fetched with Bearer and saved as a blob (a plain link cannot send it)
+    function fetchFile(file) {
+      var token = auth && auth.getToken && auth.getToken();
+      var headers = { 'ngrok-skip-browser-warning': 'true' };
+      if (token) headers['Authorization'] = 'Bearer ' + token;
+      return fetch(file.url, { headers: headers }).then(function (res) {
+        if (res.status === 401) { if (auth) auth.logout(); throw { handled: true }; }
+        if (!res.ok) throw new Error('Download failed (' + res.status + ')');
+        var cd = res.headers.get('Content-Disposition') || '';
+        var m = /filename\*?=(?:UTF-8'')?"?([^";]+)"?/i.exec(cd);
+        var name = (m && decodeURIComponent(m[1])) || file.name || file.url.split('?')[0].split('/').pop() || 'orders';
+        return res.blob().then(function (blob) { saveBlob(blob, name); });
+      });
+    }
+
+    function runDownload(btn, work) {
+      var label = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Preparing…';
+      if (window.THCM_LOADER) window.THCM_LOADER.show('Preparing download…');
+      var done = function () {
+        if (window.THCM_LOADER) window.THCM_LOADER.hide();
+        btn.disabled = false;
+        btn.textContent = label;
+      };
+      Promise.resolve().then(work).then(done, function (err) {
+        done();
+        if (err && err.handled) return;
+        console.error('THCM daily orders: download failed', err);
+        toast('Download failed', true);
+      });
+    }
+
+    dlBtn && dlBtn.addEventListener('click', function () {
+      var key = resolveDay(state.day);
+      var out = state.record;
+      if (!out) return;
+      runDownload(dlBtn, function () {
+        if (out.file && isBackendUrl(out.file.url)) return fetchFile(out.file);
+        saveBlob(new Blob([buildCsv(state.columns.length ? state.columns : (state.lastColumns.length ? state.lastColumns : ['date', 'orders', 'totalAmount']), out.rows)], { type: 'text/csv;charset=utf-8' }), 'thcm-orders-' + key + '.csv');
+      });
+    });
+
+    dlRangeBtn && dlRangeBtn.addEventListener('click', function () {
+      var from = fromEl.value;
+      var to = toEl.value;
+      if (!DAY_RE.test(from) || !DAY_RE.test(to) || from > to) { toast('Choose a valid From and To date.', true); return; }
+      runDownload(dlRangeBtn, function () {
+        return fetchRecords('from=' + encodeURIComponent(from) + '&to=' + encodeURIComponent(to)).then(function (recs) {
+          var rows = [];
+          recs.forEach(function (r) {
+            if (!r.key || r.key < from || r.key > to) return;
+            (r.details.length ? rowObjects(r) : [r.generic]).forEach(function (o) {
+              var withDate = { date: r.key };
+              Object.keys(o).forEach(function (k) { if (k !== 'date') withDate[k] = o[k]; });
+              rows.push(withDate);
+            });
+          });
+          var cols = columnsFor(rows);
+          if (!cols.length) cols = state.columns.length ? ['date'].concat(state.columns) : ['date'];
+          saveBlob(new Blob([buildCsv(cols, rows)], { type: 'text/csv;charset=utf-8' }), 'thcm-orders-' + from + '_to_' + to + '.csv');
+        });
+      });
+    });
+
+    // ---- day filter ----------------------------------------------------------------------
+    function paintDay() {
+      dayBtns.forEach(function (b) {
+        var on = b.getAttribute('data-d-day') === state.day;
+        b.classList.toggle('is-active', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      dayInput.value = resolveDay(state.day);
+    }
+
+    function setParam(value) {
+      try {
+        var u = new URL(window.location.href);
+        if (value) u.searchParams.set('ddate', value); else u.searchParams.delete('ddate');
+        window.history.replaceState(null, '', u.pathname + u.search + u.hash);
+      } catch (e) { /* convenience only */ }
+    }
+
+    function setDay(day) {
+      state.day = day;
+      paintDay();
+      setParam(day === 'yesterday' ? '' : day);
+      load();
+    }
+
+    dayBtns.forEach(function (b) {
+      b.addEventListener('click', function () { setDay(b.getAttribute('data-d-day')); });
+    });
+    dayInput.addEventListener('change', function () {
+      if (DAY_RE.test(dayInput.value)) setDay(dayInput.value);
+    });
+    prevBtn.addEventListener('click', function () { if (state.page > 0) { state.page--; renderTable(); } });
+    nextBtn.addEventListener('click', function () { state.page++; renderTable(); });
+
+    // ---- start: only when the Daily tab is shown ------------------------------------------
+    function start() {
+      if (state.started) return;
+      state.started = true;
+      if (accToggle) window.THCM_ACC.bindToggle(accToggle, listEl);
+      var q = '';
+      try { q = new URL(window.location.href).searchParams.get('ddate') || ''; } catch (e) { q = ''; }
+      if (q === 'today' || q === 'yesterday' || DAY_RE.test(q)) state.day = q;
+      paintDay();
+      load();
+    }
+
+    root.addEventListener('thcm:tab', function (e) {
+      if (e.detail && e.detail.tab === 'daily') start();
+    });
+    if (root.getAttribute('data-active-tab') === 'daily') start();
+  })();
+</script>

@@ -9,7 +9,7 @@
 {% enddoc %}
 
 {%- unless request.design_mode -%}
-  {%- assign thcm_admin_urls = settings.thcm_admin_only_urls | default: '/pages/daily-orders' | newline_to_br | split: '<br />' -%}
+  {%- assign thcm_admin_urls = settings.thcm_admin_only_urls | default: '/pages/employee-management' | newline_to_br | split: '<br />' -%}
   <script>
     (function () {
       if (window.__thcmAdminLinks) return;

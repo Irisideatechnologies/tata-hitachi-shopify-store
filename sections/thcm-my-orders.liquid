@@ -1,7 +1,10 @@
 {% doc %}
-  My Orders (employee portal). Shows only the signed-in employee's orders.
-  Styling lives in assets/tata.css ("My Orders" block); logic in snippets/thcm-orders-js.liquid.
-  In the theme editor no API call is made: static sample cards are shown instead.
+  Orders page (employee portal): one section with two tabs.
+    My Orders     every employee: own orders, day filter (All / Today / Yesterday / date), summary chips, status tabs.
+    Daily Orders  admin only: one day's export (summary + table + CSV download). Hidden and never calls the API for non-admins.
+  Styling lives in assets/tata.css (shared .thcm block); logic in snippets/thcm-orders-js.liquid (tabs, My Orders)
+  and snippets/thcm-orders-daily-js.liquid (Daily Orders).
+  In the theme editor no API call is made: static samples of both tabs are shown instead.
 {% enddoc %}
 
 {%- liquid
@@ -15,6 +18,8 @@
   data-empty-text="{{ section.settings.empty_text | escape }}"
   data-shop-url="{{ shop_url }}"
   data-shop-label="{{ section.settings.shop_label | escape }}"
+  data-show-download="{{ section.settings.show_download }}"
+  data-denied-text="{{ section.settings.denied_text | escape }}"
   data-section-id="{{ section.id }}"
 >
   <div class="thcm__wrap">
@@ -25,96 +30,165 @@
       {%- endif -%}
     </header>
 
-    {%- if section.settings.show_summary -%}
-      <div class="thcm-chips" aria-label="Order summary">
-        <div class="thcm-chip" data-chip="total"><span class="thcm-chip__n" data-n>{% if request.design_mode %}4{% else %}&ndash;{% endif %}</span><span class="thcm-chip__l">Total</span></div>
-        <div class="thcm-chip thcm-chip--amber" data-chip="pending"><span class="thcm-chip__n" data-n>{% if request.design_mode %}1{% else %}&ndash;{% endif %}</span><span class="thcm-chip__l">Awaiting approval</span></div>
-        <div class="thcm-chip thcm-chip--green" data-chip="approved"><span class="thcm-chip__n" data-n>{% if request.design_mode %}1{% else %}&ndash;{% endif %}</span><span class="thcm-chip__l">Approved</span></div>
-        <div class="thcm-chip thcm-chip--green" data-chip="delivered"><span class="thcm-chip__n" data-n>{% if request.design_mode %}1{% else %}&ndash;{% endif %}</span><span class="thcm-chip__l">Delivered</span></div>
-        <div class="thcm-chip thcm-chip--red" data-chip="cancelled"><span class="thcm-chip__n" data-n>{% if request.design_mode %}1{% else %}&ndash;{% endif %}</span><span class="thcm-chip__l">Cancelled</span></div>
-      </div>
-    {%- endif -%}
+    <div class="thcm-tabs thcm-tabs--main" role="tablist" aria-label="Orders">
+      <button type="button" role="tab" class="thcm-tab is-active" data-main-tab="daily" aria-selected="true"{% unless request.design_mode %} hidden{% endunless %}>{{ section.settings.tab_daily }}</button>
+      <button type="button" role="tab" class="thcm-tab" data-main-tab="my" aria-selected="false">{{ section.settings.tab_my }}</button>
+    </div>
 
-    {%- if section.settings.show_filters -%}
-      <div class="thcm-tabs" role="tablist" aria-label="Filter orders">
-        <button type="button" role="tab" class="thcm-tab is-active" data-filter="all" aria-selected="true">All</button>
-        <button type="button" role="tab" class="thcm-tab" data-filter="pending" aria-selected="false">Awaiting approval</button>
-        <button type="button" role="tab" class="thcm-tab" data-filter="approved" aria-selected="false">Approved</button>
-        <button type="button" role="tab" class="thcm-tab" data-filter="shipped" aria-selected="false">Shipped</button>
-        <button type="button" role="tab" class="thcm-tab" data-filter="delivered" aria-selected="false">Delivered</button>
-        <button type="button" role="tab" class="thcm-tab" data-filter="cancelled" aria-selected="false">Cancelled</button>
+    <div data-panel="daily"{% unless request.design_mode %} hidden{% endunless %}>
+      <div class="thcm-day" role="group" aria-label="Choose the export day">
+        <button type="button" class="thcm-tab" data-d-day="today" aria-pressed="false">{{ section.settings.label_today }}</button>
+        <button type="button" class="thcm-tab is-active" data-d-day="yesterday" aria-pressed="true">{{ section.settings.label_yesterday }}</button>
+        <label class="thcm-day__date"><span class="thcm-day__icon" aria-hidden="true">&#128197;</span><span class="thcm-visually-hidden">Pick a date</span><input type="date" data-d-input></label>
       </div>
-    {%- endif -%}
 
-    <div class="thcm-list" data-list aria-live="polite">
-      {%- if request.design_mode -%}
-        <article class="thcm-card" data-stage="pending">
-          <div class="thcm-card__head">
-            <div class="thcm-card__id"><span class="thcm-card__no">Order #1001</span><span class="thcm-card__date">08 Oct 2026</span></div>
-            <div class="thcm-card__total">&#8377;1,299.00</div>
-          </div>
-          <ul class="thcm-items">
-            <li class="thcm-item"><div class="thcm-item__main"><span class="thcm-item__title">Sample cap &times; 1</span><span class="thcm-item__sku">SKU: CAP-BLK</span></div><span class="thcm-item__price">&#8377;499.00</span></li>
-            <li class="thcm-item"><div class="thcm-item__main"><span class="thcm-item__title">Sample mug &times; 2</span><span class="thcm-item__sku">SKU: MUG-WHT</span></div><span class="thcm-item__price">&#8377;400.00</span></li>
-          </ul>
-          <div class="thcm-badges">
-            <div class="thcm-badge-group"><small class="thcm-badge-group__label">Payment</small><span class="thcm-badge thcm-badge--amber">Awaiting approval</span></div>
-            <div class="thcm-badge-group"><small class="thcm-badge-group__label">Fulfillment</small><span class="thcm-badge thcm-badge--grey">Not shipped</span></div>
-            <div class="thcm-badge-group"><small class="thcm-badge-group__label">Delivery</small><span class="thcm-badge thcm-badge--grey">&mdash;</span></div>
-          </div>
-          <ol class="thcm-steps" aria-label="Order progress">
-            <li class="thcm-step is-current"><span class="thcm-step__dot"></span><span class="thcm-step__label">Placed</span></li>
-            <li class="thcm-step"><span class="thcm-step__dot"></span><span class="thcm-step__label">Approved</span></li>
-            <li class="thcm-step"><span class="thcm-step__dot"></span><span class="thcm-step__label">Shipped</span></li>
-            <li class="thcm-step"><span class="thcm-step__dot"></span><span class="thcm-step__label">Delivered</span></li>
-          </ol>
-          <div class="thcm-actions"><button type="button" class="thcm-btn thcm-btn--danger">Cancel order</button></div>
-        </article>
-        <article class="thcm-card" data-stage="shipped">
-          <div class="thcm-card__head">
-            <div class="thcm-card__id"><span class="thcm-card__no">Order #1000</span><span class="thcm-card__date">02 Oct 2026</span></div>
-            <div class="thcm-card__total">&#8377;2,499.00</div>
-          </div>
-          <ul class="thcm-items">
-            <li class="thcm-item"><div class="thcm-item__main"><span class="thcm-item__title">Sample scale model &times; 1</span><span class="thcm-item__sku">SKU: MODEL-01</span></div><span class="thcm-item__price">&#8377;2,499.00</span></li>
-          </ul>
-          <div class="thcm-badges">
-            <div class="thcm-badge-group"><small class="thcm-badge-group__label">Payment</small><span class="thcm-badge thcm-badge--green">Approved</span></div>
-            <div class="thcm-badge-group"><small class="thcm-badge-group__label">Fulfillment</small><span class="thcm-badge thcm-badge--blue">Shipped</span></div>
-            <div class="thcm-badge-group"><small class="thcm-badge-group__label">Delivery</small><span class="thcm-badge thcm-badge--grey">&mdash;</span></div>
-          </div>
-          <ol class="thcm-steps" aria-label="Order progress">
-            <li class="thcm-step is-done"><span class="thcm-step__dot"></span><span class="thcm-step__label">Placed</span></li>
-            <li class="thcm-step is-done"><span class="thcm-step__dot"></span><span class="thcm-step__label">Approved</span></li>
-            <li class="thcm-step is-current"><span class="thcm-step__dot"></span><span class="thcm-step__label">Shipped</span></li>
-            <li class="thcm-step"><span class="thcm-step__dot"></span><span class="thcm-step__label">Delivered</span></li>
-          </ol>
-          <div class="thcm-actions"><span class="thcm-btn thcm-btn--ghost">Track shipment<span class="thcm-btn__meta">Carrier &middot; 123456789</span></span></div>
-        </article>
+      <div class="thcm-chips thcm-chips--auto" data-d-chips aria-label="Day summary">
+        <div class="thcm-chip" data-d-chip="count"><span class="thcm-chip__n" data-n>{% if request.design_mode %}14{% else %}&ndash;{% endif %}</span><span class="thcm-chip__l">Orders</span></div>
+        <div class="thcm-chip" data-d-chip="amount"><span class="thcm-chip__n" data-n>{% if request.design_mode %}&#8377;18,450.00{% else %}&ndash;{% endif %}</span><span class="thcm-chip__l">Total amount</span></div>
+        <div class="thcm-chip" data-d-chip="employees" hidden><span class="thcm-chip__n" data-n>&ndash;</span><span class="thcm-chip__l">Employees</span></div>
+      </div>
+
+      <div class="thcm-d-bar" data-d-bar{% unless request.design_mode %} hidden{% endunless %}>
+        {%- if section.settings.show_download -%}
+          <button type="button" class="thcm-btn thcm-btn--primary" data-d-download>&#11015; Download CSV</button>
+          <details class="thcm-d-range">
+            <summary>Download range</summary>
+            <div class="thcm-d-range__body">
+              <label class="thcm-field"><span>From</span><input type="date" data-d-from></label>
+              <label class="thcm-field"><span>To</span><input type="date" data-d-to></label>
+              <button type="button" class="thcm-btn thcm-btn--ghost thcm-btn--sm" data-d-download-range>Download</button>
+            </div>
+          </details>
+        {%- endif -%}
+      </div>
+
+      <div class="thcm-state" data-d-state hidden></div>
+
+      <div data-d-list-wrap{% unless request.design_mode %} hidden{% endunless %}>
+        <div class="thcm-acc-bar"><button type="button" class="thcm-btn thcm-btn--ghost thcm-btn--sm" data-d-acc-toggle{% unless request.design_mode %} hidden{% endunless %}>Expand all</button></div>
+        <div class="thcm-list" data-d-list>
+          {%- if request.design_mode -%}
+          <article class="thcm-acc thcm-card is-open" data-stage="open">
+            <button type="button" class="thcm-acc__head" id="thcm-sample-h-3" aria-controls="thcm-sample-p-3" aria-expanded="true"><span class="thcm-acc__chev"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" focusable="false"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="thcm-acc__title thcm-card__no">Order #1001</span><span class="thcm-acc__meta">Sample Employee (E1042) · 3 items</span><span class="thcm-acc__badge"><span class="thcm-badge thcm-badge--amber">Pending</span></span><span class="thcm-acc__amount thcm-card__total">&#8377;1,299.00</span></button>
+            <div class="thcm-acc__panel" id="thcm-sample-p-3" role="region" aria-labelledby="thcm-sample-h-3"><div class="thcm-acc__inner"><div class="thcm-acc__body">
+              <ul class="thcm-items">
+                <li class="thcm-item"><div class="thcm-item__main"><span class="thcm-item__title">Sample cap &times; 1</span><span class="thcm-item__sku">Black &middot; SKU: CAP-BLK</span></div><span class="thcm-item__price">&#8377;499.00</span></li>
+              </ul>
+              <dl class="thcm-dl"><dt>Shipping address</dt><dd>Sample street, Sample city</dd><dt>Payment method</dt><dd>Sample method</dd><dt>Tracking</dt><dd>Carrier &middot; 123456789</dd></dl>
+            </div></div></div>
+          </article>
+          <article class="thcm-acc thcm-card" data-stage="open">
+            <button type="button" class="thcm-acc__head" id="thcm-sample-h-4" aria-controls="thcm-sample-p-4" aria-expanded="false"><span class="thcm-acc__chev"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" focusable="false"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="thcm-acc__title thcm-card__no">Order #1000</span><span class="thcm-acc__meta">Sample Employee (E2210) · 1 item</span><span class="thcm-acc__badge"><span class="thcm-badge thcm-badge--green">Approved</span></span><span class="thcm-acc__amount thcm-card__total">&#8377;2,499.00</span></button>
+            <div class="thcm-acc__panel" id="thcm-sample-p-4" role="region" aria-labelledby="thcm-sample-h-4"><div class="thcm-acc__inner"><div class="thcm-acc__body">
+              <ul class="thcm-items">
+                <li class="thcm-item"><div class="thcm-item__main"><span class="thcm-item__title">Sample cap &times; 1</span><span class="thcm-item__sku">Black &middot; SKU: CAP-BLK</span></div><span class="thcm-item__price">&#8377;499.00</span></li>
+              </ul>
+              <dl class="thcm-dl"><dt>Shipping address</dt><dd>Sample street, Sample city</dd><dt>Payment method</dt><dd>Sample method</dd><dt>Tracking</dt><dd>Carrier &middot; 123456789</dd></dl>
+            </div></div></div>
+          </article>
+          {%- endif -%}
+        </div>
+      </div>
+
+      <nav class="thcm-pager" data-d-pager aria-label="Daily orders pagination" hidden>
+        <button type="button" class="thcm-btn thcm-btn--ghost" data-d-prev>Previous</button>
+        <span class="thcm-pager__range" data-d-range></span>
+        <button type="button" class="thcm-btn thcm-btn--ghost" data-d-next>Next</button>
+      </nav>
+    </div>
+
+    <div data-panel="my"{% unless request.design_mode %} hidden{% endunless %}>
+      <div class="thcm-day" role="group" aria-label="Filter orders by day">
+        <button type="button" class="thcm-tab is-active" data-day="all" aria-pressed="true">{{ section.settings.label_all }}</button>
+        <button type="button" class="thcm-tab" data-day="today" aria-pressed="false">{{ section.settings.label_today }}</button>
+        <button type="button" class="thcm-tab" data-day="yesterday" aria-pressed="false">{{ section.settings.label_yesterday }}</button>
+        <label class="thcm-day__date"><span class="thcm-day__icon" aria-hidden="true">&#128197;</span><span class="thcm-visually-hidden">Pick a date</span><input type="date" data-day-input></label>
+      </div>
+
+      {%- if section.settings.show_summary -%}
+        <div class="thcm-chips" aria-label="Order summary">
+          <div class="thcm-chip" data-chip="total"><span class="thcm-chip__n" data-n>{% if request.design_mode %}4{% else %}&ndash;{% endif %}</span><span class="thcm-chip__l">Total</span></div>
+          <div class="thcm-chip thcm-chip--amber" data-chip="pending"><span class="thcm-chip__n" data-n>{% if request.design_mode %}1{% else %}&ndash;{% endif %}</span><span class="thcm-chip__l">Awaiting approval</span></div>
+          <div class="thcm-chip thcm-chip--green" data-chip="approved"><span class="thcm-chip__n" data-n>{% if request.design_mode %}1{% else %}&ndash;{% endif %}</span><span class="thcm-chip__l">Approved</span></div>
+          <div class="thcm-chip thcm-chip--green" data-chip="delivered"><span class="thcm-chip__n" data-n>{% if request.design_mode %}1{% else %}&ndash;{% endif %}</span><span class="thcm-chip__l">Delivered</span></div>
+          <div class="thcm-chip thcm-chip--red" data-chip="cancelled"><span class="thcm-chip__n" data-n>{% if request.design_mode %}1{% else %}&ndash;{% endif %}</span><span class="thcm-chip__l">Cancelled</span></div>
+        </div>
       {%- endif -%}
-    </div>
 
-    <nav class="thcm-pager" data-pager aria-label="Orders pagination" hidden>
-      <button type="button" class="thcm-btn thcm-btn--ghost" data-prev>Previous</button>
-      <span class="thcm-pager__range" data-range></span>
-      <button type="button" class="thcm-btn thcm-btn--ghost" data-next>Next</button>
-    </nav>
+      {%- if section.settings.show_filters -%}
+        <div class="thcm-tabs" role="tablist" aria-label="Filter orders">
+          <button type="button" role="tab" class="thcm-tab is-active" data-filter="all" aria-selected="true">All</button>
+          <button type="button" role="tab" class="thcm-tab" data-filter="pending" aria-selected="false">Awaiting approval</button>
+          <button type="button" role="tab" class="thcm-tab" data-filter="approved" aria-selected="false">Approved</button>
+          <button type="button" role="tab" class="thcm-tab" data-filter="shipped" aria-selected="false">Shipped</button>
+          <button type="button" role="tab" class="thcm-tab" data-filter="delivered" aria-selected="false">Delivered</button>
+          <button type="button" role="tab" class="thcm-tab" data-filter="cancelled" aria-selected="false">Cancelled</button>
+        </div>
+      {%- endif -%}
+
+      <div class="thcm-acc-bar"><button type="button" class="thcm-btn thcm-btn--ghost thcm-btn--sm" data-acc-toggle{% unless request.design_mode %} hidden{% endunless %}>Expand all</button></div>
+
+      <div class="thcm-list" data-list aria-live="polite">
+        {%- if request.design_mode -%}
+          <article class="thcm-acc thcm-card is-open" data-stage="pending">
+            <button type="button" class="thcm-acc__head" id="thcm-sample-h-1" aria-controls="thcm-sample-p-1" aria-expanded="true"><span class="thcm-acc__chev"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" focusable="false"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="thcm-acc__title thcm-card__no">Order #1001</span><span class="thcm-acc__meta">08 Oct 2026 · 3 items</span><span class="thcm-acc__badge"><span class="thcm-badge thcm-badge--amber">Awaiting approval</span></span><span class="thcm-acc__amount thcm-card__total">&#8377;1,299.00</span></button>
+            <div class="thcm-acc__panel" id="thcm-sample-p-1" role="region" aria-labelledby="thcm-sample-h-1"><div class="thcm-acc__inner"><div class="thcm-acc__body">
+              <ul class="thcm-items">
+                <li class="thcm-item"><div class="thcm-item__main"><span class="thcm-item__title">Sample cap &times; 1</span><span class="thcm-item__sku">SKU: CAP-BLK</span></div><span class="thcm-item__price">&#8377;499.00</span></li>
+                <li class="thcm-item"><div class="thcm-item__main"><span class="thcm-item__title">Sample mug &times; 2</span><span class="thcm-item__sku">SKU: MUG-WHT</span></div><span class="thcm-item__price">&#8377;400.00</span></li>
+              </ul>
+              <div class="thcm-badges">
+                <div class="thcm-badge-group"><small class="thcm-badge-group__label">Payment</small><span class="thcm-badge thcm-badge--amber">Awaiting approval</span></div>
+                <div class="thcm-badge-group"><small class="thcm-badge-group__label">Fulfillment</small><span class="thcm-badge thcm-badge--grey">Not shipped</span></div>
+                <div class="thcm-badge-group"><small class="thcm-badge-group__label">Delivery</small><span class="thcm-badge thcm-badge--grey">&mdash;</span></div>
+              </div>
+              <ol class="thcm-steps" aria-label="Order progress">
+                <li class="thcm-step is-current"><span class="thcm-step__dot"></span><span class="thcm-step__label">Placed</span></li>
+                <li class="thcm-step"><span class="thcm-step__dot"></span><span class="thcm-step__label">Approved</span></li>
+                <li class="thcm-step"><span class="thcm-step__dot"></span><span class="thcm-step__label">Shipped</span></li>
+                <li class="thcm-step"><span class="thcm-step__dot"></span><span class="thcm-step__label">Delivered</span></li>
+              </ol>
+            </div></div></div>
+          </article>
+          <article class="thcm-acc thcm-card" data-stage="shipped">
+            <button type="button" class="thcm-acc__head" id="thcm-sample-h-2" aria-controls="thcm-sample-p-2" aria-expanded="false"><span class="thcm-acc__chev"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" focusable="false"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="thcm-acc__title thcm-card__no">Order #1000</span><span class="thcm-acc__meta">02 Oct 2026 · 1 item</span><span class="thcm-acc__badge"><span class="thcm-badge thcm-badge--blue">Shipped</span></span><span class="thcm-acc__amount thcm-card__total">&#8377;2,499.00</span></button>
+            <div class="thcm-acc__panel" id="thcm-sample-p-2" role="region" aria-labelledby="thcm-sample-h-2"><div class="thcm-acc__inner"><div class="thcm-acc__body">
+              <ul class="thcm-items">
+                <li class="thcm-item"><div class="thcm-item__main"><span class="thcm-item__title">Sample scale model &times; 1</span><span class="thcm-item__sku">SKU: MODEL-01</span></div><span class="thcm-item__price">&#8377;2,499.00</span></li>
+              </ul>
+              <div class="thcm-badges">
+                <div class="thcm-badge-group"><small class="thcm-badge-group__label">Payment</small><span class="thcm-badge thcm-badge--green">Approved</span></div>
+                <div class="thcm-badge-group"><small class="thcm-badge-group__label">Fulfillment</small><span class="thcm-badge thcm-badge--blue">Shipped</span></div>
+                <div class="thcm-badge-group"><small class="thcm-badge-group__label">Delivery</small><span class="thcm-badge thcm-badge--grey">&mdash;</span></div>
+              </div>
+              <ol class="thcm-steps" aria-label="Order progress">
+                <li class="thcm-step is-done"><span class="thcm-step__dot"></span><span class="thcm-step__label">Placed</span></li>
+                <li class="thcm-step is-done"><span class="thcm-step__dot"></span><span class="thcm-step__label">Approved</span></li>
+                <li class="thcm-step is-current"><span class="thcm-step__dot"></span><span class="thcm-step__label">Shipped</span></li>
+                <li class="thcm-step"><span class="thcm-step__dot"></span><span class="thcm-step__label">Delivered</span></li>
+              </ol>
+              <div class="thcm-actions"><span class="thcm-btn thcm-btn--ghost">Track shipment<span class="thcm-btn__meta">Carrier &middot; 123456789</span></span></div>
+            </div></div></div>
+          </article>
+        {%- endif -%}
+      </div>
+
+      <nav class="thcm-pager" data-pager aria-label="Orders pagination" hidden>
+        <button type="button" class="thcm-btn thcm-btn--ghost" data-prev>Previous</button>
+        <span class="thcm-pager__range" data-range></span>
+        <button type="button" class="thcm-btn thcm-btn--ghost" data-next>Next</button>
+      </nav>
+    </div>
   </div>
-
-  <dialog class="thcm-dialog" data-confirm aria-labelledby="thcm-confirm-title-{{ section.id }}">
-    <h2 class="thcm-dialog__title" id="thcm-confirm-title-{{ section.id }}">Cancel order</h2>
-    <p class="thcm-dialog__text" data-confirm-text></p>
-    <div class="thcm-dialog__actions">
-      <button type="button" class="thcm-btn thcm-btn--ghost" data-confirm-cancel>Keep order</button>
-      <button type="button" class="thcm-btn thcm-btn--danger-solid" data-confirm-ok>Yes, cancel order</button>
-    </div>
-  </dialog>
 
   <div class="thcm-toasts" data-toasts aria-live="polite"></div>
 </section>
 
+{% render 'thcm-accordion-js' %}
+
 {%- unless request.design_mode -%}
   {% render 'thcm-orders-js' %}
+  {% render 'thcm-orders-daily-js' %}
 {%- endunless -%}
 
 {% schema %}
@@ -126,13 +200,13 @@
       "type": "text",
       "id": "heading",
       "label": "Heading",
-      "default": "My Orders"
+      "default": "Orders"
     },
     {
       "type": "text",
       "id": "subheading",
-      "label": "Subheading",
-      "default": "Track the status of your merchandise orders."
+      "label": "Subtitle",
+      "default": "Track and manage merchandise orders."
     },
     {
       "type": "range",
@@ -155,6 +229,21 @@
       "label": "Show filter tabs",
       "default": true
     },
+    {
+      "type": "header",
+      "content": "Tabs and day filter"
+    },
+    { "type": "text", "id": "tab_my", "label": "My Orders tab label", "default": "My Orders" },
+    { "type": "text", "id": "tab_daily", "label": "Daily Orders tab label (admin only)", "default": "Daily Orders" },
+    { "type": "text", "id": "label_all", "label": "All orders button", "default": "All Orders" },
+    { "type": "text", "id": "label_today", "label": "Today button", "default": "Today's Orders" },
+    { "type": "text", "id": "label_yesterday", "label": "Yesterday button", "default": "Yesterday" },
+    {
+      "type": "header",
+      "content": "Daily Orders (admin)"
+    },
+    { "type": "checkbox", "id": "show_download", "label": "Show download buttons", "default": true },
+    { "type": "text", "id": "denied_text", "label": "Access denied text", "default": "Access denied" },
     {
       "type": "header",
       "content": "Empty state"

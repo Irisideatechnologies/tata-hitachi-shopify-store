@@ -1,0 +1,91 @@
+{% doc %}
+  Reusable accordion helper (window.THCM_ACC) for the Orders page (My Orders cards and Daily Orders rows).
+  Markup contract (also used by the static theme-editor samples in sections/thcm-my-orders.liquid):
+    .thcm-acc[.is-open] > button.thcm-acc__head[aria-expanded][aria-controls] + .thcm-acc__panel[role=region] > .thcm-acc__inner
+  Clicks are handled by one delegated listener, so server-rendered samples work without any other script.
+  Styling: assets/tata.css ("Accordion" block). Panel content is passed in as DOM nodes; API data never goes through innerHTML.
+
+  THCM_ACC.build({ cls, head: [Node...], panel: Node, open }) -> article.thcm-acc
+  THCM_ACC.setOpen(acc, open)
+  THCM_ACC.bindToggle(button, container) -> refresh()   "Expand all" / "Collapse all" button for every .thcm-acc in container
+{% enddoc %}
+
+<script>
+  window.THCM_ACC = (function () {
+    var uid = 0;
+    // Constant icon markup only (no API data)
+    var CHEVRON = '<svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" focusable="false"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+    function headOf(acc) { return acc.querySelector(':scope > .thcm-acc__head'); }
+
+    function setOpen(acc, open) {
+      var head = headOf(acc);
+      if (!head) return;
+      acc.classList.toggle('is-open', open);
+      head.setAttribute('aria-expanded', open ? 'true' : 'false');
+      acc.dispatchEvent(new CustomEvent('thcm:acc', { bubbles: true }));
+    }
+
+    function build(opts) {
+      var n = ++uid;
+      var acc = document.createElement('article');
+      acc.className = 'thcm-acc' + (opts.cls ? ' ' + opts.cls : '');
+
+      var head = document.createElement('button');
+      head.type = 'button';
+      head.className = 'thcm-acc__head';
+      head.id = 'thcm-acc-h-' + n;
+      head.setAttribute('aria-controls', 'thcm-acc-p-' + n);
+      head.setAttribute('aria-expanded', 'false');
+      var chev = document.createElement('span');
+      chev.className = 'thcm-acc__chev';
+      chev.innerHTML = CHEVRON;
+      head.appendChild(chev);
+      (opts.head || []).forEach(function (node) { head.appendChild(node); });
+      acc.appendChild(head);
+
+      var panel = document.createElement('div');
+      panel.className = 'thcm-acc__panel';
+      panel.id = 'thcm-acc-p-' + n;
+      panel.setAttribute('role', 'region');
+      panel.setAttribute('aria-labelledby', head.id);
+      var inner = document.createElement('div');
+      inner.className = 'thcm-acc__inner';
+      if (opts.panel) inner.appendChild(opts.panel);
+      panel.appendChild(inner);
+      acc.appendChild(panel);
+
+      if (opts.open) setOpen(acc, true);
+      return acc;
+    }
+
+    document.addEventListener('click', function (e) {
+      var head = e.target.closest && e.target.closest('.thcm-acc__head');
+      if (!head) return;
+      var acc = head.closest('.thcm-acc');
+      if (acc) setOpen(acc, !acc.classList.contains('is-open'));
+    });
+
+    function bindToggle(btn, container) {
+      function items() { return Array.prototype.slice.call(container.querySelectorAll('.thcm-acc')); }
+      function anyClosed() { return items().some(function (a) { return !a.classList.contains('is-open'); }); }
+      function refresh() {
+        var list = items();
+        btn.hidden = !list.length;
+        btn.textContent = anyClosed() ? 'Expand all' : 'Collapse all';
+      }
+      btn.addEventListener('click', function () {
+        var open = anyClosed();
+        items().forEach(function (a) { setOpen(a, open); });
+        refresh();
+      });
+      container.addEventListener('thcm:acc', refresh);
+      // Lists are re-rendered (filter, day, page change); the button follows
+      new MutationObserver(refresh).observe(container, { childList: true });
+      refresh();
+      return refresh;
+    }
+
+    return { build: build, setOpen: setOpen, bindToggle: bindToggle };
+  })();
+</script>

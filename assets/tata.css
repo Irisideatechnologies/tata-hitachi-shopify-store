@@ -1352,3 +1352,283 @@ html.map-locked:not(.shopify-design-mode) body > #thcm-loader.thcm-loader {
     animation-duration: 2.5s;
   }
 }
+
+/* === Orders page: page tabs, day filter, Daily Orders panel === */
+.thcm-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.thcm-tabs--main {
+  margin-bottom: 24px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--thcm-border);
+}
+
+.thcm-tabs--main .thcm-tab {
+  padding: 10px 20px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.thcm-day {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding-bottom: 4px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.thcm-day .thcm-tab[aria-pressed='true'] {
+  border-color: var(--thcm-orange);
+  background: var(--thcm-orange);
+  color: #fff;
+}
+
+.thcm-day__date {
+  position: relative;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-inline: 12px 4px;
+  border: 1px solid var(--thcm-border);
+  border-radius: 999px;
+  background: #fff;
+}
+
+.thcm-day__date input {
+  height: 38px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  color: var(--thcm-text);
+}
+
+.thcm-day__date:focus-within {
+  outline: 2px solid var(--thcm-orange);
+  outline-offset: 2px;
+}
+
+.thcm-chips--auto {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media screen and (min-width: 750px) {
+  .thcm-chips--auto {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+}
+
+.thcm-d-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px 16px;
+  margin-bottom: 20px;
+}
+
+.thcm-d-range summary {
+  padding: 10px 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--thcm-orange-dark);
+  cursor: pointer;
+}
+
+.thcm-d-range__body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 12px 0;
+}
+
+.thcm .thcm-d-range summary:focus-visible {
+  outline: 2px solid var(--thcm-orange);
+  outline-offset: 2px;
+}
+
+/* === Accordion (Orders page: My Orders cards, Daily Orders rows) ===
+   Markup and behaviour: snippets/thcm-accordion-js.liquid. */
+.thcm-acc-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.thcm-acc-bar [hidden] {
+  display: none;
+}
+
+.thcm-card.thcm-acc {
+  padding: 0;
+}
+
+.thcm-acc__head {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1.2fr) minmax(0, 1.4fr) auto auto;
+  align-items: center;
+  column-gap: 12px;
+  width: 100%;
+  padding: 16px 20px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.thcm-acc__head:hover {
+  background: #f9fafb;
+}
+
+.thcm-acc__head:focus-visible {
+  outline: 2px solid var(--thcm-orange);
+  outline-offset: -2px;
+}
+
+.thcm-acc__chev {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--thcm-muted);
+  transition: transform 0.2s ease;
+}
+
+.thcm-acc.is-open > .thcm-acc__head .thcm-acc__chev {
+  transform: rotate(90deg);
+}
+
+.thcm-acc__title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.thcm-acc__meta {
+  min-width: 0;
+  font-size: 13px;
+  color: var(--thcm-muted);
+}
+
+.thcm-acc__amount {
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.thcm-acc__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  transition: grid-template-rows 0.2s ease, opacity 0.2s ease, visibility 0s linear 0.2s;
+}
+
+.thcm-acc.is-open > .thcm-acc__panel {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  transition: grid-template-rows 0.2s ease, opacity 0.2s ease, visibility 0s;
+}
+
+.thcm-acc__inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.thcm-acc__body {
+  padding: 0 20px 20px;
+}
+
+.thcm-acc__body .thcm-items {
+  margin-top: 0;
+}
+
+.thcm-dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 8px 16px;
+  margin: 16px 0 0;
+  font-size: 14px;
+}
+
+.thcm-dl dt {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--thcm-muted);
+}
+
+.thcm-dl dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+@media screen and (max-width: 749px) {
+  .thcm-acc__head {
+    grid-template-columns: 20px minmax(0, 1fr) auto;
+    grid-template-areas:
+      'chev title amount'
+      '. meta meta'
+      '. badge badge';
+    row-gap: 6px;
+    padding: 14px 16px;
+  }
+
+  .thcm-acc__chev {
+    grid-area: chev;
+  }
+
+  .thcm-acc__title {
+    grid-area: title;
+  }
+
+  .thcm-acc__amount {
+    grid-area: amount;
+  }
+
+  .thcm-acc__meta {
+    grid-area: meta;
+  }
+
+  .thcm-acc__badge {
+    grid-area: badge;
+    justify-self: start;
+  }
+
+  .thcm-acc__body {
+    padding: 0 16px 16px;
+  }
+
+  .thcm-dl {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .thcm-dl dd {
+    margin-bottom: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thcm-acc__panel,
+  .thcm-acc.is-open > .thcm-acc__panel,
+  .thcm-acc__chev {
+    transition: none;
+  }
+}

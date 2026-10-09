@@ -23,8 +23,8 @@
       "type": "thcm-my-orders",
       "name": "THCM My Orders",
       "settings": {
-        "heading": "My Orders",
-        "subheading": "Track the status of your merchandise orders.",
+        "heading": "Orders",
+        "subheading": "Track and manage merchandise orders.",
         "page_size": 10,
         "show_summary": true,
         "show_filters": true,

@@ -1,7 +1,7 @@
 {% doc %}
   Orders page (employee portal): one section with two tabs.
     My Orders     every employee: own orders, day filter (All / Today / Yesterday / date), summary chips, status tabs.
-    Daily Orders  admin only: one day's export (summary + table + CSV download). Hidden and never calls the API for non-admins.
+    Daily Orders  every signed-in user, including admins, sees only their own authenticated daily exports.
   Styling lives in assets/tata.css (shared .thcm block); logic in snippets/thcm-orders-js.liquid (tabs, My Orders)
   and snippets/thcm-orders-daily-js.liquid (Daily Orders).
   In the theme editor no API call is made: static samples of both tabs are shown instead.
@@ -36,32 +36,11 @@
     </div>
 
     <div data-panel="daily"{% unless request.design_mode %} hidden{% endunless %}>
-      <div class="thcm-day" role="group" aria-label="Choose the export day">
-        <button type="button" class="thcm-tab" data-d-day="today" aria-pressed="false">{{ section.settings.label_today }}</button>
-        <button type="button" class="thcm-tab is-active" data-d-day="yesterday" aria-pressed="true">{{ section.settings.label_yesterday }}</button>
-        <label class="thcm-day__date"><span class="thcm-day__icon" aria-hidden="true">&#128197;</span><span class="thcm-visually-hidden">Pick a date</span><input type="date" data-d-input></label>
+      <div class="thcm-day thcm-day--daily" role="group" aria-label="Filter daily orders by date">
+        <button type="button" class="thcm-tab" data-d-day="today" aria-pressed="false">Today</button>
+        <button type="button" class="thcm-tab is-active" data-d-day="yesterday" aria-pressed="true">Yesterday</button>
+        <label class="thcm-day__date"><span class="thcm-day__icon" aria-hidden="true">&#128197;</span><span class="thcm-visually-hidden">Pick a daily order date</span><input type="date" data-d-input></label>
       </div>
-
-      <div class="thcm-chips thcm-chips--auto" data-d-chips aria-label="Day summary">
-        <div class="thcm-chip" data-d-chip="count"><span class="thcm-chip__n" data-n>{% if request.design_mode %}14{% else %}&ndash;{% endif %}</span><span class="thcm-chip__l">Orders</span></div>
-        <div class="thcm-chip" data-d-chip="amount"><span class="thcm-chip__n" data-n>{% if request.design_mode %}&#8377;18,450.00{% else %}&ndash;{% endif %}</span><span class="thcm-chip__l">Total amount</span></div>
-        <div class="thcm-chip" data-d-chip="employees" hidden><span class="thcm-chip__n" data-n>&ndash;</span><span class="thcm-chip__l">Employees</span></div>
-      </div>
-
-      <div class="thcm-d-bar" data-d-bar{% unless request.design_mode %} hidden{% endunless %}>
-        {%- if section.settings.show_download -%}
-          <button type="button" class="thcm-btn thcm-btn--primary" data-d-download>&#11015; Download CSV</button>
-          <details class="thcm-d-range">
-            <summary>Download range</summary>
-            <div class="thcm-d-range__body">
-              <label class="thcm-field"><span>From</span><input type="date" data-d-from></label>
-              <label class="thcm-field"><span>To</span><input type="date" data-d-to></label>
-              <button type="button" class="thcm-btn thcm-btn--ghost thcm-btn--sm" data-d-download-range>Download</button>
-            </div>
-          </details>
-        {%- endif -%}
-      </div>
-
       <div class="thcm-state" data-d-state hidden></div>
 
       <div data-d-list-wrap{% unless request.design_mode %} hidden{% endunless %}>

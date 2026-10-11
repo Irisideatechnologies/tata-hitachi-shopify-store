@@ -66,7 +66,13 @@
       return isNaN(d.getTime()) ? '' : keyFmt.format(d);
     }
     function todayKey() { return keyFmt.format(new Date()); }
-    function yesterdayKey() { return keyFmt.format(new Date(Date.now() - 86400000)); }
+    function shiftKey(key, amount) {
+      var p = key.split('-');
+      var d = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2], 12));
+      d.setUTCDate(d.getUTCDate() + amount);
+      return d.toISOString().slice(0, 10);
+    }
+    function yesterdayKey() { return shiftKey(todayKey(), -1); }
     function resolveDay(day) {
       if (day === 'today') return todayKey();
       if (day === 'yesterday') return yesterdayKey();
@@ -357,7 +363,17 @@
     }
 
     function path(limit, cursor) {
-      var p = '/api/dashboard/orders?email=' + encodeURIComponent(email()) + '&limit=' + limit;
+      // Dashboard Orders is API-key protected. Employee scope is supplied only as the
+      // authenticated employee's email; the API key is added by THCM_API.keyRequest.
+      var p = '/api/dashboard/orders?limit=' + limit + '&email=' + encodeURIComponent(email());
+      if (state.day) {
+        var day = resolveDay(state.day);
+        // Send the exact IST calendar-day instants so the database query does not depend on
+        // the backend host timezone.
+        var start = new Date(Date.UTC(+day.slice(0, 4), +day.slice(5, 7) - 1, +day.slice(8, 10), 0) - 330 * 60 * 1000);
+        var end = new Date(start.getTime() + 86400000 - 1);
+        p += '&fromDate=' + encodeURIComponent(start.toISOString()) + '&toDate=' + encodeURIComponent(end.toISOString());
+      }
       // after and before are never sent together
       if (cursor && cursor.after) p += '&after=' + encodeURIComponent(cursor.after);
       else if (cursor && cursor.before) p += '&before=' + encodeURIComponent(cursor.before);
@@ -542,15 +558,12 @@
     var mainTabs = root.querySelectorAll('[data-main-tab]');
     var panels = root.querySelectorAll('[data-panel]');
     var myLoaded = false;
-    var tabsRow = $('.thcm-tabs--main');
-    if (tabsRow && !isAdmin) tabsRow.hidden = true; // a lone "My Orders" tab is just noise for employees
-
     mainTabs.forEach(function (b) {
-      if (b.getAttribute('data-main-tab') === 'daily') b.hidden = !isAdmin;
+      if (b.getAttribute('data-main-tab') === 'daily') b.hidden = false;
     });
 
     function setTab(tab, silent) {
-      if (tab !== 'daily' || !isAdmin) tab = 'my';
+      if (tab !== 'daily' && tab !== 'my') tab = 'my';
       root.setAttribute('data-active-tab', tab);
       mainTabs.forEach(function (b) {
         var on = b.getAttribute('data-main-tab') === tab;
@@ -576,6 +589,5 @@
     var wantTab = getParam('tab');
     // Admin lands on Daily Orders, employees on My Orders
     setTab(wantTab === 'my' ? 'my' : (wantTab === 'daily' || isAdmin ? 'daily' : 'my'), true);
-    if (wantTab === 'daily' && !isAdmin) setParam('tab', '');
   })();
 </script>

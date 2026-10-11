@@ -2,7 +2,7 @@
   THCM API helper (window.THCM_API). Single place for every storefront -> backend call.
   Requires map-auth-head (MAP_API_BASE, MAP_API_KEY, MAP_AUTH) to be rendered first in <head>.
 
-  keyRequest(method, path, body, options) - sends x-api-key.
+  keyRequest(method, path, body, options) - sends x-api-key for API-key-protected routes.
   jwtRequest(method, path, body, options) - sends Authorization: Bearer <employee token>.
   options (optional): { mode: 'overlay' } for user actions (default is the top progress bar), { silent: true } for background calls.
   The global loader (snippets/thcm-loader.liquid) shows itself for every call; nothing else is needed here.
@@ -12,7 +12,8 @@
     - resolves { denied: true } on 404 only for /api/admin/ routes or when the body message mentions access/permission;
       any other 404 rejects with an Error ("Not found...") so callers can show it with Retry
     - rejects with an Error (message is user-safe, .status holds the HTTP status when there is one)
-    - on 401 calls MAP_AUTH.logout() and rejects with { handled: true }
+    - on a confirmed JWT failure calls MAP_AUTH.logout(); other 401 responses stay on the page
+      so a proxy/API-route mistake or temporary failure cannot destroy a valid session
 {% enddoc %}
 
 <script>
@@ -30,7 +31,7 @@
       Object.keys(hints).forEach(function (k) { headers[k] = hints[k]; });
 
       if (kind === 'key') {
-        headers['x-api-key'] = window.MAP_API_KEY || '';
+        if (window.MAP_API_KEY) headers['x-api-key'] = window.MAP_API_KEY;
       } else {
         var token = window.MAP_AUTH && window.MAP_AUTH.getToken();
         if (token) headers['Authorization'] = 'Bearer ' + token;
@@ -55,9 +56,14 @@
             }
 
             if (res.status === 401) {
-              console.error('THCM_API: 401 on ' + method + ' ' + path);
-              if (window.MAP_AUTH) window.MAP_AUTH.logout();
-              throw { handled: true, status: 401 };
+              var authMessage = String((json && json.message) || '').toLowerCase();
+              var tokenRejected = /authentication required|invalid or expired token|token expired|invalid token|jwt/i.test(authMessage);
+              console.error('THCM_API: 401 on ' + method + ' ' + path + (authMessage ? ' (' + authMessage + ')' : ''));
+              if (tokenRejected && window.MAP_AUTH) {
+                window.MAP_AUTH.logout();
+                throw { handled: true, status: 401 };
+              }
+              throw fail((json && json.message) || 'Authentication request failed. Please retry.', 401);
             }
             if (res.status === 404) {
               console.error('THCM_API: 404 on ' + method + ' ' + path, json);

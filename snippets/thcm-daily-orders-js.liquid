@@ -133,7 +133,7 @@
       var headers = { 'ngrok-skip-browser-warning': 'true' };
       if (token) headers['Authorization'] = 'Bearer ' + token;
       fetch(row.file, { headers: headers }).then(function (res) {
-        if (res.status === 401) { if (auth) auth.logout(); throw { handled: true }; }
+        if (res.status === 401) throw new Error('Download authentication failed. Please retry.');
         if (!res.ok) throw new Error('Download failed (' + res.status + ')');
         var cd = res.headers.get('Content-Disposition') || '';
         var m = /filename\*?=(?:UTF-8'')?"?([^";]+)"?/i.exec(cd);

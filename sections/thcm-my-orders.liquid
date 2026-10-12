@@ -39,12 +39,11 @@
       <div class="thcm-day thcm-day--daily" role="group" aria-label="Filter daily orders by date">
         <button type="button" class="thcm-tab" data-d-day="today" aria-pressed="false">Today</button>
         <button type="button" class="thcm-tab is-active" data-d-day="yesterday" aria-pressed="true">Yesterday</button>
-        <label class="thcm-day__date"><span class="thcm-day__icon" aria-hidden="true">&#128197;</span><span class="thcm-visually-hidden">Pick a daily order date</span><input type="date" data-d-input></label>
+        <label class="thcm-day__date"><span class="thcm-day__icon" aria-hidden="true"><svg viewBox="0 0 16 16" width="17" height="17" focusable="false"><path d="M4 1.5v2M12 1.5v2M2.5 6h11M3 3h10a1 1 0 0 1 1 1v8.5a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="thcm-visually-hidden">Pick a daily order date</span><input type="date" data-d-input aria-label="Filter by date"></label>
       </div>
       <div class="thcm-state" data-d-state hidden></div>
 
       <div data-d-list-wrap{% unless request.design_mode %} hidden{% endunless %}>
-        <div class="thcm-acc-bar"><button type="button" class="thcm-btn thcm-btn--ghost thcm-btn--sm" data-d-acc-toggle{% unless request.design_mode %} hidden{% endunless %}>Expand all</button></div>
         <div class="thcm-list" data-d-list>
           {%- if request.design_mode -%}
           <article class="thcm-acc thcm-card is-open" data-stage="open">
@@ -81,7 +80,7 @@
         <button type="button" class="thcm-tab is-active" data-day="all" aria-pressed="true">{{ section.settings.label_all }}</button>
         <button type="button" class="thcm-tab" data-day="today" aria-pressed="false">{{ section.settings.label_today }}</button>
         <button type="button" class="thcm-tab" data-day="yesterday" aria-pressed="false">{{ section.settings.label_yesterday }}</button>
-        <label class="thcm-day__date"><span class="thcm-day__icon" aria-hidden="true">&#128197;</span><span class="thcm-visually-hidden">Pick a date</span><input type="date" data-day-input></label>
+        <label class="thcm-day__date"><span class="thcm-day__icon" aria-hidden="true"><svg viewBox="0 0 16 16" width="17" height="17" focusable="false"><path d="M4 1.5v2M12 1.5v2M2.5 6h11M3 3h10a1 1 0 0 1 1 1v8.5a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="thcm-visually-hidden">Pick a date</span><input type="date" data-day-input aria-label="Filter by date"></label>
       </div>
 
       {%- if section.settings.show_summary -%}
@@ -104,8 +103,6 @@
           <button type="button" role="tab" class="thcm-tab" data-filter="cancelled" aria-selected="false">Cancelled</button>
         </div>
       {%- endif -%}
-
-      <div class="thcm-acc-bar"><button type="button" class="thcm-btn thcm-btn--ghost thcm-btn--sm" data-acc-toggle{% unless request.design_mode %} hidden{% endunless %}>Expand all</button></div>
 
       <div class="thcm-list" data-list aria-live="polite">
         {%- if request.design_mode -%}

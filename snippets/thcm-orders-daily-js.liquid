@@ -31,10 +31,19 @@
     var toasts = $('[data-toasts]');
     var moneyFmt = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
     var dateFmt = new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' });
+    var dateTimeFmt = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' });
     var istParts = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Asia/Kolkata' });
     var COLUMNS = ['Id', 'Name', 'Email', 'Export Date', 'Product SKU', 'Product Name', 'Unit Price', 'Quantity', 'Total Price', 'Address', 'Created At', 'Updated At'];
     var state = { day: 'yesterday', from: '', to: '', rows: [], exports: [], pageInfo: {}, cursor: '', requestId: 0, loading: false, started: false };
     var showDownloads = root.getAttribute('data-show-download') !== 'false';
+    var detailCache = Object.create(null);
+    var detailRequests = Object.create(null);
+    var modal = null;
+    var modalContent = null;
+    var modalClose = null;
+    var activeExport = null;
+    var modalOpener = null;
+    var previousBodyOverflow = '';
 
     function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = String(text); return n; }
     function clear(n) { while (n && n.firstChild) n.removeChild(n.firstChild); }
@@ -58,12 +67,46 @@
     function yesterdayKey() { return shiftKey(todayKey(), -1); }
     function resolveDay(value) { return value === 'today' ? todayKey() : value === 'yesterday' ? yesterdayKey() : (DAY_RE.test(value) ? value : ''); }
     function displayDate(value) { if (!value) return ''; var d = new Date(String(value).length === 10 ? value + 'T12:00:00Z' : value); return isNaN(d.getTime()) ? String(value) : dateFmt.format(d); }
-    function displayDateTime(value) { if (!value) return ''; var d = new Date(value); return isNaN(d.getTime()) ? String(value) : new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' }).format(d); }
+    function displayDateTime(value) { if (!value) return ''; var d = new Date(value); return isNaN(d.getTime()) ? String(value) : dateTimeFmt.format(d).replace(/\b(am|pm)\b/, function (part) { return part.toUpperCase(); }); }
     function flat(value) { if (value == null || value === '') return ''; if (typeof value !== 'object') return String(value); if (Array.isArray(value)) return value.map(flat).filter(Boolean).join(', '); return Object.keys(value).map(function (key) { return flat(value[key]); }).filter(Boolean).join(', '); }
-    function setTextCell(row, value, header) { var td = el('td'); td.setAttribute('data-label', header); td.textContent = (header === 'Unit Price' || header === 'Total Price') ? money(value) : (value == null ? '' : String(value)); return td; }
-    function valueFor(row, index) { return Array.isArray(row.values) ? row.values[index] : row.values[COLUMNS[index]]; }
     function validColumns(columns) { return Array.isArray(columns) && columns.length ? columns.map(String) : COLUMNS.slice(); }
     function rowObject(columns, values) { var o = {}; columns.forEach(function (c, i) { o[c] = values && values[i] !== undefined ? values[i] : ''; }); return o; }
+    function field(row, names) {
+      for (var i = 0; i < names.length; i++) {
+        var key = names[i];
+        if (row[key] != null && row[key] !== '') return row[key];
+      }
+      var keys = Object.keys(row);
+      for (var j = 0; j < names.length; j++) {
+        var match = keys.find(function (key) { return key.toLowerCase() === names[j].toLowerCase(); });
+        if (match && row[match] != null && row[match] !== '') return row[match];
+      }
+      return '';
+    }
+    var ORDER_ID_FIELDS = ['Id', 'Order', 'Order Number', 'Order #', 'Order ID', 'Order Id'];
+    var SUMMARY_IDENTIFIERS = ['total', 'grand total', 'subtotal'];
+    function rawOrderId(row) { return field(row, ORDER_ID_FIELDS); }
+    function normalizedOrderId(value) {
+      var text = value == null ? '' : String(value).trim();
+      return text.replace(/^#\s*/, '').trim();
+    }
+    function isNumericOrderId(value) { return /^\d+$/.test(normalizedOrderId(value)); }
+    function isSummaryIdentifier(value) {
+      var identifier = normalizedOrderId(value).toLowerCase();
+      return SUMMARY_IDENTIFIERS.indexOf(identifier) !== -1;
+    }
+    function isModalLineItem(row) {
+      var identifiers = ORDER_ID_FIELDS.map(function (name) { return field(row, [name]); }).filter(function (value) { return value != null && String(value).trim() !== ''; });
+      if (identifiers.some(isSummaryIdentifier)) return false;
+      var orderId = rawOrderId(row);
+      var sku = field(row, ['Product SKU', 'productSku', 'SKU']);
+      if (String(orderId == null ? '' : orderId).trim() === '' && String(sku == null ? '' : sku).trim() === '') return false;
+      return isNumericOrderId(orderId) && String(sku == null ? '' : sku).trim() !== '';
+    }
+    function displayOrder(value) {
+      var text = normalizedOrderId(value);
+      return isNumericOrderId(text) ? '#' + text : text;
+    }
 
     function apiPath(path) { return (window.MAP_API_BASE || '').replace(/\/+$/, '') + path; }
     function downloadFile(record, button) {
@@ -84,39 +127,219 @@
       }).catch(function (err) { if (!(err && err.handled)) toast(err.message || 'Download failed.'); }).then(function () { button.disabled = false; });
     }
 
-    function recordHeader(record) {
-      var header = el('div', 'thcm-d-export');
-      var info = el('div');
-      info.appendChild(el('strong', '', displayDate(record.exportDate)));
-      info.appendChild(el('span', 'thcm-d-export__meta', (record.fileName || 'Export file') + ' · ' + (record.orderCount || 0) + ' orders'));
-      header.appendChild(info);
-      if (!record.fileName) info.appendChild(el('span', 'thcm-d-export__meta', 'Live orders — no export file available'));
-      if (showDownloads && record.id) { var b = el('button', 'thcm-btn thcm-btn--ghost thcm-btn--sm', 'Download Excel'); b.type = 'button'; b.addEventListener('click', function () { downloadFile(record, b); }); header.appendChild(b); }
-      return header;
+    function modalRowData(detail) {
+      var columns = validColumns(detail.columns);
+      return (detail.rows || []).map(function (values) { return rowObject(columns, values); }).filter(isModalLineItem);
     }
-    function tableFor(detail) {
-      var columns = validColumns(detail.columns), wrap = el('div', 'thcm-table-wrap'), table = el('table', 'thcm-table');
-      var thead = el('thead'), hrow = el('tr');
-      columns.forEach(function (c) { var th = el('th', '', c); th.scope = 'col'; hrow.appendChild(th); }); thead.appendChild(hrow); table.appendChild(thead);
+    function orderGroups(rows) {
+      var groups = [];
+      rows.forEach(function (row) {
+        var rawOrder = rawOrderId(row);
+        var key = normalizedOrderId(rawOrder);
+        var group = groups.find(function (entry) { return entry.key === key; });
+        if (!group) { group = { key: key, label: 'Order ' + displayOrder(key), rows: [] }; groups.push(group); }
+        group.rows.push(row);
+      });
+      return groups;
+    }
+    function ensureModal() {
+      if (modal) return;
+      modal = el('div', 'thcm-d-modal');
+      modal.hidden = true;
+      modal.setAttribute('data-d-modal', '');
+      var dialog = el('section', 'thcm-d-modal__dialog');
+      dialog.setAttribute('role', 'dialog');
+      dialog.setAttribute('aria-modal', 'true');
+      dialog.setAttribute('aria-labelledby', 'thcm-d-modal-title');
+      dialog.setAttribute('aria-describedby', 'thcm-d-modal-subtitle');
+      var header = el('header', 'thcm-d-modal__header');
+      var heading = el('div', 'thcm-d-modal__heading');
+      heading.appendChild(el('h2', 'thcm-d-modal__title', 'Export'));
+      heading.lastChild.id = 'thcm-d-modal-title';
+      heading.appendChild(el('p', 'thcm-d-modal__subtitle'));
+      heading.lastChild.id = 'thcm-d-modal-subtitle';
+      modalClose = el('button', 'thcm-d-modal__close', '×');
+      modalClose.type = 'button';
+      modalClose.setAttribute('aria-label', 'Close export details');
+      header.appendChild(heading);
+      header.appendChild(modalClose);
+      modalContent = el('div', 'thcm-d-modal__body');
+      modalContent.setAttribute('aria-live', 'polite');
+      dialog.appendChild(header);
+      dialog.appendChild(modalContent);
+      modal.appendChild(dialog);
+      root.appendChild(modal);
+      modalClose.addEventListener('click', closeModal);
+      modal.addEventListener('click', function (event) { if (event.target === modal) closeModal(); });
+      document.addEventListener('keydown', function (event) {
+        if (modal.hidden) return;
+        if (event.key === 'Escape') { event.preventDefault(); closeModal(); return; }
+        if (event.key !== 'Tab') return;
+        var focusable = modal.querySelectorAll('button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])');
+        if (!focusable.length) return;
+        var first = focusable[0], last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      });
+    }
+    function setModalState(className, message, retry) {
+      clear(modalContent);
+      modalContent.setAttribute('aria-busy', className === 'is-loading' ? 'true' : 'false');
+      var stateBox = el('div', 'thcm-d-modal-state ' + className);
+      if (className === 'is-loading') {
+        for (var i = 0; i < 4; i++) stateBox.appendChild(el('span', 'thcm-skel__line' + (i % 2 ? ' thcm-skel__line--w60' : '')));
+      } else {
+        stateBox.appendChild(el('p', 'thcm-state__text', message));
+        if (retry) {
+          var button = el('button', 'thcm-btn thcm-btn--primary', 'Retry');
+          button.type = 'button';
+          button.addEventListener('click', function () { fetchModalDetail(activeExport, true); });
+          stateBox.appendChild(button);
+        }
+      }
+      modalContent.appendChild(stateBox);
+    }
+    function renderModalDetail(record, detail) {
+      if (modal.hidden || !activeExport || String(activeExport.id) !== String(record.id)) return;
+      clear(modalContent);
+      modalContent.setAttribute('aria-busy', 'false');
+      var rows = modalRowData(detail);
+      var groups = orderGroups(rows);
+      var first = rows[0] || {};
+      var name = field(first, ['Name', 'Customer Name']) || record.name || '';
+      var email = field(first, ['Email', 'Customer Email']) || record.email || '';
+      var subtitle = [name, email].filter(Boolean).join(' · ');
+      modal.querySelector('.thcm-d-modal__title').textContent = 'Export - ' + displayDate(record.exportDate);
+      modal.querySelector('.thcm-d-modal__subtitle').textContent = subtitle;
+
+      var summaries = el('div', 'thcm-d-modal__summaries');
+      [["Orders", groups.length], ["Items", rows.length], ["Exported", displayDateTime(record.exportDate)]].forEach(function (pair) {
+        var chip = el('div', 'thcm-d-modal-chip');
+        chip.appendChild(el('span', 'thcm-d-modal-chip__label', pair[0]));
+        chip.appendChild(el('strong', 'thcm-d-modal-chip__value', pair[1]));
+        summaries.appendChild(chip);
+      });
+      modalContent.appendChild(summaries);
+      if (!rows.length) {
+        modalContent.appendChild(el('p', 'thcm-d-empty-items', 'No items in this export'));
+        return;
+      }
+
+      var tableWrap = el('div', 'thcm-d-modal-table-wrap');
+      var table = el('table', 'thcm-d-modal-table');
+      var head = el('thead'), headRow = el('tr');
+      ['SKU', 'Product', 'Unit price', 'Qty', 'Total'].forEach(function (label) {
+        var th = el('th', '', label);
+        th.scope = 'col';
+        if (label === 'Unit price' || label === 'Qty' || label === 'Total') th.className = 'is-numeric';
+        headRow.appendChild(th);
+      });
+      head.appendChild(headRow);
+      table.appendChild(head);
       var body = el('tbody');
-      (detail.rows || []).forEach(function (values) { var tr = el('tr'); columns.forEach(function (c, i) { tr.appendChild(setTextCell(tr, values[i], c)); }); body.appendChild(tr); });
-      table.appendChild(body); wrap.appendChild(table); return wrap;
+      groups.forEach(function (group) {
+        var groupRow = el('tr', 'thcm-d-modal-table__group');
+        var groupCell = el('th', '', group.label + ' · ' + group.rows.length + (group.rows.length === 1 ? ' item' : ' items'));
+        groupCell.scope = 'rowgroup';
+        groupCell.colSpan = 5;
+        groupRow.appendChild(groupCell);
+        body.appendChild(groupRow);
+        group.rows.forEach(function (row) {
+          var product = String(field(row, ['Product Name', 'Product']) || '');
+          var sku = field(row, ['Product SKU', 'SKU']);
+          var unitPrice = field(row, ['Unit Price', 'Price']);
+          var quantity = field(row, ['Quantity', 'Qty']);
+          var total = field(row, ['Total Price', 'Total']);
+          var tr = el('tr', 'thcm-d-modal-table__item');
+          tr.appendChild(el('td', 'thcm-d-modal-table__sku', sku));
+          var productCell = el('td', 'thcm-d-modal-table__product', product);
+          if (product) productCell.title = product;
+          tr.appendChild(productCell);
+          tr.appendChild(el('td', 'thcm-d-modal-table__number', money(unitPrice)));
+          tr.appendChild(el('td', 'thcm-d-modal-table__number', quantity));
+          tr.appendChild(el('td', 'thcm-d-modal-table__number', money(total)));
+          body.appendChild(tr);
+        });
+      });
+      table.appendChild(body);
+      tableWrap.appendChild(table);
+      modalContent.appendChild(tableWrap);
+
+      var cards = el('div', 'thcm-d-modal-cards');
+      groups.forEach(function (group) {
+        var groupCards = el('section', 'thcm-d-modal-card-group');
+        groupCards.appendChild(el('h3', 'thcm-d-modal-card-group__title', group.label + ' · ' + group.rows.length + (group.rows.length === 1 ? ' item' : ' items')));
+        group.rows.forEach(function (row) {
+          var product = String(field(row, ['Product Name', 'Product']) || '');
+          var sku = field(row, ['Product SKU', 'SKU']);
+          var unitPrice = field(row, ['Unit Price', 'Price']);
+          var quantity = field(row, ['Quantity', 'Qty']);
+          var total = field(row, ['Total Price', 'Total']);
+          var card = el('article', 'thcm-d-modal-card');
+          var top = el('div', 'thcm-d-modal-card__top');
+          var productName = el('strong', 'thcm-d-modal-card__product', product);
+          if (product) productName.title = product;
+          top.appendChild(productName);
+          top.appendChild(el('strong', 'thcm-d-modal-card__total', money(total)));
+          card.appendChild(top);
+          card.appendChild(el('p', 'thcm-d-modal-card__meta', 'SKU ' + (sku == null ? '' : String(sku)) + ' · Qty ' + (quantity == null ? '' : String(quantity)) + ' × ' + money(unitPrice)));
+          groupCards.appendChild(card);
+        });
+        cards.appendChild(groupCards);
+      });
+      modalContent.appendChild(cards);
+    }
+    function fetchModalDetail(record, retry) {
+      if (!record || !record.id) { setModalState('is-error', 'This export has no detail record.', false); return; }
+      var key = String(record.id);
+      if (detailCache[key]) { renderModalDetail(record, detailCache[key]); return; }
+      if (detailRequests[key]) return detailRequests[key];
+      setModalState('is-loading');
+      var detailPath = dailyBase + '/' + encodeURIComponent(record.id) + '/view';
+      var request = api.jwtRequest('GET', detailPath).then(function (res) {
+        if (!res.data || !Array.isArray(res.data.rows)) throw new Error('The export preview is incomplete.');
+        detailCache[key] = res.data;
+        delete detailRequests[key];
+        renderModalDetail(record, res.data);
+        return res.data;
+      }).catch(function (err) {
+        delete detailRequests[key];
+        if (!modal.hidden && activeExport && String(activeExport.id) === key) setModalState('is-error', (err && err.message) || 'Could not load this export.', true);
+        throw err;
+      });
+      detailRequests[key] = request;
+      request.catch(function () {});
+      return request;
+    }
+    function openModal(record, opener) {
+      ensureModal();
+      activeExport = record;
+      modalOpener = opener;
+      modal.querySelector('.thcm-d-modal__title').textContent = 'Export - ' + displayDate(record.exportDate);
+      modal.querySelector('.thcm-d-modal__subtitle').textContent = [record.name, record.email].filter(Boolean).join(' · ');
+      modal.hidden = false;
+      previousBodyOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      modalClose.focus();
+      fetchModalDetail(record);
+    }
+    function closeModal() {
+      if (!modal || modal.hidden) return;
+      modal.hidden = true;
+      document.body.style.overflow = previousBodyOverflow;
+      activeExport = null;
+      if (modalOpener && document.contains(modalOpener)) modalOpener.focus();
+      modalOpener = null;
     }
     function render() {
       clear(listEl);
       if (!state.rows.length) { showState('No exports found for the selected date.', '', false); return; }
       stateEl.hidden = true; listWrap.hidden = false;
-      var orderCount = 0, totalAmount = 0;
-      state.rows.forEach(function (item) {
-        orderCount += Number(item.record.orderCount) || 0;
-        var cols = validColumns(item.detail.columns), priceIndex = cols.indexOf('Total Price');
-        (item.detail.rows || []).forEach(function (values) { if (priceIndex >= 0 && values[priceIndex] !== '' && !isNaN(Number(values[priceIndex]))) totalAmount += Number(values[priceIndex]); });
-      });
       // Keep the history compact: one export per row, with its order details behind View.
       // This also makes it impossible to mistake several employees' export files for one
       // combined employee view.
-      var summaryWrap = el('div', 'thcm-table-wrap');
-      var summaryTable = el('table', 'thcm-table');
+      var summaryWrap = el('div', 'thcm-d-history-wrap');
+      var summaryTable = el('table', 'thcm-d-history-table');
       var summaryHead = el('thead'), summaryHeadRow = el('tr');
       ['Export Date', 'Order Date', 'Order Count', ''].forEach(function (label) { var th = el('th', '', label); th.scope = 'col'; summaryHeadRow.appendChild(th); });
       summaryHead.appendChild(summaryHeadRow); summaryTable.appendChild(summaryHead);
@@ -127,16 +350,16 @@
         row.appendChild(el('td', '', displayDate(record.exportDate)));
         row.appendChild(el('td', '', record.orderCount == null ? '' : record.orderCount));
         var actions = el('td', 'thcm-d-summary-actions');
-        var detailRow = el('tr'); detailRow.hidden = true;
-        var detailCell = el('td'); detailCell.colSpan = 4; detailCell.appendChild(tableFor(item.detail)); detailRow.appendChild(detailCell);
         var view = el('button', 'thcm-btn thcm-btn--ghost thcm-btn--sm', 'View'); view.type = 'button';
-        view.addEventListener('click', function () { detailRow.hidden = !detailRow.hidden; view.textContent = detailRow.hidden ? 'View' : 'Hide'; });
+        view.setAttribute('aria-haspopup', 'dialog');
+        view.addEventListener('click', function () { openModal(record, view); });
         actions.appendChild(view);
         if (showDownloads && record.id && record.fileName) {
           var download = el('button', 'thcm-btn thcm-btn--ghost thcm-btn--sm', 'Download'); download.type = 'button';
-          download.addEventListener('click', function () { downloadFile(record, download); }); actions.appendChild(download);
+          download.addEventListener('click', function () { downloadFile(record, download); });
+          actions.appendChild(download);
         }
-        row.appendChild(actions); summaryBody.appendChild(row); summaryBody.appendChild(detailRow);
+        row.appendChild(actions); summaryBody.appendChild(row);
       });
       summaryTable.appendChild(summaryBody); summaryWrap.appendChild(summaryTable); listEl.appendChild(summaryWrap);
       var pi = state.pageInfo || {}, shown = state.rows.length;
@@ -152,18 +375,12 @@
         if (id !== state.requestId) return;
         if (res.denied) throw new Error('Access denied.');
         if (res.success === false) throw new Error(res.message || 'Could not load daily exports.');
-        var records = Array.isArray(res.data) ? res.data : [], details = awaitDetails(records);
-        return details.then(function (items) { if (id !== state.requestId) return; state.rows = items; state.pageInfo = res.pageInfo || {}; render(); });
+        var records = Array.isArray(res.data) ? res.data : [];
+        if (id !== state.requestId) return;
+        state.rows = records.map(function (record) { return { record: record }; });
+        state.pageInfo = res.pageInfo || {};
+        render();
       });
-    }
-    function awaitDetails(records) {
-      return Promise.all(records.map(function (record) {
-        var detailPath = dailyBase + '/' + encodeURIComponent(record.id) + '/view';
-        return api.jwtRequest('GET', detailPath).then(function (res) {
-          if (!res.data || !Array.isArray(res.data.rows)) throw new Error('The export preview is incomplete.');
-          return { record: record, detail: res.data };
-        });
-      }));
     }
     function load() {
       if (state.loading) return; state.loading = true; var id = ++state.requestId;
@@ -174,16 +391,23 @@
     }
     function paintDay() {
       if (!dayButtons || !dayButtons.length) return;
-      dayButtons.forEach(function (b) { var on = b.getAttribute('data-d-day') === state.day; b.classList.toggle('is-active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
-      if (dayInput) dayInput.value = resolveDay(state.day);
+        dayButtons.forEach(function (b) { var on = b.getAttribute('data-d-day') === state.day; b.classList.toggle('is-active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+        if (dayInput) dayInput.value = resolveDay(state.day);
+        if (dayInput) dayInput.parentElement.classList.toggle('is-selected', !!dayInput.value);
     }
     function setDay(day) { state.day = day; state.from = ''; state.to = ''; state.cursor = ''; paintDay(); load(); }
     if (dayButtons && dayButtons.length) {
       dayButtons.forEach(function (b) { b.addEventListener('click', function () { setDay(b.getAttribute('data-d-day')); }); });
     }
-    if (dayInput) {
-      dayInput.addEventListener('change', function () { if (DAY_RE.test(dayInput.value)) setDay(dayInput.value); });
-    }
+      if (dayInput) {
+        dayInput.addEventListener('change', function () { if (DAY_RE.test(dayInput.value)) setDay(dayInput.value); });
+        var dayPicker = dayInput.closest('.thcm-day__date');
+        if (dayPicker) dayPicker.addEventListener('click', function (event) {
+          if (event.target === dayInput || typeof dayInput.showPicker !== 'function') return;
+          event.preventDefault();
+          try { dayInput.showPicker(); } catch (error) {}
+        });
+      }
     prev.addEventListener('click', function () { if (state.pageInfo.previousCursor) { state.cursor = state.pageInfo.previousCursor; load(); } });
     next.addEventListener('click', function () { if (state.pageInfo.nextCursor) { state.cursor = state.pageInfo.nextCursor; load(); } });
     function start() { if (state.started) return; state.started = true; paintDay(); load(); }

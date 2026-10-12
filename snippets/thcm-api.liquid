@@ -32,6 +32,7 @@
 
       if (kind === 'key') {
         if (window.MAP_API_KEY) headers['x-api-key'] = window.MAP_API_KEY;
+        headers['accept'] = 'application/json, text/plain, */*';
       } else {
         var token = window.MAP_AUTH && window.MAP_AUTH.getToken();
         if (token) headers['Authorization'] = 'Bearer ' + token;

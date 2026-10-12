@@ -58,14 +58,17 @@
 
     var dateFmt = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' });
     var moneyFmt = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
-    var keyFmt = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Asia/Kolkata' });
+    var keyFmt = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Asia/Kolkata' });
 
     // YYYY-MM-DD in IST (a fixed UTC+5:30 offset, so subtracting 24h is safe)
     function keyOf(v) {
       var d = new Date(v);
-      return isNaN(d.getTime()) ? '' : keyFmt.format(d);
+      if (isNaN(d.getTime())) return '';
+      var parts = keyFmt.formatToParts(d), values = {};
+      parts.forEach(function (part) { if (part.type !== 'literal') values[part.type] = part.value; });
+      return values.year + '-' + values.month + '-' + values.day;
     }
-    function todayKey() { return keyFmt.format(new Date()); }
+    function todayKey() { return keyOf(new Date()); }
     function shiftKey(key, amount) {
       var p = key.split('-');
       var d = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2], 12));
@@ -391,7 +394,6 @@
         showError('Please sign in to see your orders.');
         return;
       }
-      if (state.all) { applyDay(); return; }
       var id = ++state.requestId;
       showSkeleton();
       var all = [];
@@ -539,6 +541,7 @@
       state.day = day === 'all' ? '' : day;
       state.filter = 'all';
       state.page = 0;
+      state.all = null;
       paintDay();
       renderTabs();
       setParam('day', state.day);
@@ -572,7 +575,8 @@
       });
       panels.forEach(function (pn) { pn.hidden = pn.getAttribute('data-panel') !== tab; });
       if (!silent) setParam('tab', tab);
-      if (tab === 'my' && !myLoaded) { myLoaded = true; load(); }
+      var wasMyTab = root.getAttribute('data-active-tab') === 'my';
+      if (tab === 'my' && (!myLoaded || !wasMyTab)) { myLoaded = true; load(); }
       root.dispatchEvent(new CustomEvent('thcm:tab', { detail: { tab: tab } }));
     }
 
@@ -589,5 +593,8 @@
     var wantTab = getParam('tab');
     // Admin lands on Daily Orders, employees on My Orders
     setTab(wantTab === 'my' ? 'my' : (wantTab === 'daily' || isAdmin ? 'daily' : 'my'), true);
+    window.addEventListener('pageshow', function (event) {
+      if (event.persisted && root.getAttribute('data-active-tab') === 'my') load();
+    });
   })();
 </script>

@@ -59,6 +59,14 @@
                 </a>
               </li>
             {% endfor %}
+            <li class="thcm-admin-only">
+              <a
+                href="/pages/employee-management"
+                class="menu-list__item"
+              >
+                Employee Management
+              </a>
+            </li>
           </ul>
         </div>
       </div>
@@ -169,6 +177,20 @@
           {%- endif -%}
         </li>
       {% endfor %}
+      <li
+        class="menu-list__list-item thcm-admin-only"
+        on:blur="/deactivate"
+        on:pointerenter="/activate"
+        on:pointerleave="/deactivate"
+      >
+        <a
+          href="/pages/employee-management"
+          class="menu-list__link"
+          ref="menuitem"
+        >
+          <span class="menu-list__link-title">Employee Management</span>
+        </a>
+      </li>
       <li
         class="menu-list__list-item"
         slot="more"

@@ -302,7 +302,10 @@
       listEl.appendChild(box);
     }
 
-    function baseOrders() { return state.day ? state.dayOrders : state.orders; }
+    function baseOrders() {
+      if (state.day) return state.dayOrders;
+      return state.filter !== 'all' && state.allOrders ? state.allOrders : state.orders;
+    }
 
     function renderList() {
       listEl.removeAttribute('aria-busy');
@@ -325,6 +328,11 @@
         nextBtn.disabled = state.page >= pages - 1;
         var start = state.page * PAGE_SIZE;
         rangeEl.textContent = shownTotal ? 'Showing ' + (start + 1) + '–' + Math.min(start + PAGE_SIZE, shownTotal) + ' of ' + shownTotal + ' orders' : '';
+        return;
+      }
+      if (state.filter !== 'all' && state.allOrders) {
+        pagerEl.hidden = true;
+        rangeEl.textContent = shownTotal ? 'Showing ' + shownTotal + ' matching orders' : '';
         return;
       }
       var info = state.pageInfo || {};
@@ -469,6 +477,7 @@
     function loadSummary(id) {
       var info = state.pageInfo || {};
       if (!info.hasNextPage && !info.hasPreviousPage) {
+        state.allOrders = state.orders.slice();
         state.summary = tally(state.orders);
         renderChips();
         return;
@@ -484,10 +493,14 @@
         });
       }
       step({ after: '', before: '' }).then(function () {
+        if (id !== state.requestId) return;
+        state.allOrders = all;
         state.summary = tally(all);
         if (state.pageInfo && state.pageInfo.total != null && state.pageInfo.total > all.length) state.summary.total = state.pageInfo.total;
         renderChips();
+        if (state.filter !== 'all') renderList();
       }).catch(function (err) {
+        if (id !== state.requestId) return;
         console.error('THCM orders: summary failed', err);
       });
     }
@@ -501,11 +514,13 @@
     });
 
     prevBtn.addEventListener('click', function () {
+      if (!state.day && state.filter !== 'all' && state.allOrders) return;
       if (state.day) { if (state.page > 0) { state.page--; renderList(); } return; }
       var c = state.pageInfo && state.pageInfo.previousCursor;
       if (c) load({ after: '', before: c });
     });
     nextBtn.addEventListener('click', function () {
+      if (!state.day && state.filter !== 'all' && state.allOrders) return;
       if (state.day) { state.page++; renderList(); return; }
       var c = state.pageInfo && state.pageInfo.nextCursor;
       if (c) load({ after: c, before: '' });
@@ -542,6 +557,8 @@
       state.filter = 'all';
       state.page = 0;
       state.all = null;
+      state.allOrders = null;
+      state.summary = null;
       paintDay();
       renderTabs();
       setParam('day', state.day);

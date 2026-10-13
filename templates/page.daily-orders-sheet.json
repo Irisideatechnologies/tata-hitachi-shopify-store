@@ -58,21 +58,9 @@
         "padding-block-start": 40,
         "padding-block-end": 80
       }
-    },
-    "dailyorderssheet_MUzif7": {
-      "type": "dailyorderssheet",
-      "name": "THCM Daily Orders",
-      "settings": {
-        "heading": "Daily Orders Export",
-        "note": "",
-        "page_size": 10,
-        "show_download": true,
-        "denied_text": "Access denied"
-      }
     }
   },
   "order": [
-    "main",
-    "dailyorderssheet_MUzif7"
+    "main"
   ]
 }

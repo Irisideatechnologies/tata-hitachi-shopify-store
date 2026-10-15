@@ -24,6 +24,25 @@
 
       <button class="map-login__button" id="map-login-submit" type="submit">Log in</button>
     </form>
+
+    <button class="map-login__link" id="map-forgot-link" type="button">Forgot password?</button>
+
+    <form id="map-reset-form" novalidate hidden>
+      <label class="map-login__label" for="map-reset-email">Email</label>
+      <input class="map-login__input" id="map-reset-email" type="email" autocomplete="email" required>
+
+      <label class="map-login__label" for="map-reset-password">New password</label>
+      <input class="map-login__input" id="map-reset-password" type="password" autocomplete="new-password" required>
+
+      <label class="map-login__label" for="map-reset-confirm">Confirm password</label>
+      <input class="map-login__input" id="map-reset-confirm" type="password" autocomplete="new-password" required>
+
+      <p class="map-login__error" id="map-reset-error" hidden></p>
+      <p class="map-login__success" id="map-reset-success" hidden></p>
+
+      <button class="map-login__button" id="map-reset-submit" type="submit">Update password</button>
+      <button class="map-login__link" id="map-back-login" type="button">Back to login</button>
+    </form>
   </div>
 </div>
 
@@ -45,9 +64,12 @@
   .map-login__eye.is-visible .map-login__eye-on { display: none; }
   .map-login__eye.is-visible .map-login__eye-off { display: block; }
   .map-login__error { color: #B91C1C; font-size: 13px; margin: 0 0 12px; }
+  .map-login__success { color: #166534; font-size: 13px; margin: 0 0 12px; }
   .map-login__button { width: 100%; padding: 14px; border: 0; border-radius: 8px; background: #C94F0C; color: #fff; font-weight: 600; font-size: 15px; font-family: inherit; cursor: pointer; }
   .map-login__button:hover { background: #A94009; }
   .map-login__button:disabled { opacity: .6; cursor: wait; }
+  .map-login__link { display: block; margin: 14px auto 0; padding: 0; border: 0; background: transparent; color: #C94F0C; font: inherit; font-size: 13px; cursor: pointer; text-decoration: underline; }
+  .map-login__link:hover { color: #A94009; }
 </style>
 
 <script>
@@ -59,6 +81,91 @@
     var passInput = document.getElementById('map-login-password');
     var errorBox = document.getElementById('map-login-error');
     var button = document.getElementById('map-login-submit');
+    var forgotLink = document.getElementById('map-forgot-link');
+    var resetForm = document.getElementById('map-reset-form');
+    var resetEmail = document.getElementById('map-reset-email');
+    var resetPassword = document.getElementById('map-reset-password');
+    var resetConfirm = document.getElementById('map-reset-confirm');
+    var resetError = document.getElementById('map-reset-error');
+    var resetSuccess = document.getElementById('map-reset-success');
+    var resetButton = document.getElementById('map-reset-submit');
+    var backLogin = document.getElementById('map-back-login');
+
+    function showResetError(msg) {
+      resetError.textContent = msg;
+      resetError.hidden = false;
+      resetSuccess.hidden = true;
+    }
+
+    function showLogin() {
+      resetForm.hidden = true;
+      form.hidden = false;
+      forgotLink.hidden = false;
+      resetError.hidden = true;
+      resetSuccess.hidden = true;
+      resetButton.disabled = false;
+      resetButton.textContent = 'Update password';
+    }
+
+    forgotLink.addEventListener('click', function () {
+      form.hidden = true;
+      forgotLink.hidden = true;
+      resetForm.hidden = false;
+      errorBox.hidden = true;
+      resetError.hidden = true;
+      resetSuccess.hidden = true;
+      resetEmail.value = idInput.value.indexOf('@') !== -1 ? idInput.value.trim() : '';
+      resetEmail.focus();
+    });
+
+    backLogin.addEventListener('click', function () {
+      showLogin();
+      idInput.focus();
+    });
+
+    resetForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      resetError.hidden = true;
+      resetSuccess.hidden = true;
+
+      var email = resetEmail.value.trim();
+      var newPassword = resetPassword.value;
+      var confirmation = resetConfirm.value;
+      if (!email || !newPassword || !confirmation) {
+        showResetError('Please enter your email, new password and confirmation.');
+        return;
+      }
+      if (newPassword !== confirmation) {
+        showResetError('New password and confirm password must match.');
+        return;
+      }
+      if (!window.THCM_API || typeof window.THCM_API.keyRequest !== 'function') {
+        showResetError('Password reset is not available. Please contact support.');
+        return;
+      }
+
+      resetButton.disabled = true;
+      resetButton.textContent = 'Please wait...';
+      try {
+        var resetResponse = await window.THCM_API.keyRequest('POST', '/api/auth/reset-password', {
+          email: email,
+          newPassword: newPassword
+        }, { mode: 'overlay' });
+        if (!resetResponse || resetResponse.success !== true) {
+          throw new Error((resetResponse && resetResponse.message) || 'Password update failed.');
+        }
+        resetPassword.value = '';
+        resetConfirm.value = '';
+        showLogin();
+        errorBox.textContent = resetResponse.message || 'Password updated successfully';
+        errorBox.classList.add('map-login__success');
+        errorBox.hidden = false;
+      } catch (err) {
+        showResetError((err && err.message) || 'Password update failed.');
+        resetButton.disabled = false;
+        resetButton.textContent = 'Update password';
+      }
+    });
 
     var eye = document.getElementById('map-login-eye');
     eye.addEventListener('click', function () {
@@ -71,6 +178,7 @@
 
     function showError(msg) {
       errorBox.textContent = msg;
+      errorBox.classList.remove('map-login__success');
       errorBox.hidden = false;
     }
 

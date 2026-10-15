@@ -16,6 +16,7 @@
 
     var auth = window.MAP_AUTH;
     var api = window.THCM_API;
+    var isAdmin = !!(auth && auth.isLoggedIn && auth.isLoggedIn() && auth.isAdmin && auth.isAdmin());
     var PAGE_SIZE = parseInt(root.getAttribute('data-page-size'), 10) || 10;
     var EMPTY_TEXT = root.getAttribute('data-empty-text') || 'You have not placed any orders yet';
     var SHOP_URL = root.getAttribute('data-shop-url') || '/collections/all';
@@ -111,6 +112,10 @@
 
     function safeUrl(u) {
       return /^https?:\/\//i.test(String(u || '')) ? String(u) : '';
+    }
+
+    function orderRequest(method, requestPath, body, options) {
+      return isAdmin ? api.jwtRequest(method, requestPath, body, options) : api.keyRequest(method, requestPath, body, options);
     }
 
     function orderNo(o) {
@@ -242,6 +247,16 @@
         if (extra) a.appendChild(el('span', 'thcm-btn__meta', extra));
         actions.appendChild(a);
       }
+      if (isAdmin && stage === 'pending' && o.shopifyOrderId) {
+        var approve = el('button', 'thcm-btn thcm-btn--primary thcm-btn--sm', 'Approve');
+        approve.type = 'button';
+        approve.setAttribute('aria-label', 'Approve order ' + orderNo(o));
+        approve.addEventListener('click', function (event) {
+          event.stopPropagation();
+          approveOrder(o, approve);
+        });
+        actions.appendChild(approve);
+      }
       if (actions.children.length) body.appendChild(actions);
 
       var c = window.THCM_ACC.build({ cls: 'thcm-card', head: [no, meta, badge, amount], panel: body, open: false });
@@ -252,9 +267,46 @@
     function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); }
 
     function toast(msg, isError) {
-      var t = el('div', 'thcm-toast' + (isError ? ' thcm-toast--error' : ''), msg);
+      var t = el('div', 'thcm-toast' + (isError ? ' thcm-toast--error' : ' thcm-toast--success'), msg);
       toastsEl.appendChild(t);
       setTimeout(function () { t.remove(); }, 4500);
+    }
+
+    function replaceOrder(updated) {
+      if (!updated) return;
+      var id = String(updated.shopifyOrderId || updated.id || '');
+      function replaceIn(items) {
+        if (!Array.isArray(items)) return;
+        items.forEach(function (item, index) {
+          var itemId = String(item.shopifyOrderId || item.id || '');
+          if (itemId === id) items[index] = Object.assign({}, item, updated);
+        });
+      }
+      replaceIn(state.orders);
+      replaceIn(state.allOrders);
+      replaceIn(state.dayOrders);
+    }
+
+    function approveOrder(order, button) {
+      if (!isAdmin || !order.shopifyOrderId || button.disabled) return;
+      button.disabled = true;
+      button.textContent = 'Approving…';
+      orderRequest('POST', '/api/admin/orders/' + encodeURIComponent(order.shopifyOrderId) + '/approve')
+        .then(function (body) {
+          if (body.denied) throw new Error('You are not authorized to approve orders.');
+          if (body.success === false) throw new Error(body.message || 'Could not approve this order.');
+          replaceOrder(body.data);
+          if (state.allOrders) state.summary = tally(state.allOrders);
+          toast('Order approved successfully!', false);
+          renderList();
+          renderChips();
+        })
+        .catch(function (err) {
+          if (err && err.handled) return;
+          button.disabled = false;
+          button.textContent = 'Approve';
+          toast((err && err.message) || 'Could not approve this order.', true);
+        });
     }
 
     function showSkeleton() {
@@ -376,7 +428,7 @@
     function path(limit, cursor) {
       // Dashboard Orders is API-key protected. Employee scope is supplied only as the
       // authenticated employee's email; the API key is added by THCM_API.keyRequest.
-      var p = '/api/dashboard/orders?limit=' + limit + '&email=' + encodeURIComponent(email());
+      var p = isAdmin ? '/api/admin/orders?limit=' + limit : '/api/dashboard/orders?limit=' + limit + '&email=' + encodeURIComponent(email());
       if (state.day) {
         var day = resolveDay(state.day);
         // Send the exact IST calendar-day instants so the database query does not depend on
@@ -407,7 +459,7 @@
       var all = [];
       var pagesLeft = SUMMARY_MAX_PAGES;
       function step(cursor) {
-        return api.keyRequest('GET', path(SUMMARY_PAGE_LIMIT, cursor)).then(function (body) {
+        return orderRequest('GET', path(SUMMARY_PAGE_LIMIT, cursor)).then(function (body) {
           if (id !== state.requestId) return;
           if (body.denied) throw new Error('Orders could not be found for your account.');
           if (body.success === false) throw new Error(body.message || 'Could not load your orders.');
@@ -447,7 +499,7 @@
       }
       var id = ++state.requestId;
       showSkeleton();
-      api.keyRequest('GET', path(PAGE_SIZE, state.cursor)).then(function (body) {
+      orderRequest('GET', path(PAGE_SIZE, state.cursor)).then(function (body) {
         if (id !== state.requestId) return;
         if (body.denied) { showError('Orders could not be found for your account.'); return; }
         if (body.success === false) { showError(body.message || 'Could not load your orders.'); return; }
@@ -485,7 +537,7 @@
       var all = [];
       var pagesLeft = SUMMARY_MAX_PAGES;
       function step(cursor) {
-        return api.keyRequest('GET', path(SUMMARY_PAGE_LIMIT, cursor), null, { silent: true }).then(function (body) {
+        return orderRequest('GET', path(SUMMARY_PAGE_LIMIT, cursor), null, { silent: true }).then(function (body) {
           var parsed = parse(body);
           all = all.concat(parsed.orders);
           var pi = parsed.pageInfo || {};
@@ -574,7 +626,6 @@
     });
 
     // ---- page tabs ---------------------------------------------------------
-    var isAdmin = !!(auth && auth.isLoggedIn && auth.isLoggedIn() && auth.isAdmin && auth.isAdmin());
     var mainTabs = root.querySelectorAll('[data-main-tab]');
     var panels = root.querySelectorAll('[data-panel]');
     var myLoaded = false;

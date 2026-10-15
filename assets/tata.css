@@ -706,6 +706,10 @@ footer {
   background: #991b1b;
 }
 
+.thcm-toast--success {
+  background: #166534;
+}
+
 /* === My Orders === */
 .thcm-chips {
   display: grid;

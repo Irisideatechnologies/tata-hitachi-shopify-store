@@ -29,6 +29,13 @@
         "page_size": 10,
         "show_summary": true,
         "show_filters": true,
+        "tab_my": "My Orders",
+        "tab_daily": "Daily Orders",
+        "label_all": "All Orders",
+        "label_today": "Today's Orders",
+        "label_yesterday": "Yesterday",
+        "show_download": true,
+        "denied_text": "Access denied",
         "empty_text": "You have not placed any orders yet",
         "shop_label": "Shop now",
         "shop_url": ""

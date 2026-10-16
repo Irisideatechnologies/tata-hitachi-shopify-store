@@ -40,7 +40,7 @@
         "title": {
           "type": "text",
           "settings": {
-            "text": "<h1>Wear the Strength of Tata Hitachi</h1>",
+            "text": "",
             "width": "fit-content",
             "max_width": "normal",
             "alignment": "left",
@@ -403,7 +403,7 @@
             "horizontal_alignment": "center",
             "vertical_alignment": "flex-start",
             "collection_card_gap": 8,
-            "background_color": "#FFFFFF",
+            "background_color": "#ffffff",
             "border": "none",
             "border_width": 1,
             "border_opacity": 100,

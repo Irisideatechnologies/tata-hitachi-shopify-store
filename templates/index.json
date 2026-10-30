@@ -466,7 +466,9 @@
       "settings": {
         "collection_list": [
           "caps",
-          "kids"
+          "kids",
+          "clothing-hoodie",
+          "clothing-jacket"
         ],
         "layout_type": "grid",
         "carousel_on_mobile": false,

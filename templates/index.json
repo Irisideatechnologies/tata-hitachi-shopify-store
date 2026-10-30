@@ -466,9 +466,11 @@
       "settings": {
         "collection_list": [
           "caps",
-          "kids",
-          "clothing-hoodie",
-          "clothing-jacket"
+          "kids-kids-t-shirt",
+          "office-essentials-laptop-sleeve",
+          "scale-model",
+          "clothing",
+          "kids-categories"
         ],
         "layout_type": "grid",
         "carousel_on_mobile": false,

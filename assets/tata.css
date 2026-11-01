@@ -443,7 +443,7 @@ footer {
 }
 
 /* === THCM Portal (shared) ===
-   Base styles for the employee portal sections (My Orders, Daily Orders): layout, buttons, badges, states. */
+   Base styles for the employee portal sections (All Orders, Daily Orders): layout, buttons, badges, states. */
 .thcm {
   --thcm-orange: #c94f0c;
   --thcm-orange-dark: #a94009;
@@ -710,7 +710,7 @@ footer {
   background: #166534;
 }
 
-/* === My Orders === */
+/* === All Orders === */
 .thcm-chips {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -1919,7 +1919,7 @@ html.map-locked:not(.shopify-design-mode) body > #thcm-loader.thcm-loader {
   outline-offset: 2px;
 }
 
-/* === Accordion (Orders page: My Orders cards, Daily Orders rows) ===
+/* === Accordion (Orders page: All Orders cards, Daily Orders rows) ===
    Markup and behaviour: snippets/thcm-accordion-js.liquid. */
 .thcm-acc-bar {
   display: flex;

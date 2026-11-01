@@ -22,14 +22,14 @@
     },
     "thcm_my_orders_6EWDR8": {
       "type": "thcm-my-orders",
-      "name": "THCM My Orders",
+      "name": "THCM All Orders",
       "settings": {
         "heading": "Orders",
         "subheading": "Track and manage merchandise orders.",
         "page_size": 10,
         "show_summary": true,
         "show_filters": true,
-        "tab_my": "My Orders",
+        "tab_my": "All Orders",
         "tab_daily": "Daily Orders",
         "label_all": "All Orders",
         "label_today": "Today's Orders",

@@ -1,14 +1,4 @@
-{% doc %}
-  Reusable accordion helper (window.THCM_ACC) for the Orders page (My Orders cards and Daily Orders rows).
-  Markup contract (also used by the static theme-editor samples in sections/thcm-my-orders.liquid):
-    .thcm-acc[.is-open] > button.thcm-acc__head[aria-expanded][aria-controls] + .thcm-acc__panel[role=region] > .thcm-acc__inner
-  Clicks are handled by one delegated listener, so server-rendered samples work without any other script.
-  Styling: assets/tata.css ("Accordion" block). Panel content is passed in as DOM nodes; API data never goes through innerHTML.
 
-  THCM_ACC.build({ cls, head: [Node...], panel: Node, open }) -> article.thcm-acc
-  THCM_ACC.setOpen(acc, open)
-  THCM_ACC.bindToggle(button, container) -> refresh()   "Expand all" / "Collapse all" button for every .thcm-acc in container
-{% enddoc %}
 
 <script>
   window.THCM_ACC = (function () {

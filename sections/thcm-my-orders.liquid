@@ -1,11 +1,4 @@
-{% doc %}
-  Orders page (employee portal): one section with two tabs.
-    My Orders     every employee: own orders, day filter (All / Today / Yesterday / date), summary chips, status tabs.
-    Daily Orders  every signed-in user, including admins, sees only their own authenticated daily exports.
-  Styling lives in assets/tata.css (shared .thcm block); logic in snippets/thcm-orders-js.liquid (tabs, My Orders)
-  and snippets/thcm-orders-daily-js.liquid (Daily Orders).
-  In the theme editor no API call is made: static samples of both tabs are shown instead.
-{% enddoc %}
+
 
 {%- liquid
   assign shop_url = section.settings.shop_url | default: '/collections/all'
@@ -169,7 +162,7 @@
 
 {% schema %}
 {
-  "name": "THCM My Orders",
+  "name": "THCM All Orders",
   "class": "section-wrapper",
   "settings": [
     {
@@ -209,7 +202,7 @@
       "type": "header",
       "content": "Tabs and day filter"
     },
-    { "type": "text", "id": "tab_my", "label": "My Orders tab label", "default": "My Orders" },
+    { "type": "text", "id": "tab_my", "label": "All Orders tab label", },
     { "type": "text", "id": "tab_daily", "label": "Daily Orders tab label (admin only)", "default": "Daily Orders" },
     { "type": "text", "id": "label_all", "label": "All orders button", "default": "All Orders" },
     { "type": "text", "id": "label_today", "label": "Today button", "default": "Today's Orders" },
@@ -244,7 +237,7 @@
   ],
   "presets": [
     {
-      "name": "THCM My Orders"
+      "name": "THCM All Orders"
     }
   ]
 }

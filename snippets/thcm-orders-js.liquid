@@ -1,12 +1,4 @@
-{% doc %}
-  Client logic for the Orders page section (sections/thcm-my-orders.liquid): page tabs (?tab=my|daily),
-  the "My Orders" tab and its day filter (?day=today|yesterday|YYYY-MM-DD).
-  Loads the signed-in employee's orders through THCM_API and renders cards, filters, and pagination.
-  Day filtering is client-side: the orders API has no confirmed date parameter, so every page is fetched (capped)
-  and filtered by createdAt in IST. The Daily Orders tab lives in snippets/thcm-orders-daily-js.liquid.
-  All API data is written with textContent / DOM nodes, never innerHTML.
-  Not rendered in the theme editor (the section shows static sample cards there).
-{% enddoc %}
+
 
 <script>
   (function () {
@@ -659,7 +651,7 @@
     renderTabs();
     renderChips();
     var wantTab = getParam('tab');
-    // Admin lands on Daily Orders, employees on My Orders
+    // Admin lands on Daily Orders, employees on All Orders
     setTab(wantTab === 'my' ? 'my' : (wantTab === 'daily' || isAdmin ? 'daily' : 'my'), true);
     window.addEventListener('pageshow', function (event) {
       if (event.persisted && root.getAttribute('data-active-tab') === 'my') load();

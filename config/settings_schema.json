@@ -2121,6 +2121,19 @@
     "name": "THCM Portal",
     "settings": [
       {
+        "type": "text",
+        "id": "thcm_api_base_url",
+        "label": "THCM API base URL",
+        "info": "Backend origin only; do not include /api.",
+        "default": "https://8bc1-2401-4900-c7b3-e2b2-b0a1-514e-4f3c-5e47.ngrok-free.app"
+      },
+      {
+        "type": "text",
+        "id": "thcm_api_key",
+        "label": "THCM API key",
+        "info": "Paste the MAP backend x-api-key here. Keep it out of theme source and Git."
+      },
+      {
         "type": "header",
         "content": "Admin-only links"
       },

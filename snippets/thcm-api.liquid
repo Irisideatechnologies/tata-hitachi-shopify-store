@@ -30,13 +30,15 @@
       var hints = window.THCM_LOADER ? window.THCM_LOADER.headers(options) : {};
       Object.keys(hints).forEach(function (k) { headers[k] = hints[k]; });
 
+      // Admin/SAP endpoints authenticate the employee with JWT, while the backend's
+      // API-key middleware protects other /api routes. Sending both when available keeps
+      // every backend request on one authenticated path and is harmless for JWT routes.
+      if (window.MAP_API_KEY) headers['x-api-key'] = window.MAP_API_KEY;
       if (kind === 'key') {
-        if (window.MAP_API_KEY) headers['x-api-key'] = window.MAP_API_KEY;
         headers['accept'] = 'application/json, text/plain, */*';
-      } else {
-        var token = window.MAP_AUTH && window.MAP_AUTH.getToken();
-        if (token) headers['Authorization'] = 'Bearer ' + token;
       }
+      var token = window.MAP_AUTH && window.MAP_AUTH.getToken();
+      if (token) headers['Authorization'] = 'Bearer ' + token;
 
       var opts = { method: method || 'GET', headers: headers };
       if (body !== undefined && body !== null) {
@@ -90,9 +92,29 @@
       );
     }
 
+    function downloadBlob(path, options) {
+      var headers = { 'ngrok-skip-browser-warning': 'true' };
+      var hints = window.THCM_LOADER ? window.THCM_LOADER.headers(options) : {};
+      Object.keys(hints).forEach(function (k) { headers[k] = hints[k]; });
+      if (window.MAP_API_KEY) headers['x-api-key'] = window.MAP_API_KEY;
+      var token = window.MAP_AUTH && window.MAP_AUTH.getToken();
+      if (token) headers['Authorization'] = 'Bearer ' + token;
+      return fetch((window.MAP_API_BASE || '') + path, { method: 'GET', headers: headers }).then(function (res) {
+        if (!res.ok) {
+          return res.text().then(function (text) {
+            var json = null;
+            try { json = text ? JSON.parse(text) : null; } catch (e) {}
+            throw fail((json && json.message) || ('Download failed (' + res.status + ').'), res.status);
+          });
+        }
+        return res.blob().then(function (blob) { return { blob: blob, response: res }; });
+      });
+    }
+
     return {
       keyRequest: function (method, path, body, options) { return send('key', method, path, body, options); },
-      jwtRequest: function (method, path, body, options) { return send('jwt', method, path, body, options); }
+      jwtRequest: function (method, path, body, options) { return send('jwt', method, path, body, options); },
+      downloadBlob: downloadBlob
     };
   })();
 </script>

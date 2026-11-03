@@ -4,11 +4,11 @@
       <img class="map-login__logo" src="{{ settings.logo | image_url: width: 400 }}" alt="{{ shop.name | escape }}" width="200">
     {%- endif -%}
 
-    <h2 class="map-login__title">Employee Login</h2>
-    <p class="map-login__sub">Log in with your Email, Employee ID or Ticket ID</p>
+    <h2 class="map-login__title">User Login</h2>
+    <p class="map-login__sub">Log in with your Email, User ID or Ticket ID</p>
 
     <form id="map-login-form" novalidate>
-      <label class="map-login__label" for="map-login-id">Email / Employee ID / Ticket ID</label>
+      <label class="map-login__label" for="map-login-id">Email / User ID / Ticket ID</label>
       <input class="map-login__input" id="map-login-id" type="text" autocomplete="username" required>
 
       <label class="map-login__label" for="map-login-password">Password</label>
@@ -20,9 +20,9 @@
         </button>
       </div>
 
-      <p class="map-login__error" id="map-login-error" hidden></p>
+      <p class="map-login__error" id="map-login-error" role="alert" aria-live="polite" hidden></p>
 
-      <button class="map-login__button" id="map-login-submit" type="submit">Log in</button>
+      <button class="map-login__button" id="map-login-submit" type="submit">Login</button>
     </form>
 
     <button class="map-login__link" id="map-forgot-link" type="button">Forgot password?</button>
@@ -37,7 +37,7 @@
       <label class="map-login__label" for="map-reset-confirm">Confirm password</label>
       <input class="map-login__input" id="map-reset-confirm" type="password" autocomplete="new-password" required>
 
-      <p class="map-login__error" id="map-reset-error" hidden></p>
+      <p class="map-login__error" id="map-reset-error" role="alert" aria-live="polite" hidden></p>
       <p class="map-login__success" id="map-reset-success" hidden></p>
 
       <button class="map-login__button" id="map-reset-submit" type="submit">Update password</button>
@@ -72,42 +72,47 @@
   .map-login__link:hover { color: #A94009; }
 </style>
 
-<script>
-  (function () {
-    var LOGIN_URL = (window.MAP_API_BASE || '') + '/api/auth/login';
+  <script>
+    (function () {
+      var LOGIN_URL = (window.MAP_API_BASE || '') + '/api/auth/login';
+      var REQUEST_TIMEOUT = 15000;
 
-    var form = document.getElementById('map-login-form');
-    var idInput = document.getElementById('map-login-id');
-    var passInput = document.getElementById('map-login-password');
-    var errorBox = document.getElementById('map-login-error');
-    var button = document.getElementById('map-login-submit');
-    var forgotLink = document.getElementById('map-forgot-link');
-    var resetForm = document.getElementById('map-reset-form');
-    var resetEmail = document.getElementById('map-reset-email');
-    var resetPassword = document.getElementById('map-reset-password');
-    var resetConfirm = document.getElementById('map-reset-confirm');
-    var resetError = document.getElementById('map-reset-error');
-    var resetSuccess = document.getElementById('map-reset-success');
-    var resetButton = document.getElementById('map-reset-submit');
-    var backLogin = document.getElementById('map-back-login');
+      function init() {
+        var form = document.getElementById('map-login-form');
+        if (!form || form.dataset.mapLoginInitialized === 'true') return;
+        form.dataset.mapLoginInitialized = 'true';
 
-    function showResetError(msg) {
-      resetError.textContent = msg;
-      resetError.hidden = false;
-      resetSuccess.hidden = true;
-    }
+        var idInput = document.getElementById('map-login-id');
+        var passInput = document.getElementById('map-login-password');
+        var errorBox = document.getElementById('map-login-error');
+        var button = document.getElementById('map-login-submit');
+        var forgotLink = document.getElementById('map-forgot-link');
+        var resetForm = document.getElementById('map-reset-form');
+        var resetEmail = document.getElementById('map-reset-email');
+        var resetPassword = document.getElementById('map-reset-password');
+        var resetConfirm = document.getElementById('map-reset-confirm');
+        var resetError = document.getElementById('map-reset-error');
+        var resetSuccess = document.getElementById('map-reset-success');
+        var resetButton = document.getElementById('map-reset-submit');
+        var backLogin = document.getElementById('map-back-login');
 
-    function showLogin() {
-      resetForm.hidden = true;
-      form.hidden = false;
-      forgotLink.hidden = false;
-      resetError.hidden = true;
-      resetSuccess.hidden = true;
-      resetButton.disabled = false;
-      resetButton.textContent = 'Update password';
-    }
+        function showResetError(msg) {
+          resetError.textContent = msg;
+          resetError.hidden = false;
+          resetSuccess.hidden = true;
+        }
 
-    forgotLink.addEventListener('click', function () {
+        function showLogin() {
+          resetForm.hidden = true;
+          form.hidden = false;
+          forgotLink.hidden = false;
+          resetError.hidden = true;
+          resetSuccess.hidden = true;
+          resetButton.disabled = false;
+          resetButton.textContent = 'Update password';
+        }
+
+        forgotLink.addEventListener('click', function () {
       form.hidden = true;
       forgotLink.hidden = true;
       resetForm.hidden = false;
@@ -116,14 +121,14 @@
       resetSuccess.hidden = true;
       resetEmail.value = idInput.value.indexOf('@') !== -1 ? idInput.value.trim() : '';
       resetEmail.focus();
-    });
+        });
 
-    backLogin.addEventListener('click', function () {
+        backLogin.addEventListener('click', function () {
       showLogin();
       idInput.focus();
-    });
+        });
 
-    resetForm.addEventListener('submit', async function (e) {
+        resetForm.addEventListener('submit', async function (e) {
       e.preventDefault();
       resetError.hidden = true;
       resetSuccess.hidden = true;
@@ -165,100 +170,142 @@
         resetButton.disabled = false;
         resetButton.textContent = 'Update password';
       }
-    });
+        });
 
-    var eye = document.getElementById('map-login-eye');
-    eye.addEventListener('click', function () {
+        var eye = document.getElementById('map-login-eye');
+        eye.addEventListener('click', function () {
       var show = passInput.type === 'password';
       passInput.type = show ? 'text' : 'password';
       eye.setAttribute('aria-pressed', show);
       eye.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
       eye.classList.toggle('is-visible', show);
-    });
+        });
 
-    function showError(msg) {
-      errorBox.textContent = msg;
-      errorBox.classList.remove('map-login__success');
-      errorBox.hidden = false;
-    }
+        function showError(msg) {
+          errorBox.textContent = msg;
+          errorBox.classList.remove('map-login__success');
+          errorBox.hidden = false;
+        }
 
-    function resetButton() {
-      button.disabled = false;
-      button.classList.remove('is-loading');
-      button.textContent = 'Log in';
-    }
+        function setLoading(loading) {
+          button.disabled = loading;
+          button.classList.toggle('is-loading', loading);
+          button.textContent = loading ? 'Please wait...' : 'Login';
+          button.setAttribute('aria-busy', loading ? 'true' : 'false');
+          form.setAttribute('aria-busy', loading ? 'true' : 'false');
+          [idInput, passInput].forEach(function (input) { input.disabled = loading; });
+        }
 
-    form.addEventListener('submit', async function (e) {
-      e.preventDefault();
-      errorBox.hidden = true;
+        function updateButtonState() {
+          if (!form.hasAttribute('aria-busy') || form.getAttribute('aria-busy') !== 'true') {
+            setLoading(false);
+            button.disabled = !idInput.value.trim() || !passInput.value;
+          }
+        }
+
+        function clearError() {
+          errorBox.textContent = '';
+          errorBox.hidden = true;
+          errorBox.classList.remove('map-login__success');
+        }
+
+        function resetButton() {
+          setLoading(false);
+          updateButtonState();
+        }
+
+        [idInput, passInput].forEach(function (input) {
+          input.addEventListener('input', function () {
+            clearError();
+            updateButtonState();
+          });
+        });
+
+        form.addEventListener('submit', async function (e) {
+          e.preventDefault();
+          if (button.disabled && form.getAttribute('aria-busy') === 'true') return;
+          clearError();
 
       var identifier = idInput.value.trim();
       var password = passInput.value;
-      if (!identifier || !password) {
-        showError('Please enter your login ID and password.');
-        return;
-      }
+          if (!identifier || !password) {
+            showError('Please enter your login ID and password.');
+            passInput.focus();
+            updateButtonState();
+            return;
+          }
 
-      if (!window.MAP_AUTH) {
-        console.error('MAP login error: MAP_AUTH not found. Render map-auth-head in <head> of theme.liquid.');
-        showError('Login setup error. Please contact support.');
-        return;
-      }
+          if (!window.MAP_AUTH) {
+            console.error('MAP login error: MAP_AUTH not found. Render map-auth-head in <head> of theme.liquid.');
+            showError('Login setup error. Please contact support.');
+            passInput.focus();
+            updateButtonState();
+            return;
+          }
 
-      if (button.disabled) return;
-      button.disabled = true;
-      button.classList.add('is-loading');
-      button.textContent = 'Please wait...';
+          setLoading(true);
+          var signedIn = false;
+          var controller = new AbortController();
+          var timeoutId = window.setTimeout(function () { controller.abort(); }, REQUEST_TIMEOUT);
 
-      var res;
-      var signedIn = false;
-      try {
-        res = await fetch(LOGIN_URL, {
-          method: 'POST',
-          // x-thcm-loader is read and stripped by THCM_LOADER (snippets/thcm-loader.liquid) before the request is sent
-          headers: Object.assign({
-            'Content-Type': 'application/json',
-            'ngrok-skip-browser-warning': 'true'
-          }, window.THCM_LOADER ? window.THCM_LOADER.headers({ mode: 'overlay' }) : {}),
-          body: JSON.stringify({ identifier: identifier, password: password })
+          try {
+            var res = await fetch(LOGIN_URL, {
+              method: 'POST',
+              headers: Object.assign({
+                'Content-Type': 'application/json',
+                'ngrok-skip-browser-warning': 'true'
+              }, window.THCM_LOADER ? window.THCM_LOADER.headers({ mode: 'overlay' }) : {}),
+              body: JSON.stringify({ identifier: identifier, password: password }),
+              signal: controller.signal
+            });
+            var text = await res.text();
+            var json = null;
+            try { json = text ? JSON.parse(text) : null; } catch (parseErr) {}
+
+            if (!res.ok) {
+              throw new Error((json && json.message) || (res.status >= 500 ? 'Server error. Please try again.' : 'Invalid credentials.'));
+            }
+            if (!json) throw new Error('Server returned an unexpected response.');
+
+            var data = json.data || {};
+            if (!data.token) throw new Error(json.message || 'Invalid credentials.');
+
+            window.MAP_AUTH.saveLogin(data.token, data.user || {});
+            passInput.value = '';
+            signedIn = true;
+            button.textContent = 'Signing you in...';
+            window.location.reload();
+          } catch (err) {
+            console.error('MAP login request failed:', err);
+            if (err && err.name === 'AbortError') showError('Request timed out, please try again.');
+            else showError((err && err.message) || 'Could not reach the server. Please try again.');
+            passInput.focus();
+          } finally {
+            window.clearTimeout(timeoutId);
+            if (!signedIn) resetButton();
+          }
         });
-      } catch (err) {
-        console.error('MAP login network/CORS error:', err);
-        showError('Could not reach the server. Check the API URL and backend CORS settings.');
-        resetButton();
-        return;
+
+        updateButtonState();
       }
 
-      try {
-        var text = await res.text();
-        var json;
-        try {
-          json = JSON.parse(text);
-        } catch (parseErr) {
-          console.error('MAP login: response is not JSON:', text.slice(0, 300));
-          showError('Server returned an unexpected response.');
-          return;
-        }
-
-        var data = json.data || {};
-        if (!res.ok || !data.token) {
-          showError(json.message || 'Invalid login details.');
-          return;
-        }
-
-        window.MAP_AUTH.saveLogin(data.token, data.user || {});
-        passInput.value = '';
-        // Reload so every script (admin links, panels, Daily Orders) re-reads the new auth state.
-        // The button stays disabled until the page unloads.
-        signedIn = true;
-        button.textContent = 'Signing you in...';
-        window.location.reload();
-      } catch (err) {
-        console.error('MAP login error after response:', err);
-        showError('Login failed: ' + err.message);
-      } finally {
-        if (!signedIn) resetButton();
+      init();
+      if (!window.__MAP_LOGIN_PAGESHOW_BOUND__) {
+        window.__MAP_LOGIN_PAGESHOW_BOUND__ = true;
+        window.addEventListener('pageshow', function () {
+          var form = document.getElementById('map-login-form');
+          var button = document.getElementById('map-login-submit');
+          if (!form || !button) return;
+          form.setAttribute('aria-busy', 'false');
+          button.disabled = false;
+          button.classList.remove('is-loading');
+          button.textContent = 'Login';
+          button.setAttribute('aria-busy', 'false');
+          var idInput = document.getElementById('map-login-id');
+          var passInput = document.getElementById('map-login-password');
+          if (idInput && passInput) button.disabled = !idInput.value.trim() || !passInput.value;
+        });
       }
-    });
-  })();
-</script>
+      document.addEventListener('shopify:section:load', init);
+    })();
+  </script>

@@ -1,0 +1,156 @@
+<script>
+  (function () {
+    var root = document.querySelector('[data-thcm-orders]');
+    if (!root || root.__thcmAnalyticsInit) return;
+    root.__thcmAnalyticsInit = true;
+
+    var auth = window.MAP_AUTH;
+    var api = window.THCM_API;
+    var isAdmin = !!(auth && auth.isLoggedIn && auth.isLoggedIn() && auth.isAdmin && auth.isAdmin());
+    var tab = root.querySelector('[data-main-tab="analytics"]');
+    var view = root.querySelector('[data-analytics]');
+    if (!isAdmin || !tab || !view || !api) return;
+    tab.hidden = false;
+
+    var PERIOD_BY_TAB = {
+      today: 'today', yesterday: 'yesterday', this_week: 'this_week', previous_week: 'previous_week',
+      this_month: 'this_month', previous_month: 'previous_month', this_year: 'this_year', previous_year: 'previous_year', custom: 'custom'
+    };
+    var periods = root.querySelectorAll('[data-analytics-tab]');
+    var custom = view.querySelector('[data-analytics-custom]');
+    var startInput = view.querySelector('[data-analytics-start]');
+    var endInput = view.querySelector('[data-analytics-end]');
+    var dateError = view.querySelector('[data-analytics-date-error]');
+    var limit = view.querySelector('[data-analytics-limit]');
+    var rangeLabel = view.querySelector('[data-analytics-range-label]');
+    var body = view.querySelector('[data-analytics-body]');
+    var tableWrap = view.querySelector('[data-analytics-table-wrap]');
+    var stateEl = view.querySelector('[data-analytics-state]');
+    var pager = view.querySelector('[data-analytics-pager]');
+    var prev = view.querySelector('[data-analytics-prev]');
+    var next = view.querySelector('[data-analytics-next]');
+    var range = view.querySelector('[data-analytics-range]');
+    var state = { period: PERIOD_BY_TAB.this_month, startDate: '', endDate: '', rows: [], page: 0, requestId: 0, loaded: false };
+    var PAGE_SIZE = 25;
+    var money = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
+    var number = new Intl.NumberFormat('en-IN');
+    var periodLabels = {
+      today: 'Today', yesterday: 'Yesterday', this_week: 'This Week', previous_week: 'Previous Week',
+      this_month: 'This Month', previous_month: 'Previous Month', this_year: 'This Year', previous_year: 'Previous Year'
+    };
+
+    function query(selector) { return view.querySelector(selector); }
+    function setPeriodUI() {
+      periods.forEach(function (button) {
+        var active = PERIOD_BY_TAB[button.getAttribute('data-analytics-tab')] === state.period;
+        button.classList.toggle('is-active', active);
+        button.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+      custom.hidden = state.period !== 'custom';
+      rangeLabel.textContent = state.period === 'custom' ? (state.startDate && state.endDate ? formatRange(state.startDate, state.endDate) : 'Choose a custom date range') : (periodLabels[state.period] || 'This Month');
+    }
+    function formatRange(start, end) {
+      function format(value) {
+        var parts = String(value).split('-');
+        return parts.length === 3 ? parts[2] + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][Number(parts[1]) - 1] + ' ' + parts[0] : value;
+      }
+      return format(start) + ' - ' + format(end);
+    }
+    function showState(message, tone, retry) {
+      tableWrap.hidden = true; pager.hidden = true; stateEl.hidden = false;
+      stateEl.className = 'thcm-state' + (tone ? ' thcm-state--' + tone : '');
+      stateEl.textContent = '';
+      var p = document.createElement('p'); p.className = 'thcm-state__text'; p.textContent = message; stateEl.appendChild(p);
+      if (retry) { var button = document.createElement('button'); button.type = 'button'; button.className = 'thcm-btn thcm-btn--primary'; button.textContent = 'Retry'; button.addEventListener('click', load); stateEl.appendChild(button); }
+    }
+    function loading() {
+      stateEl.hidden = false; tableWrap.hidden = true; pager.hidden = true;
+      stateEl.className = 'thcm-state thcm-state--loading'; stateEl.textContent = 'Loading analytics…';
+    }
+    function validateCustom() {
+      var start = startInput.value, end = endInput.value;
+      if (!start || !end) { dateError.textContent = 'Start date and end date are required.'; dateError.hidden = false; return false; }
+      if (start > end) { dateError.textContent = 'Start date cannot be after end date.'; dateError.hidden = false; return false; }
+      dateError.hidden = true; state.startDate = start; state.endDate = end; rangeLabel.textContent = formatRange(start, end); return true;
+    }
+    function requestBody() {
+      var bodyData = { period: state.period, limit: Number(limit.value) || 10 };
+      if (state.period === 'custom') { bodyData.startDate = state.startDate; bodyData.endDate = state.endDate; }
+      return bodyData;
+    }
+    function load() {
+      if (state.period === 'custom' && (!state.startDate || !state.endDate)) return;
+      var bodyData = requestBody();
+      bodyData.limit = Math.max(1, Math.min(50, bodyData.limit));
+      limit.value = bodyData.limit;
+      var id = ++state.requestId; state.page = 0; loading();
+      console.log('[analytics] request', bodyData);
+      api.jwtRequest('POST', '/api/trending-products', bodyData).then(function (response) {
+        if (id !== state.requestId) return;
+        state.rows = Array.isArray(response && response.data) ? response.data : [];
+        var responseStart = response && response.startDate;
+        var responseEnd = response && response.endDate;
+        console.log('[analytics] response', { period: (response && response.period) || bodyData.period, startDate: responseStart || bodyData.startDate || '', endDate: responseEnd || bodyData.endDate || '', count: response && response.count != null ? response.count : state.rows.length });
+        if (state.period === 'custom' && responseStart && responseEnd) { state.startDate = responseStart; state.endDate = responseEnd; }
+        rangeLabel.textContent = responseStart && responseEnd ? formatRange(responseStart, responseEnd) : (state.period === 'custom' && state.startDate && state.endDate ? formatRange(state.startDate, state.endDate) : (periodLabels[response && response.period] || periodLabels[state.period] || 'This Month'));
+        query('[data-analytics-count]').textContent = number.format(Number(response && response.count != null ? response.count : state.rows.length) || 0);
+        query('[data-analytics-quantity]').textContent = number.format(state.rows.reduce(function (sum, row) { return sum + (Number(row.quantityOrdered) || 0); }, 0));
+        query('[data-analytics-sales]').textContent = money.format(state.rows.reduce(function (sum, row) { return sum + (Number(row.netSales) || 0); }, 0));
+        state.loaded = true;
+        if (!state.rows.length) { showState('No orders found for this period', '', false); return; }
+        render();
+      }).catch(function (error) {
+        if (id !== state.requestId || (error && error.handled)) return;
+        showState((error && error.message) || 'Could not load order analytics.', 'error', true);
+      });
+    }
+    function productCell(row) {
+      var cell = document.createElement('td'); cell.setAttribute('data-label', 'Product');
+      var media = document.createElement('span'); media.className = 'thcm-analytics__product-media';
+      var image = row.imageUrl || row.image;
+      if (image) { var img = document.createElement('img'); img.src = String(image); img.alt = ''; img.loading = 'lazy'; media.appendChild(img); }
+      else { media.textContent = String(row.productTitle || '?').trim().charAt(0).toUpperCase() || '?'; }
+      var info = document.createElement('span'); info.className = 'thcm-analytics__product-info';
+      var title = document.createElement('strong'); title.textContent = row.productTitle || '—'; info.appendChild(title);
+      var variant = String(row.variantTitle || '');
+      if (variant && variant !== 'Default Title') { var sub = document.createElement('small'); sub.textContent = variant; info.appendChild(sub); }
+      cell.appendChild(media); cell.appendChild(info); return cell;
+    }
+    function render() {
+      var start = state.page * PAGE_SIZE, shown = state.rows.slice(start, start + PAGE_SIZE), total = state.rows.length, pages = Math.ceil(total / PAGE_SIZE);
+      body.textContent = '';
+      shown.forEach(function (row, index) {
+        var tr = document.createElement('tr'); tr.className = 'thcm-row';
+        var rank = document.createElement('td'); rank.setAttribute('data-label', 'Rank'); rank.textContent = String(start + index + 1); tr.appendChild(rank);
+        tr.appendChild(productCell(row));
+        ['sku', 'orders', 'quantityOrdered', 'netSales'].forEach(function (field, position) {
+          var td = document.createElement('td'); td.setAttribute('data-label', ['SKU', 'Orders', 'Quantity', 'Sales'][position]);
+          td.textContent = field === 'netSales' ? money.format(Number(row[field]) || 0) : (field === 'sku' ? (row[field] || '—') : number.format(Number(row[field]) || 0));
+          if (field === 'quantityOrdered') td.className = 'thcm-analytics__highlight';
+          if (field === 'netSales') td.className = 'thcm-analytics__highlight thcm-analytics__sales';
+          tr.appendChild(td);
+        });
+        body.appendChild(tr);
+      });
+      tableWrap.hidden = false; pager.hidden = pages <= 1; prev.disabled = state.page === 0; next.disabled = state.page >= pages - 1;
+      range.textContent = 'Page ' + (state.page + 1) + ' of ' + pages + ' · Showing ' + (start + 1) + '–' + Math.min(start + PAGE_SIZE, total) + ' of ' + total;
+      stateEl.hidden = true;
+    }
+    periods.forEach(function (button) {
+      button.addEventListener('click', function () {
+        var tabKey = button.getAttribute('data-analytics-tab');
+        state.period = PERIOD_BY_TAB[tabKey] || PERIOD_BY_TAB.this_month; state.page = 0; state.startDate = ''; state.endDate = ''; setPeriodUI();
+        if (state.period !== 'custom') load();
+      });
+    });
+    view.querySelector('[data-analytics-apply]').addEventListener('click', function () { if (validateCustom()) load(); });
+    limit.addEventListener('change', function () { state.page = 0; if (state.period !== 'custom' || (state.startDate && state.endDate)) load(); });
+    prev.addEventListener('click', function () { if (state.page > 0) { state.page--; render(); } });
+    next.addEventListener('click', function () { if (state.page < Math.ceil(state.rows.length / PAGE_SIZE) - 1) { state.page++; render(); } });
+    root.addEventListener('thcm:tab', function (event) {
+      if (event.detail && event.detail.tab === 'analytics' && !state.loaded) load();
+    });
+    setPeriodUI();
+    if (root.getAttribute('data-active-tab') === 'analytics') load();
+  })();
+</script>

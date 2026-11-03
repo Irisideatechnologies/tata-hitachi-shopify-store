@@ -766,6 +766,165 @@ footer {
   scrollbar-width: thin;
 }
 
+.thcm-analytics {
+  margin-top: 26px;
+  padding-top: 4px;
+}
+
+.thcm-analytics__controls {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 0 22px;
+}
+
+.thcm-analytics__controls h2 {
+  flex: 1 0 100%;
+  margin: 0 0 2px;
+  font-size: clamp(26px, 3vw, 34px);
+  letter-spacing: -0.035em;
+}
+
+.thcm-analytics__periods {
+  display: flex;
+  flex: 1 1 100%;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+.thcm-analytics__periods .thcm-tab {
+  font-size: 13px;
+  padding-inline: 14px;
+}
+
+.thcm-analytics__custom {
+  display: flex;
+  align-items: end;
+  gap: 10px;
+  flex: 1 1 100%;
+  flex-wrap: wrap;
+  padding: 12px;
+  border: 1px solid var(--thcm-border);
+  border-radius: 10px;
+  background: var(--thcm-soft);
+}
+
+.thcm-analytics__custom label,
+.thcm-analytics__products {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--thcm-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.thcm-analytics__custom input,
+.thcm-analytics__products select {
+  height: 40px;
+  box-sizing: border-box;
+  padding: 0 10px;
+  color: var(--thcm-text);
+  background: #fff;
+  border: 1px solid var(--thcm-border);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 14px;
+}
+
+.thcm-analytics__inline-error { flex-basis: 100%; color: #b42318; font-size: 12px; }
+.thcm-analytics__range-label { align-self: center; color: var(--thcm-muted); font-size: 13px; }
+
+.thcm-analytics__controls label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--thcm-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.thcm-analytics__controls input[type="number"] {
+  width: 76px;
+  height: 40px;
+  box-sizing: border-box;
+  padding: 0 10px 0 13px;
+  color: var(--thcm-text);
+  background-color: #fff;
+  border: 1px solid var(--thcm-border);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 14px;
+}
+
+.thcm-analytics__controls .thcm-btn {
+  min-height: 40px;
+  padding-inline: 20px;
+  box-shadow: 0 5px 12px rgba(201, 79, 12, .16);
+}
+
+.thcm-analytics__cards {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0 0 24px;
+}
+
+.thcm-analytics__cards .thcm-chip {
+  min-height: 82px;
+  justify-content: center;
+  padding: 16px 18px;
+  border-radius: 14px;
+  box-shadow: 0 5px 18px rgba(17, 24, 39, .045);
+}
+
+.thcm-analytics__cards .thcm-chip__n {
+  font-size: 26px;
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+}
+
+.thcm-analytics__table {
+  min-width: 680px;
+}
+
+.thcm-analytics__table th:first-child,
+.thcm-analytics__table td:first-child {
+  width: 64px;
+  color: var(--thcm-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.thcm-analytics__table td:nth-child(n+4) {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.thcm-analytics__table th:nth-child(n+4) {
+  text-align: right;
+}
+
+.thcm-analytics__variant { color: var(--thcm-muted); font-size: 12px; }
+.thcm-analytics__table-wrap { overflow-x: auto; }
+.thcm-analytics__product-media { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 36px; width: 36px; height: 36px; overflow: hidden; border-radius: 8px; background: var(--thcm-soft); color: var(--thcm-muted); font-size: 15px; font-weight: 700; }
+.thcm-analytics__product-media img { width: 100%; height: 100%; object-fit: cover; }
+.thcm-analytics__product-info { display: inline-flex; flex-direction: column; gap: 3px; min-width: 0; vertical-align: middle; margin-left: 10px; }
+.thcm-analytics__product-info strong { font-weight: 600; }
+.thcm-analytics__product-info small { color: var(--thcm-muted); font-size: 12px; }
+.thcm-analytics__highlight { color: #b45309; font-weight: 700; }
+.thcm-analytics__sales { color: #c94f0c; }
+
+@media screen and (max-width: 749px) {
+  .thcm-analytics__cards { grid-template-columns: 1fr; }
+  .thcm-analytics__controls { align-items: stretch; }
+  .thcm-analytics__controls label { flex: 1 1 calc(50% - 6px); justify-content: space-between; }
+  .thcm-analytics__custom label, .thcm-analytics__products { flex: 1 1 100%; justify-content: space-between; }
+  .thcm-analytics__custom input, .thcm-analytics__products select { flex: 1; }
+  .thcm-analytics__controls .thcm-btn { width: 100%; }
+}
+
 .thcm-tab {
   flex: 0 0 auto;
   padding: 8px 16px;

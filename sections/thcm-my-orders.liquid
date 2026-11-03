@@ -26,6 +26,7 @@
     <div class="thcm-tabs thcm-tabs--main" role="tablist" aria-label="Orders">
       <button type="button" role="tab" class="thcm-tab is-active" data-main-tab="daily" aria-selected="true"{% unless request.design_mode %} hidden{% endunless %}>{{ section.settings.tab_daily }}</button>
       <button type="button" role="tab" class="thcm-tab" data-main-tab="my" aria-selected="false">{{ section.settings.tab_my }}</button>
+      <button type="button" role="tab" class="thcm-tab" data-main-tab="analytics" aria-selected="false" hidden>Order Analytics</button>
     </div>
 
     <div data-panel="daily"{% unless request.design_mode %} hidden{% endunless %}>
@@ -148,6 +149,41 @@
         <button type="button" class="thcm-btn thcm-btn--ghost" data-next>Next</button>
       </nav>
     </div>
+
+    <section class="thcm-analytics" data-panel="analytics" data-analytics hidden aria-labelledby="thcm-analytics-title">
+      <div class="thcm-analytics__controls">
+        <h2 id="thcm-analytics-title">Order Analytics</h2>
+        <div class="thcm-analytics__periods" role="tablist" aria-label="Analytics period">
+          <button type="button" class="thcm-tab is-active" data-analytics-tab="this_month" aria-selected="true">This Month</button>
+          <button type="button" class="thcm-tab" data-analytics-tab="today" aria-selected="false">Today</button>
+          <button type="button" class="thcm-tab" data-analytics-tab="yesterday" aria-selected="false">Yesterday</button>
+          <button type="button" class="thcm-tab" data-analytics-tab="this_week" aria-selected="false">This Week</button>
+          <button type="button" class="thcm-tab" data-analytics-tab="previous_week" aria-selected="false">Previous Week</button>
+          <button type="button" class="thcm-tab" data-analytics-tab="previous_month" aria-selected="false">Previous Month</button>
+          <button type="button" class="thcm-tab" data-analytics-tab="this_year" aria-selected="false">This Year</button>
+          <button type="button" class="thcm-tab" data-analytics-tab="previous_year" aria-selected="false">Previous Year</button>
+          <button type="button" class="thcm-tab" data-analytics-tab="custom" aria-selected="false">Custom Date</button>
+        </div>
+        <div class="thcm-analytics__custom" data-analytics-custom hidden>
+          <label>Start date <input type="date" data-analytics-start></label>
+          <label>End date <input type="date" data-analytics-end></label>
+          <button type="button" class="thcm-btn thcm-btn--primary" data-analytics-apply>Apply</button>
+          <small class="thcm-analytics__inline-error" data-analytics-date-error hidden></small>
+        </div>
+        <label class="thcm-analytics__products">Products <select data-analytics-limit><option value="5">5</option><option value="10" selected>10</option><option value="20">20</option><option value="25">25</option><option value="50">50</option></select></label>
+        <span class="thcm-analytics__range-label" data-analytics-range-label aria-live="polite"></span>
+      </div>
+      <div class="thcm-chips thcm-analytics__cards" aria-label="Analytics summary">
+        <div class="thcm-chip"><span class="thcm-chip__n" data-analytics-count>–</span><span class="thcm-chip__l">Products</span></div>
+        <div class="thcm-chip"><span class="thcm-chip__n" data-analytics-quantity>–</span><span class="thcm-chip__l">Total quantity</span></div>
+        <div class="thcm-chip thcm-chip--amber"><span class="thcm-chip__n" data-analytics-sales>–</span><span class="thcm-chip__l">Total sales</span></div>
+      </div>
+      <div class="thcm-state" data-analytics-state hidden></div>
+      <div class="thcm-table-wrap" data-analytics-table-wrap hidden>
+        <table class="thcm-table thcm-analytics__table"><thead><tr><th>Rank</th><th>Product</th><th>SKU</th><th>Orders</th><th>Quantity</th><th>Sales</th></tr></thead><tbody data-analytics-body></tbody></table>
+      </div>
+      <nav class="thcm-pager" data-analytics-pager hidden aria-label="Analytics pagination"><button type="button" class="thcm-btn thcm-btn--ghost" data-analytics-prev>Previous</button><span class="thcm-pager__range" data-analytics-range></span><button type="button" class="thcm-btn thcm-btn--ghost" data-analytics-next>Next</button></nav>
+    </section>
   </div>
 
   <div class="thcm-toasts" data-toasts aria-live="polite"></div>
@@ -158,6 +194,7 @@
 {%- unless request.design_mode -%}
   {% render 'thcm-orders-js' %}
   {% render 'thcm-orders-daily-js' %}
+  {% render 'thcm-order-analytics-js' %}
 {%- endunless -%}
 
 {% schema %}

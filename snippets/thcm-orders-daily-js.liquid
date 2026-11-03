@@ -108,19 +108,10 @@
       return isNumericOrderId(text) ? '#' + text : text;
     }
 
-    function apiPath(path) { return (window.MAP_API_BASE || '').replace(/\/+$/, '') + path; }
     function downloadFile(record, button) {
-      var token = auth.getToken && auth.getToken();
-      var headers = { 'ngrok-skip-browser-warning': 'true' };
-      if (token) headers.Authorization = 'Bearer ' + token;
       button.disabled = true;
-      fetch(apiPath(dailyBase + '/' + encodeURIComponent(record.id) + '/download'), { headers: headers }).then(function (res) {
-        if (res.status === 401) throw new Error('Download authentication failed. Please retry.');
-        if (res.status === 403) throw new Error('You are not allowed to download this export.');
-        if (res.status === 404) throw new Error('The export file is no longer available.');
-        if (!res.ok) throw new Error('Download failed (' + res.status + ').');
-        return res.blob();
-      }).then(function (blob) {
+      api.downloadBlob(dailyBase + '/' + encodeURIComponent(record.id) + '/download').then(function (out) {
+        var blob = out.blob;
         var url = URL.createObjectURL(blob), a = document.createElement('a');
         a.href = url; a.download = record.fileName || 'daily-export.xlsx'; document.body.appendChild(a); a.click(); a.remove();
         setTimeout(function () { URL.revokeObjectURL(url); }, 10000);

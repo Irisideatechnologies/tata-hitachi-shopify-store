@@ -1,18 +1,18 @@
 {%- if request.design_mode -%}
-  <div class="mae-placeholder">Employee admin panel (visible to MAP admins only)</div>
+  <div class="mae-placeholder">User admin panel (visible to MAP admins only)</div>
 {%- endif -%}
 
 <section class="mae" id="mae-root" hidden>
   <div class="mae__inner">
     <header class="mae__head">
       <div>
-        <h2 class="mae__title">Employee Management</h2>
-        <p class="mae__meta"><span id="mae-total">0</span> employees &middot; Signed in as <strong id="mae-admin"></strong></p>
+        <h2 class="mae__title">User management</h2>
+        <p class="mae__meta"><span id="mae-total">0</span> users &middot; Signed in as <strong id="mae-admin"></strong></p>
       </div>
-      <button type="button" class="mae-btn mae-btn--primary" id="mae-add">+ Add Employee</button>
+      <button type="button" class="mae-btn mae-btn--primary" id="mae-add">+ Add User</button>
     </header>
 
-    <input type="search" class="mae-input mae__search" id="mae-search" placeholder="Search by name, email or employee ID" aria-label="Search employees">
+    <input type="search" class="mae-input mae__search" id="mae-search" placeholder="Search by name, email or user ID" aria-label="Search users">
 
     <div id="mae-denied" class="mae-empty" hidden>Access denied</div>
 
@@ -21,7 +21,7 @@
         <table class="mae__table">
           <thead>
             <tr>
-              <th>Employee ID</th><th>Ticket ID</th><th>Name</th><th>Email</th><th>Phone</th><th class="mae__actions-col">Actions</th>
+              <th>User ID</th><th>Ticket ID</th><th>Name</th><th>Email</th><th>Phone</th><th class="mae__actions-col">Actions</th>
             </tr>
           </thead>
           <tbody id="mae-rows"></tbody>
@@ -29,7 +29,7 @@
       </div>
       <div class="mae__cards" id="mae-cards"></div>
 
-      <div class="mae-empty" id="mae-empty" hidden>No employees found.</div>
+      <div class="mae-empty" id="mae-empty" hidden>No users found.</div>
       <div class="mae-loading" id="mae-loading" hidden><span class="mae-spinner"></span> Loading...</div>
 
       <footer class="mae__pager">
@@ -44,13 +44,14 @@
 
   <dialog class="mae-dialog" id="mae-form-dialog">
     <form id="mae-form" novalidate>
-      <h3 id="mae-form-title">Add Employee</h3>
+      <h3 id="mae-form-title">Add User</h3>
       <div class="mae-field"><label for="mae-f-name">Name</label><input class="mae-input" id="mae-f-name" name="name" autocomplete="off"><small class="mae-err" data-err="name"></small></div>
       <div class="mae-field"><label for="mae-f-email">Email</label><input class="mae-input" id="mae-f-email" name="email" type="email" autocomplete="off"><small class="mae-err" data-err="email"></small></div>
-      <div class="mae-field"><label for="mae-f-employeeId">Employee ID</label><input class="mae-input" id="mae-f-employeeId" name="employeeId" inputmode="numeric" autocomplete="off"><small class="mae-err" data-err="employeeId"></small></div>
+      <div class="mae-field"><label for="mae-f-employeeId">User ID</label><input class="mae-input" id="mae-f-employeeId" name="employeeId" inputmode="numeric" autocomplete="off"><small class="mae-err" data-err="employeeId"></small></div>
       <div class="mae-field"><label for="mae-f-ticketId">Ticket ID</label><input class="mae-input" id="mae-f-ticketId" name="ticketId" autocomplete="off"><small class="mae-err" data-err="ticketId"></small></div>
       <div class="mae-field"><label for="mae-f-phone">Phone</label><input class="mae-input" id="mae-f-phone" name="phone" type="tel" autocomplete="off"><small class="mae-err" data-err="phone"></small></div>
       <div class="mae-field"><label for="mae-f-password" id="mae-pass-label">Password</label><input class="mae-input" id="mae-f-password" name="password" type="password" autocomplete="new-password"><small class="mae-err" data-err="password"></small></div>
+      <div class="mae-field mae-admin-option"><label for="mae-f-admin"><input id="mae-f-admin" name="admin" type="checkbox"> Make this user Admin</label></div>
       <p class="mae-err mae-err--form" id="mae-form-error" hidden></p>
       <div class="mae-dialog__actions">
         <button type="button" class="mae-btn" id="mae-form-cancel">Cancel</button>
@@ -60,7 +61,7 @@
   </dialog>
 
   <dialog class="mae-dialog" id="mae-confirm-dialog">
-    <h3>Delete employee</h3>
+    <h3>Delete user</h3>
     <p id="mae-confirm-text"></p>
     <p class="mae-err mae-err--form" id="mae-confirm-error" hidden></p>
     <div class="mae-dialog__actions">
@@ -109,6 +110,8 @@
   .mae-dialog h3 { margin: 0 0 16px; }
   .mae-field { margin-bottom: 14px; }
   .mae-field label { display: block; margin-bottom: 4px; font-size: 13px; font-weight: 600; }
+  .mae-admin-option label { display: flex; align-items: center; gap: 8px; }
+  .mae-admin-option input { margin: 0; }
   .mae-err { display: block; min-height: 0; margin-top: 4px; color: #c62828; font-size: 12px; }
   .mae-err--form { font-size: 13px; margin: 0 0 12px; }
   .mae-dialog__actions { display: flex; justify-content: flex-end; gap: 8px; }
@@ -130,7 +133,8 @@
     var auth = window.MAP_AUTH;
     if (!auth || !auth.isLoggedIn() || !auth.isAdmin()) return;
 
-    var API = (window.MAP_API_BASE || '') + '/api/admin/employees';
+    var api = window.THCM_API;
+    var API = '/api/admin/employees';
     var EDIT_METHOD = 'PUT'; // Edit endpoint is unconfirmed; change method/path here only
     var editUrl = function (id) { return API + '/' + encodeURIComponent(id); };
     var LIMIT = 50;
@@ -147,34 +151,12 @@
     }
 
     function request(method, url, body) {
-      var headers = { 'Authorization': 'Bearer ' + auth.getToken(), 'ngrok-skip-browser-warning': 'true' };
-      // Add / edit / delete are user actions: full-screen overlay (THCM_LOADER strips this header before sending). Lists use the default top bar.
-      if (method !== 'GET' && window.THCM_LOADER) {
-        var hints = window.THCM_LOADER.headers({ mode: 'overlay' });
-        Object.keys(hints).forEach(function (k) { headers[k] = hints[k]; });
-      }
-      var opts = { method: method, headers: headers };
-      if (body) {
-        headers['Content-Type'] = 'application/json';
-        opts.body = JSON.stringify(body);
-      }
-      return fetch(url, opts).then(function (res) {
-        return res.text().then(function (text) {
-          var json = null;
-          try { json = text ? JSON.parse(text) : null; } catch (e) { console.error('MAP admin: response is not JSON:', text.slice(0, 300)); }
-          if (res.status === 401) { auth.logout(); throw { handled: true }; }
-          if (res.status === 404) {
-            // /api/admin/* answers 404 to non-admins, so a 404 here means "denied" unless the body says otherwise
-            var denyMsg = (json && json.message) || '';
-            if (!denyMsg || /access|permission|forbidden|not authori[sz]ed|admin/i.test(denyMsg)) { showDenied(); throw { handled: true }; }
-            throw { message: denyMsg };
-          }
-          if (!res.ok) throw { message: (json && json.message) || ('Request failed (' + res.status + ')') };
-          return json || {};
-        });
-      }, function (err) {
-        console.error('MAP admin network/CORS error:', err);
-        throw { message: 'Server not reachable. Please try again.' };
+      return api.jwtRequest(method, url, body, method === 'GET' ? undefined : { mode: 'overlay' }).then(function (json) {
+        if (json && json.denied) { showDenied(); throw { handled: true }; }
+        return json;
+      }).catch(function (err) {
+        if (err && err.status === 401) { auth.logout(); throw { handled: true }; }
+        throw err;
       });
     }
 
@@ -237,7 +219,7 @@
         var card = document.createElement('div');
         card.className = 'mae-card';
         var dl = document.createElement('dl');
-        [['Employee ID', emp.employeeId], ['Ticket ID', emp.ticketId], ['Name', emp.name], ['Email', emp.email], ['Phone', emp.phone]].forEach(function (pair) {
+        [['User ID', emp.employeeId], ['Ticket ID', emp.ticketId], ['Name', emp.name], ['Email', emp.email], ['Phone', emp.phone]].forEach(function (pair) {
           dl.appendChild(cell('dt', pair[0]));
           dl.appendChild(cell('dd', pair[1]));
         });
@@ -273,7 +255,7 @@
         render();
       }).catch(function (err) {
         if (err && err.handled) return;
-        toast((err && err.message) || 'Failed to load employees', true);
+        toast((err && err.message) || 'Failed to load users', true);
       }).then(function () {
         $('mae-loading').hidden = true;
       });
@@ -333,7 +315,7 @@
       form.reset();
       FIELDS.forEach(function (f) { setFieldError(f, ''); });
       setFormError('');
-      $('mae-form-title').textContent = emp ? 'Edit Employee' : 'Add Employee';
+      $('mae-form-title').textContent = emp ? 'Edit User' : 'Add User';
       $('mae-pass-label').textContent = emp ? 'New password (leave blank to keep current)' : 'Password';
       if (emp) {
         ['name', 'email', 'employeeId', 'ticketId', 'phone'].forEach(function (f) { form.elements[f].value = emp[f] == null ? '' : emp[f]; });
@@ -346,7 +328,7 @@
       var errors = {};
       if (!values.name) errors.name = 'Name is required.';
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) errors.email = 'Enter a valid email.';
-      if (!/^\d{5}$/.test(values.employeeId)) errors.employeeId = 'Employee ID must be exactly 5 digits.';
+      if (!/^\d{5}$/.test(values.employeeId)) errors.employeeId = 'User ID must be exactly 5 digits.';
       if (!values.ticketId) errors.ticketId = 'Ticket ID is required.';
       if (!/^(\+91[\s-]?)?\d{10}$/.test(values.phone)) errors.phone = 'Enter a 10-digit phone number (optionally with +91).';
       if (!isEdit && !values.password) errors.password = 'Password is required.';
@@ -378,23 +360,28 @@
 
       var body = { name: values.name, email: values.email, employeeId: values.employeeId, ticketId: values.ticketId, phone: values.phone };
       if (values.password) body.password = values.password;
+      if (!isEdit) body.role = form.elements.admin.checked ? 'admin' : 'employee';
 
       setSaving(true);
       var req = isEdit ? request(EDIT_METHOD, editUrl(state.editing.id), body) : request('POST', API, body);
       req.then(function () {
         formDialog.close();
-        toast(isEdit ? 'Employee updated.' : 'Employee added.');
+        form.elements.admin.checked = false;
+        toast(isEdit ? 'User updated.' : 'User added.');
         return load();
       }).catch(function (err) {
         if (err && err.handled) return;
-        setFormError((err && err.message) || 'Could not save employee.');
+        setFormError((err && err.message) || 'Could not save user.');
       }).then(function () {
         setSaving(false);
       });
     });
 
     $('mae-add').addEventListener('click', function () { openForm(null); });
-    $('mae-form-cancel').addEventListener('click', function () { formDialog.close(); });
+    $('mae-form-cancel').addEventListener('click', function () {
+      form.elements.admin.checked = false;
+      formDialog.close();
+    });
 
     // Delete dialog
     var confirmDialog = $('mae-confirm-dialog');
@@ -416,7 +403,7 @@
       okBtn.textContent = 'Please wait...';
       request('DELETE', editUrl(state.deleting.id)).then(function () {
         confirmDialog.close();
-        toast('Employee deleted.');
+        toast('User deleted.');
         // Step back a page when the last row of a later page was removed
         if (state.items.length === 1 && state.pageInfo && state.pageInfo.hasPreviousPage) {
           state.before = state.pageInfo.previousCursor || '';
@@ -427,7 +414,7 @@
       }).catch(function (err) {
         if (err && err.handled) return;
         var box = $('mae-confirm-error');
-        box.textContent = (err && err.message) || 'Could not delete employee.';
+        box.textContent = (err && err.message) || 'Could not delete user.';
         box.hidden = false;
       }).then(function () {
         okBtn.disabled = false;

@@ -626,7 +626,7 @@
     });
 
     function setTab(tab, silent) {
-      if (tab !== 'daily' && tab !== 'my') tab = 'my';
+      if (tab !== 'daily' && tab !== 'my' && tab !== 'analytics') tab = 'my';
       root.setAttribute('data-active-tab', tab);
       mainTabs.forEach(function (b) {
         var on = b.getAttribute('data-main-tab') === tab;
@@ -652,7 +652,7 @@
     renderChips();
     var wantTab = getParam('tab');
     // Admin lands on Daily Orders, employees on All Orders
-    setTab(wantTab === 'my' ? 'my' : (wantTab === 'daily' || isAdmin ? 'daily' : 'my'), true);
+    setTab(wantTab === 'analytics' && isAdmin ? 'analytics' : (wantTab === 'my' ? 'my' : (wantTab === 'daily' || isAdmin ? 'daily' : 'my')), true);
     window.addEventListener('pageshow', function (event) {
       if (event.persisted && root.getAttribute('data-active-tab') === 'my') load();
     });

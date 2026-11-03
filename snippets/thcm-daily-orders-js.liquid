@@ -129,6 +129,18 @@
       var label = btn.textContent;
       btn.disabled = true;
       btn.textContent = 'Downloading...';
+      var backendBase = (window.MAP_API_BASE || '').replace(/\/+$/, '');
+      if (backendBase && row.file.indexOf(backendBase + '/') === 0 && api && api.downloadBlob) {
+        api.downloadBlob(row.file.slice(backendBase.length)).then(function (out) {
+          var cd = out.response.headers.get('Content-Disposition') || '';
+          var m = /filename\*?=(?:UTF-8'')?"?([^";]+)"?/i.exec(cd);
+          var name = (m && decodeURIComponent(m[1])) || row.fileName || 'daily-export';
+          var url = URL.createObjectURL(out.blob), a = document.createElement('a');
+          a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+        }).catch(function (err) { showState(err.message || 'Download failed.', 'error', false); }).then(function () { btn.disabled = false; btn.textContent = label; });
+        return;
+      }
       var token = auth && auth.getToken && auth.getToken();
       var headers = { 'ngrok-skip-browser-warning': 'true' };
       if (token) headers['Authorization'] = 'Bearer ' + token;

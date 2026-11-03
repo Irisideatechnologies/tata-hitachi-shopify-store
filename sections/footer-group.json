@@ -14,6 +14,27 @@
     "footer_m9NzUG": {
       "type": "footer",
       "blocks": {
+        "social_links_xQabKA": {
+          "type": "social-links",
+          "name": "t:names.social_media_links",
+          "settings": {
+            "icon_color": "#C83737",
+            "facebook_url": "https://www.facebook.com/TataHitachiCorporate",
+            "instagram_url": "https://www.instagram.com/tatahitachicorporate/",
+            "youtube_url": "https://www.youtube.com/TataHitachiCorporate",
+            "tiktok_url": "",
+            "twitter_url": "https://x.com/Tata_Hitachi_IN",
+            "threads_url": "",
+            "linkedin_url": "https://in.linkedin.com/company/tatahitachi",
+            "bluesky_url": "",
+            "snapchat_url": "",
+            "pinterest_url": "",
+            "tumblr_url": "",
+            "vimeo_url": "",
+            "custom_url": ""
+          },
+          "blocks": {}
+        },
         "brand": {
           "type": "group",
           "settings": {
@@ -260,6 +281,7 @@
         }
       },
       "block_order": [
+        "social_links_xQabKA",
         "brand",
         "help"
       ],

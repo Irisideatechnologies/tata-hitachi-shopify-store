@@ -93,7 +93,7 @@
         var resetConfirm = document.getElementById('map-reset-confirm');
         var resetError = document.getElementById('map-reset-error');
         var resetSuccess = document.getElementById('map-reset-success');
-        var resetButton = document.getElementById('map-reset-submit');
+        var resetSubmitButton = document.getElementById('map-reset-submit');
         var backLogin = document.getElementById('map-back-login');
 
         function showResetError(msg) {
@@ -108,8 +108,8 @@
           forgotLink.hidden = false;
           resetError.hidden = true;
           resetSuccess.hidden = true;
-          resetButton.disabled = false;
-          resetButton.textContent = 'Update password';
+          resetSubmitButton.disabled = false;
+          resetSubmitButton.textContent = 'Update password';
         }
 
         forgotLink.addEventListener('click', function () {
@@ -149,8 +149,8 @@
         return;
       }
 
-      resetButton.disabled = true;
-      resetButton.textContent = 'Please wait...';
+      resetSubmitButton.disabled = true;
+      resetSubmitButton.textContent = 'Please wait...';
       try {
         var resetResponse = await window.THCM_API.keyRequest('POST', '/api/auth/reset-password', {
           email: email,
@@ -167,8 +167,8 @@
         errorBox.hidden = false;
       } catch (err) {
         showResetError((err && err.message) || 'Password update failed.');
-        resetButton.disabled = false;
-        resetButton.textContent = 'Update password';
+        resetSubmitButton.disabled = false;
+        resetSubmitButton.textContent = 'Update password';
       }
         });
 
@@ -194,6 +194,8 @@
           button.setAttribute('aria-busy', loading ? 'true' : 'false');
           form.setAttribute('aria-busy', loading ? 'true' : 'false');
           [idInput, passInput].forEach(function (input) { input.disabled = loading; });
+          if (eye) eye.disabled = loading;
+          forgotLink.disabled = loading;
         }
 
         function updateButtonState() {
@@ -209,11 +211,6 @@
           errorBox.classList.remove('map-login__success');
         }
 
-        function resetButton() {
-          setLoading(false);
-          updateButtonState();
-        }
-
         [idInput, passInput].forEach(function (input) {
           input.addEventListener('input', function () {
             clearError();
@@ -221,13 +218,14 @@
           });
         });
 
+        var loginSubmitting = false;
         form.addEventListener('submit', async function (e) {
           e.preventDefault();
-          if (button.disabled && form.getAttribute('aria-busy') === 'true') return;
+          if (loginSubmitting) return;
           clearError();
 
-      var identifier = idInput.value.trim();
-      var password = passInput.value;
+          var identifier = idInput.value.trim();
+          var password = passInput.value;
           if (!identifier || !password) {
             showError('Please enter your login ID and password.');
             passInput.focus();
@@ -237,14 +235,14 @@
 
           if (!window.MAP_AUTH) {
             console.error('MAP login error: MAP_AUTH not found. Render map-auth-head in <head> of theme.liquid.');
-            showError('Login setup error. Please contact support.');
+            showError('Something went wrong. Please try again.');
             passInput.focus();
             updateButtonState();
             return;
           }
 
+          loginSubmitting = true;
           setLoading(true);
-          var signedIn = false;
           var controller = new AbortController();
           var timeoutId = window.setTimeout(function () { controller.abort(); }, REQUEST_TIMEOUT);
 
@@ -262,27 +260,40 @@
             var json = null;
             try { json = text ? JSON.parse(text) : null; } catch (parseErr) {}
 
-            if (!res.ok) {
-              throw new Error((json && json.message) || (res.status >= 500 ? 'Server error. Please try again.' : 'Invalid credentials.'));
+            if (res.status === 401) {
+              var unauthorized = new Error('Invalid credentials');
+              unauthorized.status = 401;
+              throw unauthorized;
             }
-            if (!json) throw new Error('Server returned an unexpected response.');
+            if (res.status === 400) {
+              var badRequest = new Error((json && json.message) || 'Invalid request.');
+              badRequest.status = 400;
+              throw badRequest;
+            }
+            if (res.status === 429 || res.status >= 500 || !res.ok) {
+              var serverFailure = new Error('Something went wrong. Please try again.');
+              serverFailure.status = res.status;
+              throw serverFailure;
+            }
+            if (!json) throw new Error('Something went wrong. Please try again.');
 
             var data = json.data || {};
-            if (!data.token) throw new Error(json.message || 'Invalid credentials.');
+            if (!data.token) throw new Error('Something went wrong. Please try again.');
 
             window.MAP_AUTH.saveLogin(data.token, data.user || {});
             passInput.value = '';
-            signedIn = true;
             button.textContent = 'Signing you in...';
             window.location.reload();
           } catch (err) {
-            console.error('MAP login request failed:', err);
-            if (err && err.name === 'AbortError') showError('Request timed out, please try again.');
-            else showError((err && err.message) || 'Could not reach the server. Please try again.');
+            console.error('MAP login request failed:', (err && err.message) || 'Request failed');
+            showError('Something went wrong. Please try again.');
+            if (err && err.status === 401) showError('Invalid credentials');
+            else if (err && err.status === 400) showError(err.message || 'Invalid request.');
             passInput.focus();
           } finally {
             window.clearTimeout(timeoutId);
-            if (!signedIn) resetButton();
+            loginSubmitting = false;
+            setLoading(false);
           }
         });
 

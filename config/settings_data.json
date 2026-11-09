@@ -106,6 +106,13 @@
     "variant_button_radius": 8,
     "variant_button_width": "equal-width-buttons",
     "content_for_index": [],
+    "blocks": {
+      "18193078901587272303": {
+        "type": "shopify://apps/kalravai/blocks/chat-widget/019ffeaf-6764-7596-a92f-a7b2171d203d",
+        "disabled": false,
+        "settings": {}
+      }
+    },
     "color_palette": {
       "background": "#FFFFFF",
       "foreground": "#111827",

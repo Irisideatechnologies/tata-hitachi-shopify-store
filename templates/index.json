@@ -955,6 +955,7 @@
         "spacer_Uapci3",
         "button_KfBbxn"
       ],
+      "disabled": true,
       "name": "Video Image with Text",
       "settings": {
         "image_height": "adapt",
@@ -1020,6 +1021,7 @@
       ],
       "name": "t:sections.lookbook.name",
       "settings": {
+        "image": "shopify://shop_images/kids-room.png",
         "heading": "Your new forever favorites are here",
         "heading_alignment": "text-center md:items-center",
         "heading_tag": "h3",
@@ -1040,6 +1042,7 @@
     },
     "featured_collection_YjQHLR": {
       "type": "featured-collection",
+      "disabled": true,
       "name": "t:sections.featured-collection.name",
       "settings": {
         "collection": "",

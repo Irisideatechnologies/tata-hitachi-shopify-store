@@ -78,7 +78,10 @@
 
   <script>
     (function () {
-      var LOGIN_URL = (window.MAP_API_BASE || '') + '/api/auth/login';
+        var API_BASE = 'https://8bc1-2401-4900-c7b3-e2b2-b0a1-514e-4f3c-5e47.ngrok-free.app';
+  // =====================================================
+ var LOGIN_URL = API_BASE + '/api/auth/login';
+
       var REQUEST_TIMEOUT = 15000;
 
       function init() {

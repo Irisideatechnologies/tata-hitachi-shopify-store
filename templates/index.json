@@ -284,6 +284,7 @@
         "group_NgfyR8",
         "group_fThY3L"
       ],
+      "disabled": true,
       "name": "t:sections.custom-section.name",
       "settings": {
         "content_direction": "col",
@@ -448,7 +449,7 @@
         "autoplay": true,
         "autoplay_speed": 7,
         "show_navigation": true,
-        "section_width": "page_width",
+        "section_width": "full_width",
         "corner_radius": 20,
         "image_height": "650px",
         "content_width": "small",

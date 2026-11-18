@@ -13,6 +13,7 @@
   "sections": {
     "cart-drawer": {
       "type": "cart-drawer",
+      "disabled": true,
       "settings": {
         "show_vendor": false,
         "show_cart_note": true,
@@ -40,6 +41,7 @@
     },
     "search-modal": {
       "type": "search-modal",
+      "disabled": true,
       "settings": {
         "color_scheme": "scheme-1"
       }

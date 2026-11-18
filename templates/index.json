@@ -323,6 +323,7 @@
         "slide-1": {
           "type": "_slide-image",
           "settings": {
+            "image": "shopify://shop_images/tl340h-ultra-hp-banner.webp",
             "aspect_ratio": "adapt",
             "link": "",
             "accessibility_info": "",

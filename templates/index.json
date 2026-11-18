@@ -361,6 +361,7 @@
         "slide_image_GMFwYT": {
           "type": "_slide-image",
           "settings": {
+            "image": "shopify://shop_images/reliable-orange-hero-banner.webp",
             "aspect_ratio": "adapt",
             "link": "",
             "accessibility_info": "",

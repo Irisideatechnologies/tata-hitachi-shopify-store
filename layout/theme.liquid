@@ -22,6 +22,8 @@
     {% render 'map-auth-head' %}
     {% render 'thcm-api' %}
     {% render 'thcm-admin-links' %}
+     {{ 'tata.css' | asset_url | stylesheet_tag }}
+    <script src="{{ 'tata.js' | asset_url }}" defer></script>
 
     {%- if settings.favicon != blank -%}
       <link rel="shortcut icon" href="{{ settings.favicon | image_url: width: 32, height: 32 }}" type="image/png" />

@@ -14,34 +14,14 @@
       <label class="map-login__label" for="map-login-password">Password</label>
       <div class="map-login__pass">
         <input class="map-login__input" id="map-login-password" type="password" autocomplete="current-password" required>
-        <button class="map-login__eye" id="map-login-eye" type="button" aria-label="Show password" aria-pressed="false">
+        <button class="map-login__eye" id="map-login-eye" type="button" aria-label="Show password">
           <svg class="map-login__eye-on" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           <svg class="map-login__eye-off" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
         </button>
       </div>
 
-      <p class="map-login__error" id="map-login-error" role="alert" aria-live="polite" hidden></p>
-
+      <p class="map-login__error" id="map-login-error" role="alert" hidden></p>
       <button class="map-login__button" id="map-login-submit" type="submit">Login</button>
-    </form>
-
-    <button class="map-login__link" id="map-forgot-link" type="button">Forgot password?</button>
-
-    <form id="map-reset-form" novalidate hidden>
-      <label class="map-login__label" for="map-reset-email">Email</label>
-      <input class="map-login__input" id="map-reset-email" type="email" autocomplete="email" required>
-
-      <label class="map-login__label" for="map-reset-password">New password</label>
-      <input class="map-login__input" id="map-reset-password" type="password" autocomplete="new-password" required>
-
-      <label class="map-login__label" for="map-reset-confirm">Confirm password</label>
-      <input class="map-login__input" id="map-reset-confirm" type="password" autocomplete="new-password" required>
-
-      <p class="map-login__error" id="map-reset-error" role="alert" aria-live="polite" hidden></p>
-      <p class="map-login__success" id="map-reset-success" hidden></p>
-
-      <button class="map-login__button" id="map-reset-submit" type="submit">Update password</button>
-      <button class="map-login__link" id="map-back-login" type="button">Back to login</button>
     </form>
   </div>
 </div>
@@ -50,277 +30,126 @@
   #map-login { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px 16px; background: #F6F7F9; font-family: Inter, system-ui, sans-serif; color: #111827; }
   .map-login__card { width: 100%; max-width: 420px; background: #fff; border: 1px solid #E5E7EB; border-top: 4px solid #F26B1D; border-radius: 12px; padding: 36px 28px; box-shadow: 0 12px 40px rgba(17,24,39,.14); }
   .map-login__logo { display: block; max-width: 180px; height: auto; margin: 0 auto 24px; }
-  .map-login__title { text-align: center; margin: 0 0 4px; font-size: 24px; font-weight: 700; letter-spacing: -.01em; }
+  .map-login__title { text-align: center; margin: 0 0 4px; font-size: 24px; font-weight: 700; }
   .map-login__sub { text-align: center; margin: 0 0 24px; color: #4B5563; font-size: 14px; }
   .map-login__label { display: block; font-size: 13px; font-weight: 600; margin: 0 0 6px; }
   .map-login__input { width: 100%; box-sizing: border-box; padding: 12px; margin: 0 0 16px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 15px; font-family: inherit; color: #111827; background: #fff; }
   .map-login__input:focus { outline: 2px solid #C94F0C; outline-offset: 1px; border-color: #C94F0C; }
-  /* Use the theme's single password toggle; suppress browser-native reveal controls. */
   .map-login__input[type='password']::-ms-reveal,
-  .map-login__input[type='password']::-ms-clear,
-  .map-login__input[type='password']::-webkit-credentials-auto-fill-button { display: none !important; visibility: hidden; pointer-events: none; }
+  .map-login__input[type='password']::-ms-clear { display: none; }
   .map-login__pass { position: relative; }
   .map-login__pass .map-login__input { padding-right: 44px; }
   .map-login__eye { position: absolute; top: 0; right: 0; height: 44px; width: 44px; display: flex; align-items: center; justify-content: center; background: none; border: 0; color: #4B5563; cursor: pointer; }
-  .map-login__eye:hover { color: #111827; }
-  .map-login__eye svg { display: block; }
   .map-login__eye .map-login__eye-off { display: none; }
   .map-login__eye.is-visible .map-login__eye-on { display: none; }
   .map-login__eye.is-visible .map-login__eye-off { display: block; }
   .map-login__error { color: #B91C1C; font-size: 13px; margin: 0 0 12px; }
-  .map-login__success { color: #166534; font-size: 13px; margin: 0 0 12px; }
   .map-login__button { width: 100%; padding: 14px; border: 0; border-radius: 8px; background: #C94F0C; color: #fff; font-weight: 600; font-size: 15px; font-family: inherit; cursor: pointer; }
   .map-login__button:hover { background: #A94009; }
   .map-login__button:disabled { opacity: .6; cursor: wait; }
-  .map-login__link { display: block; margin: 14px auto 0; padding: 0; border: 0; background: transparent; color: #C94F0C; font: inherit; font-size: 13px; cursor: pointer; text-decoration: underline; }
-  .map-login__link:hover { color: #A94009; }
 </style>
 
-  <script>
-    (function () {
-      var LOGIN_URL = (window.MAP_API_BASE || '') + '/api/auth/login';
-      var REQUEST_TIMEOUT = 15000;
+<script>
+  // =====================================================
+  // SETTINGS - yahan apni value daalo
+  // Backend ka URL (end mein / mat lagana)
+  var API_BASE = 'https://8bc1-2401-4900-c7b3-e2b2-b0a1-514e-4f3c-5e47.ngrok-free.app';
+  // =====================================================
 
-      function init() {
-        var form = document.getElementById('map-login-form');
-        if (!form || form.dataset.mapLoginInitialized === 'true') return;
-        form.dataset.mapLoginInitialized = 'true';
+  var LOGIN_URL = API_BASE + '/api/auth/login';
 
-        var idInput = document.getElementById('map-login-id');
-        var passInput = document.getElementById('map-login-password');
-        var errorBox = document.getElementById('map-login-error');
-        var button = document.getElementById('map-login-submit');
-        var forgotLink = document.getElementById('map-forgot-link');
-        var resetForm = document.getElementById('map-reset-form');
-        var resetEmail = document.getElementById('map-reset-email');
-        var resetPassword = document.getElementById('map-reset-password');
-        var resetConfirm = document.getElementById('map-reset-confirm');
-        var resetError = document.getElementById('map-reset-error');
-        var resetSuccess = document.getElementById('map-reset-success');
-        var resetSubmitButton = document.getElementById('map-reset-submit');
-        var backLogin = document.getElementById('map-back-login');
+  // Page ke elements
+  var loginForm = document.getElementById('map-login-form');
+  var idInput = document.getElementById('map-login-id');
+  var passInput = document.getElementById('map-login-password');
+  var errorBox = document.getElementById('map-login-error');
+  var loginButton = document.getElementById('map-login-submit');
+  var eyeButton = document.getElementById('map-login-eye');
 
-        function showResetError(msg) {
-          resetError.textContent = msg;
-          resetError.hidden = false;
-          resetSuccess.hidden = true;
-        }
+  // Error message dikhane ke liye
+  function showError(message) {
+    errorBox.textContent = message;
+    errorBox.hidden = false;
+  }
 
-        function showLogin() {
-          resetForm.hidden = true;
-          form.hidden = false;
-          forgotLink.hidden = false;
-          resetError.hidden = true;
-          resetSuccess.hidden = true;
-          resetSubmitButton.disabled = false;
-          resetSubmitButton.textContent = 'Update password';
-        }
+  // Password show / hide
+  eyeButton.addEventListener('click', function () {
+    if (passInput.type === 'password') {
+      passInput.type = 'text';
+      eyeButton.classList.add('is-visible');
+      eyeButton.setAttribute('aria-label', 'Hide password');
+    } else {
+      passInput.type = 'password';
+      eyeButton.classList.remove('is-visible');
+      eyeButton.setAttribute('aria-label', 'Show password');
+    }
+  });
 
-        forgotLink.addEventListener('click', function () {
-      form.hidden = true;
-      forgotLink.hidden = true;
-      resetForm.hidden = false;
-      errorBox.hidden = true;
-      resetError.hidden = true;
-      resetSuccess.hidden = true;
-      resetEmail.value = idInput.value.indexOf('@') !== -1 ? idInput.value.trim() : '';
-      resetEmail.focus();
-        });
+  // Likhna shuru karte hi purana error hata do
+  idInput.addEventListener('input', function () { errorBox.hidden = true; });
+  passInput.addEventListener('input', function () { errorBox.hidden = true; });
 
-        backLogin.addEventListener('click', function () {
-      showLogin();
-      idInput.focus();
-        });
+  // Login button dabane par
+  loginForm.addEventListener('submit', async function (event) {
+    event.preventDefault();
+    errorBox.hidden = true;
 
-        resetForm.addEventListener('submit', async function (e) {
-      e.preventDefault();
-      resetError.hidden = true;
-      resetSuccess.hidden = true;
+    var identifier = idInput.value.trim();
+    var password = passInput.value;
 
-      var email = resetEmail.value.trim();
-      var newPassword = resetPassword.value;
-      var confirmation = resetConfirm.value;
-      if (!email || !newPassword || !confirmation) {
-        showResetError('Please enter your email, new password and confirmation.');
+    // 1. Khali field check
+    if (identifier === '' || password === '') {
+      showError('Please enter your login ID and password.');
+      return;
+    }
+
+    // 2. map-auth-head.liquid load hona chahiye (token save karne ke liye)
+    if (!window.MAP_AUTH) {
+      showError('Something went wrong. Please try again.');
+      return;
+    }
+
+    // 3. Button band karo jab tak jawab na aaye
+    loginButton.disabled = true;
+    loginButton.textContent = 'Please wait...';
+
+    try {
+      // 4. Backend ko login request bhejo
+      var response = await fetch(LOGIN_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true' // sirf ngrok ke liye. Asli domain par hata dena
+        },
+        body: JSON.stringify({ identifier: identifier, password: password })
+      });
+
+      // 5. Jawab padho (agar JSON nahi hai to khali rakho)
+      var result = {};
+      try { result = await response.json(); } catch (e) {}
+
+      // 6. Jawab ke hisaab se kaam karo
+      if (response.status === 401) {
+        showError('Invalid credentials');
+      } else if (response.status === 400) {
+        showError(result.message || 'Invalid request.');
+      } else if (!response.ok) {
+        showError('Something went wrong. Please try again.');
+      } else if (!result.data || !result.data.token) {
+        showError('Something went wrong. Please try again.');
+      } else {
+        // Login sahi hai: token save karo aur page reload karo
+        window.MAP_AUTH.saveLogin(result.data.token, result.data.user || {});
+        window.location.reload();
         return;
       }
-      if (newPassword !== confirmation) {
-        showResetError('New password and confirm password must match.');
-        return;
-      }
-      if (!window.THCM_API || typeof window.THCM_API.keyRequest !== 'function') {
-        showResetError('Password reset is not available. Please contact support.');
-        return;
-      }
+    } catch (error) {
+      // Internet / server band hai
+      showError('Cannot reach the server. Please try again.');
+    }
 
-      resetSubmitButton.disabled = true;
-      resetSubmitButton.textContent = 'Please wait...';
-      try {
-        var resetResponse = await window.THCM_API.keyRequest('POST', '/api/auth/reset-password', {
-          email: email,
-          newPassword: newPassword
-        }, { mode: 'overlay' });
-        if (!resetResponse || resetResponse.success !== true) {
-          throw new Error((resetResponse && resetResponse.message) || 'Password update failed.');
-        }
-        resetPassword.value = '';
-        resetConfirm.value = '';
-        showLogin();
-        errorBox.textContent = resetResponse.message || 'Password updated successfully';
-        errorBox.classList.add('map-login__success');
-        errorBox.hidden = false;
-      } catch (err) {
-        showResetError((err && err.message) || 'Password update failed.');
-        resetSubmitButton.disabled = false;
-        resetSubmitButton.textContent = 'Update password';
-      }
-        });
-
-        var eye = document.getElementById('map-login-eye');
-        eye.addEventListener('click', function () {
-      var show = passInput.type === 'password';
-      passInput.type = show ? 'text' : 'password';
-      eye.setAttribute('aria-pressed', show);
-      eye.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
-      eye.classList.toggle('is-visible', show);
-        });
-
-        function showError(msg) {
-          errorBox.textContent = msg;
-          errorBox.classList.remove('map-login__success');
-          errorBox.hidden = false;
-        }
-
-        function setLoading(loading) {
-          button.disabled = loading;
-          button.classList.toggle('is-loading', loading);
-          button.textContent = loading ? 'Please wait...' : 'Login';
-          button.setAttribute('aria-busy', loading ? 'true' : 'false');
-          form.setAttribute('aria-busy', loading ? 'true' : 'false');
-          [idInput, passInput].forEach(function (input) { input.disabled = loading; });
-          if (eye) eye.disabled = loading;
-          forgotLink.disabled = loading;
-        }
-
-        function updateButtonState() {
-          if (!form.hasAttribute('aria-busy') || form.getAttribute('aria-busy') !== 'true') {
-            setLoading(false);
-            button.disabled = !idInput.value.trim() || !passInput.value;
-          }
-        }
-
-        function clearError() {
-          errorBox.textContent = '';
-          errorBox.hidden = true;
-          errorBox.classList.remove('map-login__success');
-        }
-
-        [idInput, passInput].forEach(function (input) {
-          input.addEventListener('input', function () {
-            clearError();
-            updateButtonState();
-          });
-        });
-
-        var loginSubmitting = false;
-        form.addEventListener('submit', async function (e) {
-          e.preventDefault();
-          if (loginSubmitting) return;
-          clearError();
-
-          var identifier = idInput.value.trim();
-          var password = passInput.value;
-          if (!identifier || !password) {
-            showError('Please enter your login ID and password.');
-            passInput.focus();
-            updateButtonState();
-            return;
-          }
-
-          if (!window.MAP_AUTH) {
-            console.error('MAP login error: MAP_AUTH not found. Render map-auth-head in <head> of theme.liquid.');
-            showError('Something went wrong. Please try again.');
-            passInput.focus();
-            updateButtonState();
-            return;
-          }
-
-          loginSubmitting = true;
-          setLoading(true);
-          var controller = new AbortController();
-          var timeoutId = window.setTimeout(function () { controller.abort(); }, REQUEST_TIMEOUT);
-
-          try {
-            var res = await fetch(LOGIN_URL, {
-              method: 'POST',
-              headers: Object.assign({
-                'Content-Type': 'application/json',
-                'ngrok-skip-browser-warning': 'true'
-              }, window.THCM_LOADER ? window.THCM_LOADER.headers({ mode: 'overlay' }) : {}),
-              body: JSON.stringify({ identifier: identifier, password: password }),
-              signal: controller.signal
-            });
-            var text = await res.text();
-            var json = null;
-            try { json = text ? JSON.parse(text) : null; } catch (parseErr) {}
-
-            if (res.status === 401) {
-              var unauthorized = new Error('Invalid credentials');
-              unauthorized.status = 401;
-              throw unauthorized;
-            }
-            if (res.status === 400) {
-              var badRequest = new Error((json && json.message) || 'Invalid request.');
-              badRequest.status = 400;
-              throw badRequest;
-            }
-            if (res.status === 429 || res.status >= 500 || !res.ok) {
-              var serverFailure = new Error('Something went wrong. Please try again.');
-              serverFailure.status = res.status;
-              throw serverFailure;
-            }
-            if (!json) throw new Error('Something went wrong. Please try again.');
-
-            var data = json.data || {};
-            if (!data.token) throw new Error('Something went wrong. Please try again.');
-
-            window.MAP_AUTH.saveLogin(data.token, data.user || {});
-            passInput.value = '';
-            button.textContent = 'Signing you in...';
-            window.location.reload();
-          } catch (err) {
-            console.error('MAP login request failed:', (err && err.message) || 'Request failed');
-            showError('Something went wrong. Please try again.');
-            if (err && err.status === 401) showError('Invalid credentials');
-            else if (err && err.status === 400) showError(err.message || 'Invalid request.');
-            passInput.focus();
-          } finally {
-            window.clearTimeout(timeoutId);
-            loginSubmitting = false;
-            setLoading(false);
-          }
-        });
-
-        updateButtonState();
-      }
-
-      init();
-      if (!window.__MAP_LOGIN_PAGESHOW_BOUND__) {
-        window.__MAP_LOGIN_PAGESHOW_BOUND__ = true;
-        window.addEventListener('pageshow', function () {
-          var form = document.getElementById('map-login-form');
-          var button = document.getElementById('map-login-submit');
-          if (!form || !button) return;
-          form.setAttribute('aria-busy', 'false');
-          button.disabled = false;
-          button.classList.remove('is-loading');
-          button.textContent = 'Login';
-          button.setAttribute('aria-busy', 'false');
-          var idInput = document.getElementById('map-login-id');
-          var passInput = document.getElementById('map-login-password');
-          if (idInput && passInput) button.disabled = !idInput.value.trim() || !passInput.value;
-        });
-      }
-      document.addEventListener('shopify:section:load', init);
-    })();
-  </script>
+    // Error aaya to button wapas chalu karo
+    loginButton.disabled = false;
+    loginButton.textContent = 'Login';
+  });
+</script>

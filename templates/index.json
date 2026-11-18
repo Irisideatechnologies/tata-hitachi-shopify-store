@@ -513,6 +513,7 @@
               "type": "image-card",
               "name": "t:blocks.image-card.name",
               "settings": {
+                "image": "shopify://shop_images/kids-room.png",
                 "aspect_ratio": "adapt",
                 "button_alignment": "left",
                 "button_label": "Living Room",
@@ -590,6 +591,7 @@
               "type": "image-card",
               "name": "t:blocks.image-card.name",
               "settings": {
+                "image": "shopify://shop_images/tata-hitachi-leaving-room-image-card.png",
                 "aspect_ratio": "adapt",
                 "button_alignment": "left",
                 "button_label": "Bed room",
@@ -667,6 +669,7 @@
               "type": "image-card",
               "name": "t:blocks.image-card.name",
               "settings": {
+                "image": "shopify://shop_images/tata-hitachi-brand-store-banner.png",
                 "aspect_ratio": "adapt",
                 "button_alignment": "right",
                 "button_label": "Kitchen",
@@ -694,6 +697,7 @@
               "type": "image-card",
               "name": "t:blocks.image-card.name",
               "settings": {
+                "image": "shopify://shop_images/industrial-equipment-card.png",
                 "aspect_ratio": "adapt",
                 "button_alignment": "right",
                 "button_label": "Kid room",

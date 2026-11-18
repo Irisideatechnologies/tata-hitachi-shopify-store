@@ -1,0 +1,211 @@
+{% doc %}
+  Global API loader for every call to the MAP backend (window.MAP_API_BASE). Rendered once in theme.liquid,
+  right after <body> and before map-login, so it also shows on the login screen. Styles: assets/tata.css ("THCM Loader").
+
+  window.THCM_LOADER
+    show(label?)           manual overlay; pair with hide()
+    hide()
+    track(promise, opts)   opts: { mode: 'bar' | 'overlay', label }; returns the same promise
+    headers(opts)          loader headers for a fetch: { mode: 'overlay' } or { silent: true }
+
+  window.fetch is wrapped once. Only requests whose URL starts with MAP_API_BASE are tracked (Shopify /cart, analytics, CDN
+  are untouched). The wrapper reads and strips two request headers before the request goes out, so the backend never sees them:
+    x-thcm-loader: overlay   full-screen overlay (default is the top progress bar)
+    x-thcm-silent: 1         no loader at all (background call)
+
+  A loader shows only after a call takes longer than 200ms and then stays at least 300ms (no flicker). Parallel calls are
+  counted; the loader hides when the last one finishes. A call that never finishes is released after 30s.
+  Not rendered in the theme editor (only a no-op stub, so callers keep working).
+{% enddoc %}
+
+{%- if request.design_mode -%}
+  <script>
+    window.THCM_LOADER = {
+      show: function () {},
+      hide: function () {},
+      track: function (p) { return p; },
+      headers: function () { return {}; }
+    };
+  </script>
+{%- else -%}
+  <div id="thcm-loader" class="thcm-loader">
+    <div class="thcm-loader__bar" aria-hidden="true"><span class="thcm-loader__bar-fill"></span></div>
+    <div class="thcm-loader__overlay" popover="manual" aria-busy="false">
+      <div class="thcm-loader__box">
+        <span class="thcm-loader__spinner" aria-hidden="true"></span>
+        <span class="thcm-loader__text" aria-live="polite"></span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      if (window.THCM_LOADER && window.THCM_LOADER.installed) return;
+
+      var SHOW_DELAY = 200;
+      var MIN_VISIBLE = 300;
+      var MAX_WAIT = 30000;
+      var DEFAULT_LABEL = 'Please wait...';
+      var H_MODE = 'x-thcm-loader';
+      var H_SILENT = 'x-thcm-silent';
+
+      var root = document.getElementById('thcm-loader');
+      var bar = root.querySelector('.thcm-loader__bar');
+      var overlay = root.querySelector('.thcm-loader__overlay');
+      var text = root.querySelector('.thcm-loader__text');
+
+      var tokens = [];
+      var blocked = [];
+      var manual = [];
+      var visible = { bar: false, overlay: false };
+      var shownAt = { bar: 0, overlay: 0 };
+      var showTimer = { bar: 0, overlay: 0 };
+      var hideTimer = { bar: 0, overlay: 0 };
+
+      function wants(kind) {
+        if (kind === 'bar') return tokens.length > 0;
+        return tokens.some(function (t) { return t.mode === 'overlay'; });
+      }
+
+      function overlayLabel() {
+        for (var i = tokens.length - 1; i >= 0; i--) {
+          if (tokens[i].mode === 'overlay' && tokens[i].label) return tokens[i].label;
+        }
+        return DEFAULT_LABEL;
+      }
+
+      function render(kind, on) {
+        visible[kind] = on;
+        if (on) shownAt[kind] = Date.now();
+        if (kind === 'bar') {
+          bar.classList.toggle('is-active', on);
+          return;
+        }
+        if (on) {
+          overlay.classList.add('is-open');
+          // Top layer, so the overlay also sits above an open modal <dialog>
+          if (overlay.showPopover) { try { overlay.showPopover(); } catch (e) {} }
+          overlay.setAttribute('aria-busy', 'true');
+          text.textContent = overlayLabel();
+          // An open modal dialog keeps the page behind it inert, which would also let clicks through to the dialog: block it too
+          blocked = Array.prototype.filter.call(document.querySelectorAll('dialog[open]'), function (d) { return !d.inert; });
+          blocked.forEach(function (d) { d.inert = true; });
+        } else {
+          if (overlay.hidePopover) { try { overlay.hidePopover(); } catch (e) {} }
+          overlay.classList.remove('is-open');
+          overlay.setAttribute('aria-busy', 'false');
+          text.textContent = '';
+          blocked.forEach(function (d) { d.inert = false; });
+          blocked = [];
+        }
+      }
+
+      function sync(kind) {
+        if (wants(kind)) {
+          clearTimeout(hideTimer[kind]);
+          hideTimer[kind] = 0;
+          if (visible[kind]) {
+            if (kind === 'overlay') text.textContent = overlayLabel();
+          } else if (!showTimer[kind]) {
+            showTimer[kind] = setTimeout(function () {
+              showTimer[kind] = 0;
+              if (wants(kind)) render(kind, true);
+            }, SHOW_DELAY);
+          }
+        } else {
+          clearTimeout(showTimer[kind]);
+          showTimer[kind] = 0;
+          if (visible[kind] && !hideTimer[kind]) {
+            var wait = Math.max(0, MIN_VISIBLE - (Date.now() - shownAt[kind]));
+            hideTimer[kind] = setTimeout(function () {
+              hideTimer[kind] = 0;
+              if (!wants(kind)) render(kind, false);
+            }, wait);
+          }
+        }
+      }
+
+      function update() {
+        sync('bar');
+        sync('overlay');
+      }
+
+      function begin(mode, label) {
+        var tok = { mode: mode === 'overlay' ? 'overlay' : 'bar', label: label || '', done: false, timer: 0 };
+        tok.timer = setTimeout(function () {
+          if (tok.done) return;
+          console.warn('THCM loader: a request is still pending after 30s, hiding the loader.');
+          finish(tok);
+        }, MAX_WAIT);
+        tokens.push(tok);
+        update();
+        return tok;
+      }
+
+      function finish(tok) {
+        if (!tok || tok.done) return;
+        tok.done = true;
+        clearTimeout(tok.timer);
+        var i = tokens.indexOf(tok);
+        if (i !== -1) tokens.splice(i, 1);
+        update();
+      }
+
+      function track(promise, opts) {
+        opts = opts || {};
+        var tok = begin(opts.mode, opts.label);
+        var done = function () { finish(tok); };
+        Promise.resolve(promise).then(done, done);
+        return promise;
+      }
+
+      function headers(opts) {
+        var h = {};
+        if (opts && opts.silent) h[H_SILENT] = '1';
+        else if (opts && opts.mode === 'overlay') h[H_MODE] = 'overlay';
+        return h;
+      }
+
+      // ---- fetch wrapper: MAP backend requests only ----
+      var origFetch = window.fetch;
+      if (typeof origFetch === 'function') {
+        window.fetch = function (input, init) {
+          var base = String(window.MAP_API_BASE || '');
+          var url = '';
+          try { url = typeof input === 'string' ? input : (input && input.url) || String(input); } catch (e) {}
+          if (!base || url.indexOf(base) !== 0) return origFetch.apply(this, arguments);
+
+          var silent = false;
+          var mode = 'bar';
+          var args = arguments;
+          if (init && init.headers) {
+            var h = new Headers(init.headers);
+            if (h.has(H_MODE) || h.has(H_SILENT)) {
+              silent = h.get(H_SILENT) === '1';
+              if (h.get(H_MODE) === 'overlay') mode = 'overlay';
+              h.delete(H_MODE);
+              h.delete(H_SILENT);
+              args = [input, Object.assign({}, init, { headers: h })];
+            }
+          }
+
+          var tok = silent ? null : begin(mode);
+          var p = origFetch.apply(this, args);
+          if (tok) {
+            var done = function () { finish(tok); };
+            p.then(done, done);
+          }
+          return p;
+        };
+      }
+
+      window.THCM_LOADER = {
+        installed: true,
+        show: function (label) { manual.push(begin('overlay', label)); },
+        hide: function () { finish(manual.shift()); },
+        track: track,
+        headers: headers
+      };
+    })();
+  </script>
+{%- endif -%}

@@ -772,8 +772,14 @@
         "collection-1": {
           "type": "collection",
           "settings": {
-            "collection": "",
-            "products": [],
+            "collection": "kids",
+            "products": [
+              "kids-t-shirt",
+              "keychain-excavator",
+              "t-shirt-excavator-black",
+              "fridge-magnet-backhoe-loader",
+              "t-shirt-backhoe-loader-black-graphic"
+            ],
             "title": "Kitchen",
             "color_scheme": ""
           }

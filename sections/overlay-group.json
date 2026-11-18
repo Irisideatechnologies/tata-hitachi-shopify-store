@@ -41,7 +41,6 @@
     },
     "search-modal": {
       "type": "search-modal",
-      "disabled": true,
       "settings": {
         "color_scheme": "scheme-1"
       }

@@ -1,0 +1,45 @@
+{% style %}
+  {% for scheme in settings.color_schemes -%}
+    {% assign scheme_classes = scheme_classes | append: ', .color-' | append: scheme.id %}
+    {% if forloop.index == 1 %}
+      :root,
+    {% endif %}
+    .color-{{ scheme.id }} {
+        /*! General */
+        --color-base-text: {{ scheme.settings.color_text.rgb }};
+        --color-base-highlight: {{ scheme.settings.color_highlight.rgb }};
+        --color-base-background: {{ scheme.settings.color_background.rgb }};
+        --color-base-button: {{ scheme.settings.color_button_background.rgb }};
+        --color-base-button-gradient: {% if scheme.settings.color_button_gradient != blank %}{{ scheme.settings.color_button_gradient }}{% else %}{{ scheme.settings.color_button_background }}{% endif %};
+        --color-base-button-text: {{ scheme.settings.color_button_text.rgb }};
+        --color-base-button-border: {{ scheme.settings.color_button_border.rgb }};
+        --color-secondary-button-text: {{ scheme.settings.color_button_2_text.rgb }};
+        --color-secondary-button: {{ scheme.settings.color_button_2_background.rgb }};
+        --color-secondary-button-border: {{ scheme.settings.color_button_2_border.rgb }};
+        --color-secondary-button-gradient: {% if scheme.settings.color_button_2_gradient != blank %}{{ scheme.settings.color_button_2_gradient }}{% else %}{{ scheme.settings.color_button_2_background }}{% endif %};
+        --color-keyboard-focus: {{ scheme.settings.color_keyboard_focus.rgb }};
+        --color-shadow: {{ scheme.settings.color_shadow.rgb }};
+        --color-price: {{ scheme.settings.color_price.rgb }};
+        --color-sale-price: {{ scheme.settings.color_sale_price.rgb }};
+        --color-sale-tag: {{ scheme.settings.color_sale_tag.rgb }};
+        --color-sale-tag-text: {{ scheme.settings.color_sale_tag_text.rgb }};
+        --color-rating: {{ scheme.settings.color_rating.rgb }};
+        --color-placeholder: {{ scheme.settings.color_image_background.rgb }};
+        --color-success-text: {{ scheme.settings.color_success_text.rgb }};
+        --color-success-background: {{ scheme.settings.color_success_background.rgb }};
+        --color-error-text: {{ scheme.settings.color_error_text.rgb }};
+        --color-error-background: {{ scheme.settings.color_error_background.rgb }};
+        --color-info-text: {{ scheme.settings.color_info_text.rgb }};
+        --color-info-background: {{ scheme.settings.color_info_background.rgb }};
+        --color-overlay: {{ scheme.settings.color_overlay.rgb }};
+      }
+  {% endfor %}
+
+  {{ scheme_classes | prepend: 'body' }} {
+    --color-foreground : var(--color-base-text);
+    --color-highlight : var(--color-base-highlight);
+    --color-background : var(--color-base-background);
+    color: rgb(var(--color-foreground));
+    background-color: rgb(var(--color-background));
+  }
+{% endstyle %}

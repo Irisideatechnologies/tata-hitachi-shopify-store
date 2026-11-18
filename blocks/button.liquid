@@ -1,0 +1,277 @@
+{%- if block.settings.button_label != blank -%}
+  {%- capture size_style -%}
+    {%- render 'section-size-style', settings: block.settings -%}
+  {%- endcapture -%}
+  {%- liquid
+    assign selected_icon = 'arrow-right'
+    if block.settings.button_icon_source == 'built-in' and block.settings.button_icon_name != blank
+      assign selected_icon = block.settings.button_icon_name
+    endif
+  -%}
+  {%- render 'button',
+    label: block.settings.button_label,
+    link: block.settings.button_link,
+    size: block.settings.button_size,
+    style: block.settings.button_style,
+    external: block.settings.button_external,
+    show_icon: block.settings.button_icon,
+    icon_only: block.settings.button_icon_only,
+    icon_size: block.settings.button_icon_size,
+    icon: selected_icon,
+    icon_source: block.settings.button_icon_source,
+    icon_image: block.settings.button_icon_image,
+    shopify_attributes: block.shopify_attributes,
+    size_style: size_style,
+    classes: 'size-style'
+  -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:blocks.button.name",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "button_label",
+      "default": "Button label",
+      "label": "t:sections.global.settings.button_label.label",
+      "info": "t:sections.global.settings.button_label.info"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "t:sections.global.settings.button_link.label"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "options": [
+        {
+          "value": "primary",
+          "label": "t:sections.global.settings.button_style.options__1.label"
+        },
+        {
+          "value": "secondary",
+          "label": "t:sections.global.settings.button_style.options__2.label"
+        },
+        {
+          "value": "outline",
+          "label": "t:sections.global.settings.button_style.options__4.label"
+        },
+        {
+          "value": "link",
+          "label": "t:sections.global.settings.button_style.options__3.label"
+        }
+      ],
+      "default": "primary",
+      "label": "t:sections.global.settings.button_style.label"
+    },
+    {
+      "visible_if": "{{ block.settings.button_style != 'link' }}",
+      "type": "select",
+      "id": "button_size",
+      "options": [
+        {
+          "value": "sm",
+          "label": "t:sections.global.settings.button_size.options__1.label"
+        },
+        {
+          "value": "md",
+          "label": "t:sections.global.settings.button_size.options__2.label"
+        },
+        {
+          "value": "lg",
+          "label": "t:sections.global.settings.button_size.options__3.label"
+        }
+      ],
+      "default": "md",
+      "label": "t:sections.global.settings.button_size.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "button_external",
+      "label": "t:sections.global.settings.button_external.label",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "button_icon",
+      "label": "t:sections.global.settings.button_icon.label",
+      "default": false
+    },
+    {
+      "visible_if": "{{ block.settings.button_icon == true or block.settings.button_icon_only == true }}",
+      "type": "select",
+      "id": "button_icon_source",
+      "label": "t:sections.global.settings.button_icon_source.label",
+      "default": "built-in",
+      "options": [
+        { "value": "built-in", "label": "t:sections.global.settings.button_icon_source.options__1.label" },
+        { "value": "custom",   "label": "t:sections.global.settings.button_icon_source.options__2.label" }
+      ]
+    },
+    {
+      "visible_if": "{{ block.settings.button_icon_source == 'built-in' }}",
+      "type": "select",
+      "id": "button_icon_name",
+      "label": "t:sections.global.settings.button_icon_name.label",
+      "default": "arrow-right",
+      "options": [
+        { "value": "arrow-down",         "label": "t:sections.global.settings.button_icon_name.options__1.label" },
+        { "value": "arrow-left",         "label": "t:sections.global.settings.button_icon_name.options__2.label" },
+        { "value": "arrow-left-long",    "label": "t:sections.global.settings.button_icon_name.options__3.label" },
+        { "value": "arrow-right",        "label": "t:sections.global.settings.button_icon_name.options__4.label" },
+        { "value": "arrow-right-long",   "label": "t:sections.global.settings.button_icon_name.options__5.label" },
+        { "value": "arrow-top",          "label": "t:sections.global.settings.button_icon_name.options__6.label" },
+        { "value": "bag",                "label": "t:sections.global.settings.button_icon_name.options__7.label" },
+        { "value": "calendar",           "label": "t:sections.global.settings.button_icon_name.options__8.label" },
+        { "value": "cart",               "label": "t:sections.global.settings.button_icon_name.options__9.label" },
+        { "value": "caret",              "label": "t:sections.global.settings.button_icon_name.options__10.label" },
+        { "value": "check-circle",       "label": "t:sections.global.settings.button_icon_name.options__11.label" },
+        { "value": "check-circle-filled","label": "t:sections.global.settings.button_icon_name.options__12.label" },
+        { "value": "chevron-down",       "label": "t:sections.global.settings.button_icon_name.options__13.label" },
+        { "value": "chevron-left",       "label": "t:sections.global.settings.button_icon_name.options__14.label" },
+        { "value": "chevron-right",      "label": "t:sections.global.settings.button_icon_name.options__15.label" },
+        { "value": "chevron-up",         "label": "t:sections.global.settings.button_icon_name.options__16.label" },
+        { "value": "close",              "label": "t:sections.global.settings.button_icon_name.options__17.label" },
+        { "value": "comment",            "label": "t:sections.global.settings.button_icon_name.options__18.label" },
+        { "value": "copy",               "label": "t:sections.global.settings.button_icon_name.options__19.label" },
+        { "value": "currency",           "label": "t:sections.global.settings.button_icon_name.options__20.label" },
+        { "value": "direction",          "label": "t:sections.global.settings.button_icon_name.options__21.label" },
+        { "value": "discount",           "label": "t:sections.global.settings.button_icon_name.options__22.label" },
+        { "value": "download",           "label": "t:sections.global.settings.button_icon_name.options__23.label" },
+        { "value": "edit",               "label": "t:sections.global.settings.button_icon_name.options__24.label" },
+        { "value": "eye",                "label": "t:sections.global.settings.button_icon_name.options__25.label" },
+        { "value": "filter",             "label": "t:sections.global.settings.button_icon_name.options__26.label" },
+        { "value": "home",               "label": "t:sections.global.settings.button_icon_name.options__27.label" },
+        { "value": "info",               "label": "t:sections.global.settings.button_icon_name.options__28.label" },
+        { "value": "language",           "label": "t:sections.global.settings.button_icon_name.options__29.label" },
+        { "value": "location",           "label": "t:sections.global.settings.button_icon_name.options__30.label" },
+        { "value": "lock",               "label": "t:sections.global.settings.button_icon_name.options__31.label" },
+        { "value": "minus",              "label": "t:sections.global.settings.button_icon_name.options__32.label" },
+        { "value": "newspaper",          "label": "t:sections.global.settings.button_icon_name.options__33.label" },
+        { "value": "note",               "label": "t:sections.global.settings.button_icon_name.options__34.label" },
+        { "value": "package",            "label": "t:sections.global.settings.button_icon_name.options__35.label" },
+        { "value": "pause",              "label": "t:sections.global.settings.button_icon_name.options__36.label" },
+        { "value": "pin",                "label": "t:sections.global.settings.button_icon_name.options__37.label" },
+        { "value": "play",               "label": "t:sections.global.settings.button_icon_name.options__38.label" },
+        { "value": "plus",               "label": "t:sections.global.settings.button_icon_name.options__39.label" },
+        { "value": "power",              "label": "t:sections.global.settings.button_icon_name.options__40.label" },
+        { "value": "printer",            "label": "t:sections.global.settings.button_icon_name.options__41.label" },
+        { "value": "question",           "label": "t:sections.global.settings.button_icon_name.options__42.label" },
+        { "value": "remove",             "label": "t:sections.global.settings.button_icon_name.options__43.label" },
+        { "value": "return",             "label": "t:sections.global.settings.button_icon_name.options__44.label" },
+        { "value": "ruler",              "label": "t:sections.global.settings.button_icon_name.options__45.label" },
+        { "value": "sale",               "label": "t:sections.global.settings.button_icon_name.options__46.label" },
+        { "value": "search",             "label": "t:sections.global.settings.button_icon_name.options__47.label" },
+        { "value": "share",              "label": "t:sections.global.settings.button_icon_name.options__48.label" },
+        { "value": "star",               "label": "t:sections.global.settings.button_icon_name.options__49.label" },
+        { "value": "thumbs-up",          "label": "t:sections.global.settings.button_icon_name.options__50.label" },
+        { "value": "tote-bag",           "label": "t:sections.global.settings.button_icon_name.options__51.label" },
+        { "value": "trash",              "label": "t:sections.global.settings.button_icon_name.options__52.label" },
+        { "value": "zoom",               "label": "t:sections.global.settings.button_icon_name.options__53.label" }
+      ]
+    },
+    {
+      "visible_if": "{{ block.settings.button_icon_source == 'custom' }}",
+      "type": "image_picker",
+      "id": "button_icon_image",
+      "label": "t:sections.global.settings.button_icon_image.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "button_icon_only",
+      "label": "t:sections.global.settings.button_icon_only.label",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "button_icon_size",
+      "label": "t:sections.global.settings.button_icon_size.label",
+      "min": 12,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 16,
+      "visible_if": "{{ block.settings.button_icon == true or block.settings.button_icon_only == true }}"
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.group.settings.header__size.content"
+    },
+    {
+      "type": "select",
+      "id": "width",
+      "label": "t:blocks.group.settings.width.label",
+      "options": [
+        {
+          "value": "fit-content",
+          "label": "t:blocks.group.settings.width.options__1.label"
+        },
+        {
+          "value": "fill",
+          "label": "t:blocks.group.settings.width.options__2.label"
+        },
+        {
+          "value": "custom",
+          "label": "t:blocks.group.settings.width.options__3.label"
+        }
+      ],
+      "default": "fill"
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "t:blocks.group.settings.custom_width.label",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 100,
+      "visible_if": "{{ block.settings.width == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "width_mobile",
+      "label": "t:blocks.group.settings.width_mobile.label",
+      "options": [
+        {
+          "value": "fit-content",
+          "label": "t:blocks.group.settings.width.options__1.label"
+        },
+        {
+          "value": "fill",
+          "label": "t:blocks.group.settings.width.options__2.label"
+        },
+        {
+          "value": "custom",
+          "label": "t:blocks.group.settings.width.options__3.label"
+        }
+      ],
+      "default": "fill"
+    },
+    {
+      "type": "range",
+      "id": "custom_width_mobile",
+      "label": "t:blocks.group.settings.custom_width.label",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 100,
+      "visible_if": "{{ block.settings.width_mobile == 'custom' }}"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.button.name",
+      "category": "t:categories.basic",
+      "settings": {
+        "button_label": "Shop now",
+        "button_link": "shopify://collections/all"
+      }
+    }
+  ]
+}
+{% endschema %}

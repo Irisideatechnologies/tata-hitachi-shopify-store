@@ -1,0 +1,21 @@
+{%- doc -%}
+  Transforms emphasis tags into visually enhanced text with decorative highlighting effects.
+
+  Replaces standard `<em>` elements with custom highlighted text components.
+
+  @param {string} content - The heading text to display
+  @param {string} style - Highlight style type ('scribble', 'none', or other custom styles)
+  @param {string} [scribble] - Scribble icon type when using 'scribble' style
+  @param {boolean} [reveal] - Enable reveal effect
+  @param {boolean} [gradient] - Enable gradient color effects on highlighted text
+  @param {number} [delay] - Animation delay multiplier (multiplied by 250ms)
+
+  @example
+  {% render 'heading-content',
+    content: 'This is example heading.',
+    style: 'scribble',
+    scribble: 'circle'
+  %}
+{%- enddoc -%}
+
+{{- content -}}

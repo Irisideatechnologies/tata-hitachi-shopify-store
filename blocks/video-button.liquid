@@ -1,0 +1,201 @@
+{%- liquid
+  assign modal_id = 'VideoModal-' | append: block.id
+  assign icon_only = false
+  if block.settings.label == blank and block.settings.show_play_icon
+    assign icon_only = true
+  endif
+
+  assign icon_px = 12
+  if block.settings.icon_size == 'xs'
+    assign icon_px = 8
+  elsif block.settings.icon_size == 'sm'
+    assign icon_px = 12
+  elsif block.settings.icon_size == 'md'
+    assign icon_px = 16
+  elsif block.settings.icon_size == 'lg'
+    assign icon_px = 20
+  endif
+-%}
+
+{%- if block.settings.style == 'link' -%}
+  <button type="button" class="link inline-flex items-center justify-center{% if icon_only %} rounded-full aspect-square{% endif %} size-style" style="{% render 'section-size-style', settings: block.settings %}" is="hover-link" aria-controls="{{ modal_id }}" aria-expanded="false" {{ block.shopify_attributes }}>
+    <span class="link-text{% if icon_only %} flex items-center justify-center{% else %} icon-with-text{% endif %}">
+      {%- if block.settings.show_play_icon -%}<span class="video-btn-icon" style="--icon-px:{{ icon_px }}px">{%- render 'icon', icon: 'play' -%}</span>{%- endif -%}
+      {{- block.settings.label | escape -}}
+    </span>
+  </button>
+{%- else -%}
+  <button type="button" class="button button--{{ block.settings.style }} button--{{ block.settings.size }}{% if icon_only %} rounded-full aspect-square p-0 flex items-center justify-center{% elsif block.settings.show_play_icon %} icon-with-text{% endif %} size-style" style="{% render 'section-size-style', settings: block.settings %}" aria-controls="{{ modal_id }}" aria-expanded="false" {{ block.shopify_attributes }}>
+    <span class="btn-text{% if icon_only %} flex items-center justify-center{% endif %}">
+      {%- if block.settings.show_play_icon -%}<span class="video-btn-icon" style="--icon-px:{{ icon_px }}px">{%- render 'icon', icon: 'play' -%}</span>{%- endif -%}
+      {{- block.settings.label | escape -}}
+    </span>
+  </button>
+{%- endif -%}
+
+<nv-video-modal
+  id="{{ modal_id }}"
+  class="x-modal drawer z-30 fixed bottom-0 left-0 h-full w-full pointer-events-none"
+  role="dialog"
+  aria-modal="true"
+  aria-label="{{ block.settings.label | default: 'Video' | escape }}"
+  data-video-url="{{ block.settings.video_url | escape }}"
+  data-video-file="{{ block.settings.video_file.url | escape }}"
+  hidden
+>
+  <overlay-element class="overlay fixed-modal invisible opacity-0 fixed bottom-0 left-0 w-full h-screen pointer-events-none" aria-controls="{{ modal_id }}" aria-expanded="false"></overlay-element>
+  <div class="drawer__inner z-10 absolute top-0 flex flex-col w-full h-full overflow-hidden">
+    <div class="drawer__content opacity-0 invisible flex flex-col h-full grow shrink">
+      <div class="relative flex items-center justify-center grow shrink">
+        <div class="video-modal-player w-[90vw] max-w-240 aspect-video"></div>
+      </div>
+    </div>
+  </div>
+</nv-video-modal>
+
+{% stylesheet %}
+  .video-btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .video-btn-icon svg {
+    width: var(--icon-px);
+    height: var(--icon-px);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Video button",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:sections.video.settings.header__video.content"
+    },
+    {
+      "type": "url",
+      "id": "video_url",
+      "label": "t:sections.video-image-with-text.settings.video.video_url",
+      "info": "t:sections.video-image-with-text.settings.video.info"
+    },
+    {
+      "type": "video",
+      "id": "video_file",
+      "label": "t:sections.video-image-with-text.settings.video.video_file"
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.group.settings.header__link.content"
+    },
+    {
+      "type": "text",
+      "id": "label",
+      "label": "t:sections.global.settings.text.label",
+      "default": "Watch video"
+    },
+    {
+      "type": "select",
+      "id": "style",
+      "label": "t:blocks.popup-link.settings.style.label",
+      "options": [
+        { "value": "primary",   "label": "t:sections.global.settings.button_style.options__1.label" },
+        { "value": "secondary", "label": "t:sections.global.settings.button_style.options__2.label" },
+        { "value": "link",      "label": "t:sections.global.settings.button_style.options__3.label" }
+      ],
+      "default": "primary"
+    },
+    {
+      "type": "select",
+      "id": "size",
+      "label": "t:blocks.popup-link.settings.size.label",
+      "options": [
+        { "value": "sm", "label": "t:sections.global.settings.button_size.options__1.label" },
+        { "value": "md", "label": "t:sections.global.settings.button_size.options__2.label" },
+        { "value": "lg", "label": "t:sections.global.settings.button_size.options__3.label" }
+      ],
+      "default": "lg",
+      "visible_if": "{{ block.settings.style == 'primary' or block.settings.style == 'secondary' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_play_icon",
+      "label": "Show play icon",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "icon_size",
+      "label": "Icon size",
+      "options": [
+        { "value": "xs", "label": "XS" },
+        { "value": "sm", "label": "SM" },
+        { "value": "md", "label": "MD" },
+        { "value": "lg", "label": "LG" }
+      ],
+      "default": "sm",
+      "visible_if": "{{ block.settings.show_play_icon }}"
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.group.settings.header__size.content"
+    },
+    {
+      "type": "select",
+      "id": "width",
+      "label": "t:blocks.group.settings.width.label",
+      "options": [
+        { "value": "fit-content", "label": "t:blocks.group.settings.width.options__1.label" },
+        { "value": "fill",        "label": "t:blocks.group.settings.width.options__2.label" },
+        { "value": "custom",      "label": "t:blocks.group.settings.width.options__3.label" }
+      ],
+      "default": "fit-content"
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "t:blocks.group.settings.custom_width.label",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 100,
+      "visible_if": "{{ block.settings.width == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "width_mobile",
+      "label": "t:blocks.group.settings.width_mobile.label",
+      "options": [
+        { "value": "fit-content", "label": "t:blocks.group.settings.width.options__1.label" },
+        { "value": "fill",        "label": "t:blocks.group.settings.width.options__2.label" },
+        { "value": "custom",      "label": "t:blocks.group.settings.width.options__3.label" }
+      ],
+      "default": "fit-content"
+    },
+    {
+      "type": "range",
+      "id": "custom_width_mobile",
+      "label": "t:blocks.group.settings.custom_width.label",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 100,
+      "visible_if": "{{ block.settings.width_mobile == 'custom' }}"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Video button",
+      "category": "t:categories.basic",
+      "settings": {
+        "label": "Watch video",
+        "video_url": "https://www.youtube.com/watch?v=_9VUPq3SxOc"
+      }
+    }
+  ]
+}
+{% endschema %}

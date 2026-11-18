@@ -1,0 +1,242 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "disabled": true,
+      "settings": {
+        "heading_size": "title-xl",
+        "heading_alignment": "text-left",
+        "heading_tag": "h1",
+        "text_size": "text-base",
+        "padding_top": 72,
+        "padding_bottom": 120,
+        "narrow": true
+      }
+    },
+    "custom_section_RrtD4L": {
+      "type": "custom-section",
+      "blocks": {
+        "heading_e9MnkL": {
+          "type": "heading",
+          "name": "t:blocks.heading.name",
+          "settings": {
+            "heading": "FAQs",
+            "heading_size": "title-sm",
+            "heading_tag": "h2",
+            "width": "fit-content",
+            "custom_width": 100,
+            "alignment": "center",
+            "width_mobile": "fill",
+            "custom_width_mobile": 100,
+            "alignment_mobile": "left"
+          },
+          "blocks": {}
+        },
+        "text_p8tGan": {
+          "type": "text",
+          "name": "t:blocks.text.name",
+          "settings": {
+            "text": "<p>Welcome to our FAQ, we are so happy to have you here and as a client.<br/></p>",
+            "text_font": "body",
+            "text_size": "text-base",
+            "text_max_size": 32,
+            "text_line_height": 1.6,
+            "text_letter_spacing": 0,
+            "text_capitalize": false,
+            "secondary_color": false,
+            "width": "fit-content",
+            "custom_width": 100,
+            "alignment": "left",
+            "width_mobile": "fit-content",
+            "custom_width_mobile": 100
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "heading_e9MnkL",
+        "text_p8tGan"
+      ],
+      "name": "t:sections.custom-section.name",
+      "settings": {
+        "content_direction": "col",
+        "vertical_on_mobile": true,
+        "content_wrap": false,
+        "horizontal_alignment": "start",
+        "vertical_alignment": "center",
+        "horizontal_alignment_flex_direction_column": "center",
+        "vertical_alignment_flex_direction_column": "center",
+        "gap": 12,
+        "section_width": "page",
+        "section_height": "auto",
+        "section_height_custom": 50,
+        "section_height_mobile": "auto",
+        "section_height_custom_mobile": 50,
+        "color_scheme": "",
+        "background_media": "image",
+        "video_position": "cover",
+        "background_image": "shopify://shop_images/page_heder_2.jpg",
+        "background_image_position": "cover",
+        "toggle_overlay": false,
+        "overlay_color": "#00000026",
+        "overlay_style": "solid",
+        "gradient_direction": "to top",
+        "padding_top": 120,
+        "padding_bottom": 90,
+        "hide_on_mobile": false
+      }
+    },
+    "faq": {
+      "type": "faq",
+      "blocks": {
+        "question-1": {
+          "type": "question",
+          "settings": {
+            "title": "What is your return policy?",
+            "text": "<p>We offer a hassle-free return policy. If you’re not satisfied with your purchase, you can return it within 30 days for a full refund or exchange. Please refer to our Returns & Exchanges page for detailed instructions.</p>"
+          }
+        },
+        "question-2": {
+          "type": "question",
+          "settings": {
+            "title": "How do I track my order?",
+            "text": "<p>Tracking your order is easy! Once your order is shipped, we’ll send you a confirmation email with a tracking number. You can use this number to track your order’s status on our Order Tracking page.</p>"
+          }
+        },
+        "question-4": {
+          "type": "question",
+          "settings": {
+            "title": "What payment methods do you accept?",
+            "text": "<p>We accept major credit cards (Visa, MasterCard, American Express) and PayPal for secure and convenient payments.</p>"
+          }
+        },
+        "question-5": {
+          "type": "question",
+          "settings": {
+            "title": "Do you offer international shipping?",
+            "text": "<p>Yes, we offer international shipping to most countries. Shipping fees and delivery times may vary based on your location. Please refer to our Shipping Information page for more details.</p>"
+          }
+        },
+        "question-6": {
+          "type": "question",
+          "settings": {
+            "title": "How can I contact your customer support?",
+            "text": "<p>You can reach our friendly customer support team through our Contact Us page, where you’ll find a contact form and our email address. We’re here to assist you with any questions or concerns you may have.</p>"
+          }
+        },
+        "question_XaFbFF": {
+          "type": "question",
+          "settings": {
+            "title": "Are the sizes true to measurements?",
+            "text": "<p>We provide detailed size charts for each product to help you find the perfect fit. Please refer to the size chart on the product page to ensure you choose the right size.</p>"
+          }
+        },
+        "question_rnRw44": {
+          "type": "question",
+          "settings": {
+            "title": "Can I modify or cancel my order after it's been placed?",
+            "text": "<p>We process orders quickly to ensure fast delivery, so modifications or cancellations may be limited. Contact our customer support as soon as possible, and we’ll do our best to assist you.</p>"
+          }
+        },
+        "question-7": {
+          "type": "question",
+          "settings": {
+            "title": "Do you offer gift wrapping services?",
+            "text": "<p>Yes, we offer gift wrapping services for a small additional fee. You can select this option during the checkout process.</p>"
+          }
+        },
+        "question-8": {
+          "type": "question",
+          "settings": {
+            "title": "How do I care for my garments?",
+            "text": "<p>Care instructions can usually be found on the product’s care label or on the product page itself. We recommend following the provided guidelines to ensure the longevity and quality of your items.</p>"
+          }
+        },
+        "question-9": {
+          "type": "question",
+          "settings": {
+            "title": "Do you offer online ordering and shipping?",
+            "text": "<p>Yes, we offer online ordering with shipping options available. Contact us for more information.</p>"
+          }
+        },
+        "question-10": {
+          "type": "question",
+          "settings": {
+            "title": "Can I sign up for exclusive offers and updates?",
+            "text": "<p>Absolutely! Join our newsletter to receive exclusive offers, promotions, and updates on the latest fashion trends. You can sign up at the bottom of our homepage.</p>"
+          }
+        },
+        "question-11": {
+          "type": "question",
+          "settings": {
+            "title": "How do I create an account?",
+            "text": "<p>Creating an account is easy! Simply click on the “Sign Up” link at the top of the page and follow the prompts to enter your information. You’ll then have access to order history, wishlists, and faster checkout.</p>"
+          }
+        },
+        "question-12": {
+          "type": "question",
+          "settings": {
+            "title": "What if an item I want is out of stock?",
+            "text": "<p>If an item you’re interested in is currently out of stock, you can sign up for notifications to be alerted when it becomes available again. Just enter your email on the product page, and we’ll notify you as soon as it’s back in stock.</p>"
+          }
+        },
+        "question_ccYxFM": {
+          "type": "question",
+          "settings": {
+            "title": "Can I change my shipping address after placing an order?",
+            "text": "<p>Please contact our customer support team as soon as possible if you need to change your shipping address after placing an order. We’ll do our best to assist you, though changes may be subject to the order’s processing stage.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "question-1",
+        "question-2",
+        "question-4",
+        "question-5",
+        "question-6",
+        "question_XaFbFF",
+        "question_rnRw44",
+        "question-7",
+        "question-8",
+        "question-9",
+        "question-10",
+        "question-11",
+        "question-12",
+        "question_ccYxFM"
+      ],
+      "settings": {
+        "style": "with-border",
+        "heading": "",
+        "heading_size": "title-md",
+        "heading_alignment": "text-left md:items-end md:flex-row",
+        "heading_tag": "h2",
+        "subheading": "",
+        "description": "",
+        "button_label": "",
+        "button_link": "",
+        "button_external": false,
+        "button_icon": true,
+        "color_scheme": "scheme-1",
+        "overlay_opacity": 4,
+        "padding_top": 90,
+        "padding_bottom": 90,
+        "narrow": false,
+        "two_columns": true
+      }
+    }
+  },
+  "order": [
+    "main",
+    "custom_section_RrtD4L",
+    "faq"
+  ]
+}

@@ -1,0 +1,621 @@
+<style>
+  #shopify-section-{{ section.id }} {
+    --section-padding-top: {{ section.settings.padding_top }}px;
+    --section-padding-bottom: {{ section.settings.padding_bottom }}px;
+    {%- render 'section-variables', section: section -%}
+  }
+
+  {%- if section.settings.tab_style == 'tabs' -%}
+  #shopify-section-{{ section.id }} .tab__item {
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-size: var(--text-4xl);
+    font-weight: 500;
+    color: rgb(var(--color-foreground));
+    opacity: 0.35;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    letter-spacing: -0.02em;
+  }
+  #shopify-section-{{ section.id }} .tab__item[disabled],
+  #shopify-section-{{ section.id }} .tab__item[aria-selected="true"] {
+    opacity: 1;
+    cursor: default;
+  }
+  @media(hover:hover) and (pointer:fine) {
+    #shopify-section-{{ section.id }} .tab__item:not([disabled]):hover {
+      opacity: 0.65;
+    }
+  }
+  {%- endif -%}
+
+  {%- if section.settings.tab_style == 'dropdown' or section.settings.tab_style == 'dropdown_inline' -%}
+
+  /* Chevron */
+  #shopify-section-{{ section.id }} .tab-dropdown-btn svg {
+    transition: transform 0.22s ease;
+  }
+  #shopify-section-{{ section.id }} .tab-dropdown-btn[aria-expanded="true"] svg {
+    transform: rotate(180deg);
+  }
+
+  /* Menu — background + animation-driven visibility (always in DOM) */
+  #shopify-section-{{ section.id }} .tab-dropdown-menu {
+    display: block;
+    pointer-events: none;
+    background-color: rgb(var(--color-foreground));
+    animation: tab-dd-out 0.18s ease forwards;
+  }
+  #shopify-section-{{ section.id }} .tab-dropdown-menu.is-open {
+    pointer-events: auto;
+    animation: tab-dd-in 0.22s ease forwards;
+  }
+  @keyframes tab-dd-in {
+    from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0)    scale(1);    }
+  }
+  @keyframes tab-dd-out {
+    from { opacity: 1; transform: translateY(0)    scale(1);    }
+    to   { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  }
+
+  /* Active option — muted + highlight dot */
+  #shopify-section-{{ section.id }} .tab-dropdown-menu [aria-selected="true"] {
+    opacity: 0.38;
+    pointer-events: none;
+  }
+  #shopify-section-{{ section.id }} .tab-dropdown-menu [aria-selected="true"]::after {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgb(var(--color-highlight));
+    flex-shrink: 0;
+    margin-left: 0.75rem;
+  }
+
+  {%- if section.settings.tab_style == 'dropdown_inline' -%}
+  /* Inline trigger — highlight underline */
+  #shopify-section-{{ section.id }} .tab-dropdown-btn {
+    border-bottom: 2px solid rgb(var(--color-highlight));
+    padding-bottom: var(--sp-2);
+  }
+  {%- endif -%}
+
+  {%- endif -%}
+</style>
+
+{%- liquid
+  assign section_rendering_api = false
+  if section.index == nil
+    assign section_rendering_api = true
+  endif
+-%}
+
+<div class="section section--padding color-{{ section.settings.color_scheme }}" id="shopify-section-{{ section.id }}" {{ section.shopify_attributes }}>
+  <div class="page-width{% if section.settings.full_width %} page-width--full{% endif %} relative">
+
+    {%- unless section.settings.tab_style == 'dropdown_inline' -%}
+      {%- render 'section-heading', section: section -%}
+    {%- endunless -%}
+
+    {%- if section.blocks.size > 0 -%}
+
+      {%- if section.settings.tab_style == 'dropdown' or section.settings.tab_style == 'dropdown_inline' -%}
+
+        {%- liquid
+          assign first_block = section.blocks.first
+          assign first_label = first_block.settings.title | default: first_block.settings.collection.title
+          if first_label == blank
+            assign first_label = 'onboarding.collection_title' | t
+          endif
+        -%}
+
+        {%- comment -%}
+          tabs-dropdown-element extends TabsElement.
+          Hidden role="tab" buttons  →  consumed by TabsElement (panels, indicators, animations).
+          Visible dropdown UI        →  managed by TabsDropdownElement (tabs-dropdown-element.js).
+        {%- endcomment -%}
+        <tabs-dropdown-element class="relative flex justify-center items-start gap-4 mb-8 lg:mb-16">
+
+          {%- comment -%} Hidden tab controls — required by TabsElement.buttons getter {%- endcomment -%}
+          <div hidden aria-hidden="true">
+            {%- for block in section.blocks -%}
+              <button
+                type="button"
+                role="tab"
+                aria-controls="ProductTab-{{ block.id }}"
+                {% if forloop.first %}disabled{% endif %}
+                {{ block.shopify_attributes }}
+              ></button>
+            {%- endfor -%}
+          </div>
+
+          {%- comment -%}
+            Prefix span sits OUTSIDE the relative wrapper so that `right-0`
+            on the menu anchors to the button edge, not to the full phrase width.
+          {%- endcomment -%}
+          {%- if section.settings.tab_style == 'dropdown_inline' and section.settings.dropdown_inline_prefix != blank -%}
+            <span class="text-2xl lg:text-4xl font-medium opacity-40 whitespace-nowrap">
+              {{- section.settings.dropdown_inline_prefix | escape -}}
+            </span>
+          {%- endif -%}
+
+          {%- comment -%} Trigger + menu share a relative container {%- endcomment -%}
+          <div class="relative inline-block">
+
+            {%- if section.settings.tab_style == 'dropdown_inline' -%}
+              <button class="tab-dropdown-btn inline-flex items-center gap-2 cursor-pointer bg-transparent border-0 font-medium text-2xl lg:text-4xl" type="button" aria-haspopup="listbox" aria-expanded="false">
+                <span class="tab-dropdown-label">{{ first_label | escape }}</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="shrink-0"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </button>
+            {%- else -%}
+              <button class="tab-dropdown-btn inline-flex items-center gap-2 cursor-pointer bg-transparent font-medium text-base px-4 py-2 border-2 border-current rounded-full" type="button" aria-haspopup="listbox" aria-expanded="false">
+                <span class="tab-dropdown-label">{{ first_label | escape }}</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="shrink-0"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </button>
+            {%- endif -%}
+
+            <div
+              class="tab-dropdown-menu absolute top-[calc(100%+10px)] right-0 z-50 min-w-[260px] rounded-[20px] py-5 shadow-[0_20px_60px_rgba(0,0,0,0.35)]"
+              role="listbox"
+            >
+              {%- for block in section.blocks -%}
+                {%- assign collection = block.settings.collection -%}
+                <button
+                  class="flex items-center justify-between w-full px-6 py-2 bg-transparent border-0 font-medium text-2xl text-bg-color cursor-pointer text-left whitespace-nowrap hover:opacity-65 transition-opacity duration-150"
+                  type="button"
+                  role="option"
+                  aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+                  data-tab-index="{{ forloop.index0 }}"
+                  {{ block.shopify_attributes }}
+                >
+                  {%- unless forloop.first -%}
+                    {%- unless section_rendering_api -%}
+                      <api-button class="api-only" data-id="ProductTabContent-{{ block.id }}" data-section-id="{{ section.id }}"></api-button>
+                    {%- endunless -%}
+                  {%- endunless -%}
+                  {%- liquid
+                    if block.settings.title != blank or collection != blank
+                      echo block.settings.title | default: collection.title | escape
+                    else
+                      echo 'onboarding.collection_title' | t | escape
+                    endif
+                  -%}
+                </button>
+              {%- endfor -%}
+            </div>
+
+          </div>
+
+          {%- if section.settings.carousel_on_desktop -%}
+            {%- for block in section.blocks -%}
+              <div class="indicators hidden lg:flex gap-2d5 items-center"{% unless forloop.first %} hidden{% endunless %} data-index="{{ forloop.index0 }}">
+                <button class="btn btn--secondary" type="button" is="previous-button" aria-controls="Slider-{{ block.id }}" aria-label="{{ 'general.pagination.previous' | t | escape }}" disabled>
+                  <span class="btn-text">{%- render 'icon', icon: 'chevron-left', class: 'transform' -%}</span>
+                </button>
+                <button class="btn btn--secondary" type="button" is="next-button" aria-controls="Slider-{{ block.id }}" aria-label="{{ 'general.pagination.next' | t | escape }}">
+                  <span class="btn-text">{%- render 'icon', icon: 'chevron-right', class: 'transform' -%}</span>
+                </button>
+              </div>
+            {%- endfor -%}
+          {%- endif -%}
+
+        </tabs-dropdown-element>
+
+      {%- else -%}
+
+        <tabs-element class="tab-list flex gap-10 justify-center">
+          <scroll-shadow class="scroll-shadow grid overflow-hidden">
+            <div class="scroll-area grid">
+              <div class="flex gap-8" role="tablist">
+                {%- for block in section.blocks -%}
+                  {%- assign collection = block.settings.collection -%}
+                  <button class="tab__item whitespace-nowrap"{% if forloop.first %} disabled{% endif %} type="button" role="tab" aria-controls="ProductTab-{{ block.id }}" data-index="{{ forloop.index0 }}" {{ block.shopify_attributes }}>
+                    {%- unless forloop.first -%}
+                      {%- unless section_rendering_api -%}
+                        <api-button class="api-only" data-id="ProductTabContent-{{ block.id }}" data-section-id="{{ section.id }}"></api-button>
+                      {%- endunless -%}
+                    {%- endunless -%}
+                    <span class="btn-text">
+                      {%- liquid
+                        if block.settings.title != blank or collection != blank
+                          echo block.settings.title | default: collection.title | escape
+                        else
+                          echo 'onboarding.collection_title' | t | escape
+                        endif
+                      -%}
+                    </span>
+                  </button>
+                {%- endfor -%}
+              </div>
+            </div>
+            <template>
+              <slot></slot>
+              <s dir="{% render 'direction' %}" style="--t: 0;--b: 0;--l: 0;--r: 0;">
+                <span class="l"></span>
+                <span class="r"></span>
+              </s>
+              <style>
+                :host{display:inline-block;position:relative}:host([hidden]){display:none}
+                s{position:absolute;inset:0;pointer-events:none;{% if settings.card_style == 'card' %}--color-background:var(--color-placeholder){% endif %}}
+                s span{position:absolute;inset-block:0;width:var(--sp-12);opacity:0;transition:opacity var(--animation-short);}
+                s .l{inset-inline-start:0;opacity:var(--l);background:linear-gradient(90deg,rgb(var(--color-background)) 0%,transparent 100%);}
+                s .r{inset-inline-end:0;opacity:var(--r);background:linear-gradient(270deg,rgb(var(--color-background)) 0%,transparent 100%);}
+                s[dir=rtl] :is(.icon-chevron-left,.icon-chevron-right){transform:scaleX(-1);}
+              </style>
+            </template>
+          </scroll-shadow>
+
+          {%- if section.settings.carousel_on_desktop -%}
+            {%- for block in section.blocks -%}
+              <div class="indicators hidden lg:flex gap-2d5"{% unless forloop.first %} hidden{% endunless %} data-index="{{ forloop.index0 }}">
+                <button class="btn btn--secondary" type="button" is="previous-button" aria-controls="Slider-{{ block.id }}" aria-label="{{ 'general.pagination.previous' | t | escape }}" disabled>
+                  <span class="btn-text">{%- render 'icon', icon: 'chevron-left', class: 'transform' -%}</span>
+                </button>
+                <button class="btn btn--secondary" type="button" is="next-button" aria-controls="Slider-{{ block.id }}" aria-label="{{ 'general.pagination.next' | t | escape }}">
+                  <span class="btn-text">{%- render 'icon', icon: 'chevron-right', class: 'transform' -%}</span>
+                </button>
+              </div>
+            {%- endfor -%}
+          {%- endif -%}
+        </tabs-element>
+
+      {%- endif -%}
+
+      {%- for block in section.blocks -%}
+        {%- liquid
+          assign collection = block.settings.collection
+          assign products = block.settings.products | default: collection.products
+        -%}
+        <div id="ProductTab-{{ block.id }}" role="tabpanel"{% unless forloop.first %} hidden{% endunless %}>
+          <div id="ProductTabContent-{{ block.id }}">
+            {%- if section_rendering_api or forloop.first -%}
+              <slider-element id="Slider-{{ block.id }}" class="grid color-{{ block.settings.color_scheme }} slider{% if section.settings.carousel_on_desktop %} slider--desktop{% endif %}{% if section.settings.swipe_on_mobile %} slider--tablet{% endif %}" selector=".card-grid>.card"{% if section.settings.carousel_on_desktop or section.settings.swipe_on_mobile %} tabindex="0"{% endif %}>
+                <motion-list class="product-grid card-grid card-grid--{{ section.settings.columns }} mobile:card-grid--{{ section.settings.columns_mobile }} grid">
+                  {%- for product in products limit: section.settings.product_limit -%}
+                    {%- render 'product-card',
+                      product: product,
+                      product_id: product.id,
+                      section_id: section.id,
+                      block_id: block.id,
+                      lazy_load: false,
+                      image_ratio: settings.product_image_ratio,
+                      image_fill: settings.product_image_fill,
+                      show_secondary_image: settings.product_secondary_image,
+                      show_vendor: settings.product_vendor,
+                      title_truncation: settings.product_title_truncation,
+                      title_line_limit: settings.product_title_line_limit,
+                      show_rating: settings.product_rating,
+                      show_color_swatches: settings.product_color_swatches,
+                      show_countdown: settings.product_countdown,
+                      show_quick_add: settings.product_quick_add,
+                      show_quick_view: settings.product_quick_view,
+                      vertical_badges: settings.product_vertical_badges,
+                      show_sold_out: settings.product_sold_out,
+                      show_save_amount: settings.product_save_amount,
+                      save_type: settings.product_save_type,
+                      show_icon_list: settings.product_icon_list
+                    -%}
+                  {%- else -%}
+                    {%- for i in (1..section.settings.product_limit) -%}
+                      {%- capture placeholder -%}product-{% cycle '1', '2', '3', '4', '5', '6' %}{%- endcapture -%}
+                      {%- render 'product-card-placeholder',
+                        placeholder: placeholder
+                        image_ratio: settings.product_image_ratio,
+                        show_vendor: settings.product_vendor
+                      -%}
+                    {%- endfor -%}
+                  {%- endfor -%}
+                </motion-list>
+              </slider-element>
+
+              {%- if section.settings.show_view_all and collection != blank and section.settings.product_limit < collection.all_products_count -%}
+                <p class="text-center">
+                  <a class="btn btn--secondary" href="{{ collection.url }}" aria-label="{{ 'sections.featured_collection.view_all_label' | t: collection_name: collection.title }}">
+                    <span class="btn-text">
+                      {%- liquid
+                        echo 'sections.featured_collection.view_all' | t
+                      -%}
+                    </span>
+                  </a>
+                </p>
+              {%- endif -%}
+            {%- endif -%}
+          </div>
+        </div>
+      {%- endfor -%}
+
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.featured-collections.name",
+  "class": "featured-collections",
+  "max_blocks": 6,
+  "settings": [
+    {
+      "type": "select",
+      "id": "tab_style",
+      "label": "Tab display style",
+      "options": [
+        {
+          "value": "tabs",
+          "label": "Tabs (default)"
+        },
+        {
+          "value": "dropdown",
+          "label": "Dropdown"
+        },
+        {
+          "value": "dropdown_inline",
+          "label": "Dropdown inline (e.g. \"You are in\")"
+        }
+      ],
+      "default": "tabs"
+    },
+    {
+      "type": "text",
+      "id": "dropdown_inline_prefix",
+      "label": "Inline dropdown prefix text",
+      "default": "You are in",
+      "info": "Only used when \"Dropdown inline\" style is selected."
+    },
+    {
+      "type": "range",
+      "id": "product_limit",
+      "label": "t:sections.global.settings.product_limit.label",
+      "default": 6,
+      "min": 2,
+      "max": 12,
+      "step": 1
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "default": 4,
+      "label": "t:sections.global.settings.columns.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "carousel_on_desktop",
+      "label": "t:sections.global.settings.carousel_on_desktop.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_view_all",
+      "label": "t:sections.featured-collection.settings.show_view_all.label",
+      "info": "t:sections.featured-collection.settings.show_view_all.info",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "t:sections.global.settings.header__mobile.content"
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "options": [
+        {
+          "value": "1",
+          "label": "t:sections.global.settings.columns_mobile.options__1.label"
+        },
+        {
+          "value": "2",
+          "label": "t:sections.global.settings.columns_mobile.options__2.label"
+        }
+      ],
+      "default": "1",
+      "label": "t:sections.global.settings.columns_mobile.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "swipe_on_mobile",
+      "label": "t:sections.global.settings.swipe_on_mobile.label",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "t:sections.global.settings.header__heading.content"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "t:sections.global.settings.heading.label",
+      "default": "Featured collections"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        {
+          "value": "title-sm",
+          "label": "t:sections.global.settings.heading_size.options__1.label"
+        },
+        {
+          "value": "title-md",
+          "label": "t:sections.global.settings.heading_size.options__2.label"
+        },
+        {
+          "value": "title-lg tracking-heading",
+          "label": "t:sections.global.settings.heading_size.options__3.label"
+        },
+        {
+          "value": "title-xl tracking-heading",
+          "label": "t:sections.global.settings.heading_size.options__4.label"
+        }
+      ],
+      "default": "title-md",
+      "label": "t:sections.global.settings.heading_size.label"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "t:sections.global.settings.heading_alignment.label",
+      "options": [
+        {
+          "value": "text-left md:items-end md:flex-row",
+          "label": "t:sections.global.settings.heading_alignment.options__1.label"
+        },
+        {
+          "value": "text-center md:items-center",
+          "label": "t:sections.global.settings.heading_alignment.options__2.label"
+        },
+        {
+          "value": "text-right md:items-end md:flex-row-reverse",
+          "label": "t:sections.global.settings.heading_alignment.options__3.label"
+        }
+      ],
+      "default": "text-left md:items-end md:flex-row"
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "t:sections.global.settings.heading_tag.options__1.label"
+        },
+        {
+          "value": "h2",
+          "label": "t:sections.global.settings.heading_tag.options__2.label"
+        },
+        {
+          "value": "h3",
+          "label": "t:sections.global.settings.heading_tag.options__3.label"
+        },
+        {
+          "value": "h4",
+          "label": "t:sections.global.settings.heading_tag.options__4.label"
+        },
+        {
+          "value": "h5",
+          "label": "t:sections.global.settings.heading_tag.options__5.label"
+        },
+        {
+          "value": "h6",
+          "label": "t:sections.global.settings.heading_tag.options__6.label"
+        },
+        {
+          "value": "div",
+          "label": "t:sections.global.settings.heading_tag.options__7.label"
+        },
+        {
+          "value": "span",
+          "label": "t:sections.global.settings.heading_tag.options__8.label"
+        },
+        {
+          "value": "p",
+          "label": "t:sections.global.settings.heading_tag.options__9.label"
+        }
+      ],
+      "default": "h2",
+      "label": "t:sections.global.settings.heading_tag.label",
+      "info": "t:sections.global.settings.heading_tag.info"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "t:sections.global.settings.subheading.label"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "t:sections.global.settings.description.label"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "default": "scheme-1",
+      "label": "t:settings.color_scheme"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.global.settings.header__section.content"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "label": "t:sections.global.settings.padding_top.label",
+      "default": 72
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "label": "t:sections.global.settings.padding_bottom.label",
+      "default": 72
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "t:sections.global.settings.full_width.label",
+      "default": false
+    }
+  ],
+  "blocks": [
+    {
+      "type": "collection",
+      "name": "t:sections.global.blocks.collection.name",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "t:sections.global.settings.collection.label"
+        },
+        {
+          "type": "product_list",
+          "id": "products",
+          "label": "t:sections.global.settings.products.label",
+          "info": "t:sections.global.settings.products.info"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "t:sections.global.settings.title.label"
+        },
+        {
+          "type": "color_scheme",
+          "id": "color_scheme",
+          "default": "scheme-1",
+          "label": "t:settings.color_scheme"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.featured-collections.name",
+      "category": "t:categories.collections",
+      "blocks": [
+        {
+          "type": "collection"
+        },
+        {
+          "type": "collection"
+        }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "templates": [
+      "password"
+    ]
+  }
+}
+{% endschema %}

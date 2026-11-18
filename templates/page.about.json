@@ -1,0 +1,810 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "disabled": true,
+      "settings": {
+        "heading_size": "title-xl tracking-heading",
+        "heading_alignment": "text-left",
+        "heading_tag": "h1",
+        "text_size": "text-base",
+        "padding_top": 72,
+        "padding_bottom": 120,
+        "narrow": true
+      }
+    },
+    "custom_section_a6GFew": {
+      "type": "custom-section",
+      "blocks": {
+        "base_heading_JayP8c": {
+          "type": "base-heading",
+          "name": "t:blocks.heading.name",
+          "settings": {
+            "type_preset": "custom",
+            "font": "var(--font-body--family)",
+            "font_size": "3.5rem",
+            "weight": "600",
+            "line_height": "tight",
+            "letter_spacing": "normal",
+            "case": "none",
+            "wrap": "pretty",
+            "color": "var(--color-foreground)",
+            "text": "<p>Transforming Your House into a Home </p><p>with Beautifully Crafted Furniture</p><p> for Every Room</p>",
+            "read_only": false,
+            "alignment": "left",
+            "show_alignment": true,
+            "padding-block-start": 0,
+            "padding-block-end": 60,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        },
+        "image_eyayGb": {
+          "type": "image",
+          "name": "t:blocks.image.name",
+          "settings": {
+            "image": "shopify://shop_images/ab-b_01.jpg",
+            "aspect_ratio": "adapt",
+            "link": "",
+            "accessibility_info": "",
+            "external": false,
+            "aspect_ratio_mobile": "adapt",
+            "width": "fill",
+            "custom_width": 100,
+            "width_mobile": "fill",
+            "custom_width_mobile": 100,
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_radius": 20
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "base_heading_JayP8c",
+        "image_eyayGb"
+      ],
+      "name": "t:sections.custom-section.name",
+      "settings": {
+        "content_direction": "col",
+        "vertical_on_mobile": true,
+        "content_wrap": false,
+        "horizontal_alignment": "start",
+        "vertical_alignment": "center",
+        "horizontal_alignment_flex_direction_column": "start",
+        "vertical_alignment_flex_direction_column": "center",
+        "gap": 12,
+        "section_width": "page",
+        "section_height": "auto",
+        "section_height_custom": 50,
+        "section_height_mobile": "auto",
+        "section_height_custom_mobile": 50,
+        "color_scheme": "",
+        "background_media": "none",
+        "video_position": "cover",
+        "background_image_position": "cover",
+        "toggle_overlay": false,
+        "overlay_color": "#00000026",
+        "overlay_style": "solid",
+        "gradient_direction": "to top",
+        "padding_top": 90,
+        "padding_bottom": 0,
+        "hide_on_mobile": false
+      }
+    },
+    "custom_section_bhcaTk": {
+      "type": "custom-section",
+      "blocks": {
+        "group_P6R9Ck": {
+          "type": "group",
+          "name": "t:blocks.group.name",
+          "settings": {
+            "link": "",
+            "accessibility_info": "",
+            "open_in_new_tab": false,
+            "content_direction": "row",
+            "vertical_on_mobile": true,
+            "content_wrap": false,
+            "horizontal_alignment": "start",
+            "vertical_alignment": "center",
+            "horizontal_alignment_flex_direction_column": "start",
+            "vertical_alignment_flex_direction_column": "center",
+            "gap": 20,
+            "width": "fill",
+            "custom_width": 100,
+            "width_mobile": "fill",
+            "custom_width_mobile": 100,
+            "height": "fit",
+            "custom_height": 100,
+            "background_media": "none",
+            "video_position": "cover",
+            "background_image_position": "cover",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_radius": 0,
+            "toggle_overlay": false,
+            "overlay_color": "#00000026",
+            "overlay_style": "solid",
+            "gradient_direction": "to top",
+            "custom_colors": false,
+            "color_text": "",
+            "color_background": "",
+            "gradient_background": "",
+            "color_button_text": "",
+            "color_button_background": "",
+            "color_button_gradient": "",
+            "padding-block-start": 0,
+            "padding-block-end": 40,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {
+            "base_heading_9ieqYU": {
+              "type": "base-heading",
+              "name": "t:blocks.heading.name",
+              "settings": {
+                "type_preset": "h5",
+                "font": "var(--font-body--family)",
+                "font_size": "1rem",
+                "weight": "",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "wrap": "pretty",
+                "color": "var(--color-foreground)",
+                "text": "<h3>Established in 2008</h3>",
+                "read_only": false,
+                "alignment": "left",
+                "show_alignment": true,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
+            },
+            "text_hymnxL": {
+              "type": "text",
+              "name": "t:blocks.text.name",
+              "settings": {
+                "text": "<p>At Miniture, our journey began in 2008 with a vision to redefine how people perceive and experience furniture. Over the years, we have grown from a small, family-owned business into a leading provider of exquisite furniture, known for our dedication to quality, craftsmanship, and innovation.</p>",
+                "text_font": "body",
+                "text_size": "text-base lg:text-lg",
+                "text_max_size": 32,
+                "text_line_height": 1.6,
+                "text_letter_spacing": 0,
+                "text_capitalize": false,
+                "secondary_color": true,
+                "width": "fit-content",
+                "custom_width": 100,
+                "alignment": "left",
+                "width_mobile": "fit-content",
+                "custom_width_mobile": 100
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "base_heading_9ieqYU",
+            "text_hymnxL"
+          ]
+        },
+        "group_BwYY8b": {
+          "type": "group",
+          "name": "t:blocks.group.name",
+          "settings": {
+            "link": "",
+            "accessibility_info": "",
+            "open_in_new_tab": false,
+            "content_direction": "row",
+            "vertical_on_mobile": true,
+            "content_wrap": false,
+            "horizontal_alignment": "start",
+            "vertical_alignment": "center",
+            "horizontal_alignment_flex_direction_column": "start",
+            "vertical_alignment_flex_direction_column": "center",
+            "gap": 20,
+            "width": "fill",
+            "custom_width": 100,
+            "width_mobile": "fill",
+            "custom_width_mobile": 100,
+            "height": "fit",
+            "custom_height": 100,
+            "background_media": "none",
+            "video_position": "cover",
+            "background_image_position": "cover",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_radius": 0,
+            "toggle_overlay": false,
+            "overlay_color": "#00000026",
+            "overlay_style": "solid",
+            "gradient_direction": "to top",
+            "custom_colors": false,
+            "color_text": "",
+            "color_background": "",
+            "gradient_background": "",
+            "color_button_text": "",
+            "color_button_background": "",
+            "color_button_gradient": "",
+            "padding-block-start": 0,
+            "padding-block-end": 40,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {
+            "base_heading_Q9QGdH": {
+              "type": "base-heading",
+              "name": "t:blocks.heading.name",
+              "settings": {
+                "type_preset": "h5",
+                "font": "var(--font-body--family)",
+                "font_size": "1rem",
+                "weight": "",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "wrap": "pretty",
+                "color": "var(--color-foreground)",
+                "text": "<h3>The Early Years</h3>",
+                "read_only": false,
+                "alignment": "left",
+                "show_alignment": true,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
+            },
+            "text_wb6X6Q": {
+              "type": "text",
+              "name": "t:blocks.text.name",
+              "settings": {
+                "text": "<p>In the early years of our company, we started as a humble workshop, crafting furniture by hand with a commitment to excellence. Our founder, Dzung Nova, had a passion for woodworking and a deep appreciation for the artistry that goes into creating fine furniture. This dedication laid the foundation for our company's values and principles.</p>",
+                "text_font": "body",
+                "text_size": "text-base lg:text-lg",
+                "text_max_size": 32,
+                "text_line_height": 1.6,
+                "text_letter_spacing": 0,
+                "text_capitalize": false,
+                "secondary_color": true,
+                "width": "fit-content",
+                "custom_width": 100,
+                "alignment": "left",
+                "width_mobile": "fit-content",
+                "custom_width_mobile": 100
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "base_heading_Q9QGdH",
+            "text_wb6X6Q"
+          ]
+        },
+        "group_cNpxKh": {
+          "type": "group",
+          "name": "t:blocks.group.name",
+          "settings": {
+            "link": "",
+            "accessibility_info": "",
+            "open_in_new_tab": false,
+            "content_direction": "row",
+            "vertical_on_mobile": true,
+            "content_wrap": false,
+            "horizontal_alignment": "start",
+            "vertical_alignment": "center",
+            "horizontal_alignment_flex_direction_column": "start",
+            "vertical_alignment_flex_direction_column": "center",
+            "gap": 20,
+            "width": "fill",
+            "custom_width": 100,
+            "width_mobile": "fill",
+            "custom_width_mobile": 100,
+            "height": "fit",
+            "custom_height": 100,
+            "background_media": "none",
+            "video_position": "cover",
+            "background_image_position": "cover",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_radius": 0,
+            "toggle_overlay": false,
+            "overlay_color": "#00000026",
+            "overlay_style": "solid",
+            "gradient_direction": "to top",
+            "custom_colors": false,
+            "color_text": "",
+            "color_background": "",
+            "gradient_background": "",
+            "color_button_text": "",
+            "color_button_background": "",
+            "color_button_gradient": "",
+            "padding-block-start": 0,
+            "padding-block-end": 40,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {
+            "base_heading_cKM4at": {
+              "type": "base-heading",
+              "name": "t:blocks.heading.name",
+              "settings": {
+                "type_preset": "h5",
+                "font": "var(--font-body--family)",
+                "font_size": "1rem",
+                "weight": "",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "wrap": "pretty",
+                "color": "var(--color-foreground)",
+                "text": "<h3>Growth and Expansion</h3>",
+                "read_only": false,
+                "alignment": "left",
+                "show_alignment": true,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
+            },
+            "text_fQr6Yx": {
+              "type": "text",
+              "name": "t:blocks.text.name",
+              "settings": {
+                "text": "<p>As our reputation for quality craftsmanship and unique designs grew, so did our business. We expanded our operations to include a showroom where customers could experience our furniture firsthand. This expansion allowed us to connect with our customers on a more personal level and showcase the range of possibilities our furniture offered.</p>",
+                "text_font": "body",
+                "text_size": "text-base lg:text-lg",
+                "text_max_size": 32,
+                "text_line_height": 1.6,
+                "text_letter_spacing": 0,
+                "text_capitalize": false,
+                "secondary_color": true,
+                "width": "fit-content",
+                "custom_width": 100,
+                "alignment": "left",
+                "width_mobile": "fit-content",
+                "custom_width_mobile": 100
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "base_heading_cKM4at",
+            "text_fQr6Yx"
+          ]
+        },
+        "group_dYiXkT": {
+          "type": "group",
+          "name": "t:blocks.group.name",
+          "settings": {
+            "link": "",
+            "accessibility_info": "",
+            "open_in_new_tab": false,
+            "content_direction": "row",
+            "vertical_on_mobile": true,
+            "content_wrap": false,
+            "horizontal_alignment": "start",
+            "vertical_alignment": "center",
+            "horizontal_alignment_flex_direction_column": "start",
+            "vertical_alignment_flex_direction_column": "center",
+            "gap": 20,
+            "width": "fill",
+            "custom_width": 100,
+            "width_mobile": "fill",
+            "custom_width_mobile": 100,
+            "height": "fit",
+            "custom_height": 100,
+            "background_media": "none",
+            "video_position": "cover",
+            "background_image_position": "cover",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_radius": 0,
+            "toggle_overlay": false,
+            "overlay_color": "#00000026",
+            "overlay_style": "solid",
+            "gradient_direction": "to top",
+            "custom_colors": false,
+            "color_text": "",
+            "color_background": "",
+            "gradient_background": "",
+            "color_button_text": "",
+            "color_button_background": "",
+            "color_button_gradient": "",
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {
+            "base_heading_ADGNfF": {
+              "type": "base-heading",
+              "name": "t:blocks.heading.name",
+              "settings": {
+                "type_preset": "h5",
+                "font": "var(--font-body--family)",
+                "font_size": "1rem",
+                "weight": "",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "wrap": "pretty",
+                "color": "var(--color-foreground)",
+                "text": "<h3>Innovation and Customization</h3>",
+                "read_only": false,
+                "alignment": "left",
+                "show_alignment": true,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
+            },
+            "text_A4LPR8": {
+              "type": "text",
+              "name": "t:blocks.text.name",
+              "settings": {
+                "text": "<p>In the 2023, we took a significant leap by embracing technology and innovation in our design and manufacturing processes. This allowed us to offer a wider range of customization options to our customers. Whether it was choosing different finishes, fabrics, or custom dimensions, we wanted every piece to reflect the unique style and personality of its owner.</p>",
+                "text_font": "body",
+                "text_size": "text-base lg:text-lg",
+                "text_max_size": 32,
+                "text_line_height": 1.6,
+                "text_letter_spacing": 0,
+                "text_capitalize": false,
+                "secondary_color": true,
+                "width": "fit-content",
+                "custom_width": 100,
+                "alignment": "left",
+                "width_mobile": "fit-content",
+                "custom_width_mobile": 100
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "base_heading_ADGNfF",
+            "text_A4LPR8"
+          ]
+        }
+      },
+      "block_order": [
+        "group_P6R9Ck",
+        "group_BwYY8b",
+        "group_cNpxKh",
+        "group_dYiXkT"
+      ],
+      "name": "t:sections.custom-section.name",
+      "settings": {
+        "content_direction": "col",
+        "vertical_on_mobile": true,
+        "content_wrap": false,
+        "horizontal_alignment": "start",
+        "vertical_alignment": "center",
+        "horizontal_alignment_flex_direction_column": "start",
+        "vertical_alignment_flex_direction_column": "center",
+        "gap": 12,
+        "section_width": "page",
+        "section_height": "auto",
+        "section_height_custom": 50,
+        "section_height_mobile": "auto",
+        "section_height_custom_mobile": 50,
+        "color_scheme": "",
+        "background_media": "none",
+        "video_position": "cover",
+        "background_image_position": "cover",
+        "toggle_overlay": false,
+        "overlay_color": "#00000026",
+        "overlay_style": "solid",
+        "gradient_direction": "to top",
+        "padding_top": 60,
+        "padding_bottom": 90,
+        "hide_on_mobile": false
+      }
+    },
+    "number_counter_tCWTRe": {
+      "type": "number-counter",
+      "blocks": {
+        "counter_bGGQCJ": {
+          "type": "counter",
+          "settings": {
+            "title": "Premium products",
+            "number": "450",
+            "unit": "+",
+            "duration": 2
+          }
+        },
+        "counter_9RgEUy": {
+          "type": "counter",
+          "settings": {
+            "title": "Years experiences",
+            "number": "25",
+            "unit": "+",
+            "duration": 2
+          }
+        },
+        "counter_whWjcV": {
+          "type": "counter",
+          "settings": {
+            "title": "Happy customers",
+            "number": "3600",
+            "unit": "+",
+            "duration": 2
+          }
+        },
+        "counter_xezPE6": {
+          "type": "counter",
+          "settings": {
+            "title": "Award gained",
+            "number": "92",
+            "unit": "+",
+            "duration": 2
+          }
+        }
+      },
+      "block_order": [
+        "counter_bGGQCJ",
+        "counter_9RgEUy",
+        "counter_whWjcV",
+        "counter_xezPE6"
+      ],
+      "name": "t:sections.number-counter.name",
+      "settings": {
+        "gap": "large",
+        "columns": 4,
+        "text_alignment": "center",
+        "columns_mobile": "1",
+        "swipe_on_mobile": true,
+        "text_alignment_mobile": "center",
+        "color_scheme": "scheme-1",
+        "padding_top": 0,
+        "padding_bottom": 90,
+        "full_width": false
+      }
+    },
+    "team_members_XEBh8a": {
+      "type": "team-members",
+      "blocks": {
+        "member_mbQJPf": {
+          "type": "member",
+          "settings": {
+            "image": "shopify://shop_images/ab_team_01.jpg",
+            "name": "Anthony Martinez",
+            "role": "Co Founder",
+            "link": ""
+          }
+        },
+        "member_KFPUzf": {
+          "type": "member",
+          "settings": {
+            "image": "shopify://shop_images/ab_team_02.jpg",
+            "name": "Elizabeth Johnson",
+            "role": "Creative Director",
+            "link": ""
+          }
+        },
+        "member_LLH9Dq": {
+          "type": "member",
+          "settings": {
+            "image": "shopify://shop_images/ab_team_03.jpg",
+            "name": "Andrew Harris",
+            "role": "Developer",
+            "link": ""
+          }
+        },
+        "member_g9Ayce": {
+          "type": "member",
+          "settings": {
+            "image": "shopify://shop_images/ab_team_04.jpg",
+            "name": "Claire Thompson",
+            "role": "Designer",
+            "link": ""
+          }
+        }
+      },
+      "block_order": [
+        "member_mbQJPf",
+        "member_KFPUzf",
+        "member_LLH9Dq",
+        "member_g9Ayce"
+      ],
+      "name": "Team members",
+      "settings": {
+        "heading": "Our Team",
+        "heading_size": "title-sm",
+        "heading_alignment": "text-center md:items-center",
+        "heading_tag": "h2",
+        "subheading": "",
+        "layout": "grid",
+        "columns": 4,
+        "columns_mobile": "2",
+        "image_ratio": "adapt",
+        "card_radius": 12,
+        "name_position": "overlay",
+        "color_scheme": "scheme-1",
+        "full_width": false,
+        "padding_top": 0,
+        "padding_bottom": 72
+      }
+    },
+    "logo_list_wWxPwk": {
+      "type": "logo-list",
+      "blocks": {
+        "logo_JKyzFi": {
+          "type": "logo",
+          "settings": {
+            "image": "shopify://shop_images/M1_logo_01.png",
+            "height": 60,
+            "link": ""
+          }
+        },
+        "logo_9JLgUC": {
+          "type": "logo",
+          "settings": {
+            "image": "shopify://shop_images/M1_logo_02.png",
+            "height": 60,
+            "link": ""
+          }
+        },
+        "logo_8GbwRM": {
+          "type": "logo",
+          "settings": {
+            "image": "shopify://shop_images/M1_logo_03.png",
+            "height": 60,
+            "link": ""
+          }
+        },
+        "logo_nhKmNm": {
+          "type": "logo",
+          "settings": {
+            "image": "shopify://shop_images/M1_logo_04.png",
+            "height": 60,
+            "link": ""
+          }
+        },
+        "logo_tdbrw4": {
+          "type": "logo",
+          "settings": {
+            "image": "shopify://shop_images/M1_logo_05.png",
+            "height": 60,
+            "link": ""
+          }
+        }
+      },
+      "block_order": [
+        "logo_JKyzFi",
+        "logo_9JLgUC",
+        "logo_8GbwRM",
+        "logo_nhKmNm",
+        "logo_tdbrw4"
+      ],
+      "name": "t:sections.logo-list.name",
+      "settings": {
+        "layout": "default",
+        "grid_horizontal": 70,
+        "direction": "left",
+        "speed": 5,
+        "heading": "",
+        "heading_size": "title-md",
+        "heading_alignment": "text-center md:items-center",
+        "heading_tag": "h2",
+        "subheading": "",
+        "description": "",
+        "button_label": "",
+        "button_link": "",
+        "button_external": false,
+        "button_icon": true,
+        "color_scheme": "",
+        "padding_top": 0,
+        "padding_bottom": 72,
+        "full_width": false
+      }
+    },
+    "image_gallery_with_text_NgLJ4p": {
+      "type": "image-gallery-with-text",
+      "blocks": {
+        "image_PyWiCC": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/m_ins_01.jpg",
+            "caption": ""
+          }
+        },
+        "image_DRY7FC": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/m_ins_04.jpg",
+            "caption": ""
+          }
+        },
+        "image_Lf6DGR": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/m_ins_02.jpg",
+            "caption": ""
+          }
+        },
+        "image_WWH7Hq": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/m_ins_05.jpg",
+            "caption": ""
+          }
+        },
+        "image_wYEV7t": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/m_ins_03.jpg",
+            "caption": ""
+          }
+        },
+        "image_nPtqyf": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/m_ins_06.jpg",
+            "caption": ""
+          }
+        }
+      },
+      "block_order": [
+        "image_PyWiCC",
+        "image_DRY7FC",
+        "image_Lf6DGR",
+        "image_WWH7Hq",
+        "image_wYEV7t",
+        "image_nPtqyf"
+      ],
+      "name": "Image Gallery With Text",
+      "settings": {
+        "layout": "text_first",
+        "columns": 3,
+        "columns_mobile": 3,
+        "image_ratio": "adapt",
+        "image_icon": "instagram",
+        "subheading": "",
+        "heading": "Instagram Shop",
+        "heading_tag": "h3",
+        "heading_size": "title-sm",
+        "description": "<p>Tag @miniture in your Instagram photos for<br/> a chance to be featured here.</p>",
+        "button_label": "Visit Our Instagram",
+        "button_link": "#",
+        "button_external": true,
+        "button_icon": false,
+        "button_style": "outline",
+        "button_size": "sm",
+        "color_scheme": "",
+        "padding_top": 0,
+        "padding_bottom": 90,
+        "full_width": false
+      }
+    }
+  },
+  "order": [
+    "main",
+    "custom_section_a6GFew",
+    "custom_section_bhcaTk",
+    "number_counter_tCWTRe",
+    "team_members_XEBh8a",
+    "logo_list_wWxPwk",
+    "image_gallery_with_text_NgLJ4p"
+  ]
+}

@@ -1,0 +1,38 @@
+{%- doc -%}
+  Renders a footer contact information block with up to 4 customizable links.
+
+  Displays contact links in a vertical list, optionally within a collapsible section.
+
+  @param {object} block - Shopify block object with settings and attributes
+
+  @example
+  {% render 'footer-contact', block: block %}
+{%- enddoc -%}
+
+{%- capture block_content -%}
+  <div class="details__content">
+    <div class="footer__contact flex flex-col gap-1">
+      {{ block.settings.text }}
+    </div>
+    {%- if show_social -%}
+      <div class="footer__socials flex justify-start mt-6">
+        {%- render 'social-icons', size: 'sm', gap: '2' -%}
+      </div>
+    {%- endif -%}
+  </div>
+  {%- endcapture -%}
+
+  {%- if block.settings.heading == blank -%}
+    <div class="footer__item--{{ block.id }} no-details" {{ block.shopify_attributes }}>
+    {{- block_content -}}
+  </div>
+{%- else -%}
+  <details class="footer__item--{{ block.id }} details active" is="footer-details"{% if block.settings.opened %} data-opened{% endif %} {{ block.shopify_attributes }}>
+    <summary class="details__summary flex items-center justify-between gap-2 cursor-pointer">
+      <span class="heading text-base-2xl font-medium lg:font-heading">{{ block.settings.heading | escape }}</span>
+      {%- render 'icon', icon: 'chevron-up' -%}
+    </summary>
+    {{- block_content -}}
+  </details>
+{%- endif -%}
+

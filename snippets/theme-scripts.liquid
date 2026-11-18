@@ -1,0 +1,72 @@
+{% comment %}
+  Paste this block into layout/theme.liquid, inside <head>, BEFORE any other
+  theme JS. Order matters:
+    1. import map   — must come before any type="module" script
+    2. modulepreload — fetch all modules in parallel before theme.js runs
+    3. theme.js     — entry point, kicks off the module graph
+{% endcomment %}
+
+{% comment %} 1. Import map — maps @theme/* bare specifiers to CDN URLs {% endcomment %}
+<script type="importmap">
+{
+  "imports": {
+    "@theme/config":        {{ 'config.js'        | asset_url | json }},
+    "@theme/events":        {{ 'events.js'         | asset_url | json }},
+    "@theme/utilities":     {{ 'utilities.js'      | asset_url | json }},
+    "@theme/a11y":          {{ 'a11y.js'           | asset_url | json }},
+    "@theme/html":          {{ 'html.js'           | asset_url | json }},
+    "@theme/component":     {{ 'component.js'      | asset_url | json }},
+    "@theme/animation":     {{ 'animation.js'      | asset_url | json }},
+    "@theme/accordion":     {{ 'accordion.js'      | asset_url | json }},
+    "@theme/modal":         {{ 'modal.js'          | asset_url | json }},
+    "@theme/buttons":       {{ 'buttons.js'        | asset_url | json }},
+    "@theme/slider":        {{ 'slider.js'         | asset_url | json }},
+    "@theme/media":         {{ 'media.js'          | asset_url | json }},
+    "@theme/animate":       {{ 'animate.js'        | asset_url | json }},
+    "@theme/header":        {{ 'header.js'         | asset_url | json }},
+    "@theme/cart":          {{ 'cart.js'           | asset_url | json }},
+    "@theme/product":       {{ 'product.js'        | asset_url | json }},
+    "@theme/sections":      {{ 'sections.js'       | asset_url | json }},
+    "@theme/ui":            {{ 'ui.js'             | asset_url | json }},
+    "@theme/scroll-shadow": {{ 'scroll-shadow.js'  | asset_url | json }}
+  }
+}
+</script>
+
+{% comment %}
+  2. modulepreload — tells the browser to fetch, parse, and compile every
+     module in parallel right now, before theme.js even starts executing.
+     Without this, each import is discovered only when its parent file is
+     parsed, causing a serial waterfall of network round-trips.
+
+     Dependency order (deepest first so nothing waits on an ancestor):
+       Core utilities → a11y/html → component → feature modules → entry
+{% endcomment %}
+
+{% comment %} Core — no dependencies {% endcomment %}
+<link rel="modulepreload" href="{{ 'config.js'        | asset_url }}">
+<link rel="modulepreload" href="{{ 'events.js'         | asset_url }}">
+<link rel="modulepreload" href="{{ 'utilities.js'      | asset_url }}">
+<link rel="modulepreload" href="{{ 'a11y.js'           | asset_url }}">
+<link rel="modulepreload" href="{{ 'html.js'           | asset_url }}">
+<link rel="modulepreload" href="{{ 'scroll-shadow.js'  | asset_url }}">
+
+{% comment %} Component layer — depends on config + utilities {% endcomment %}
+<link rel="modulepreload" href="{{ 'component.js'      | asset_url }}">
+<link rel="modulepreload" href="{{ 'animation.js'      | asset_url }}">
+
+{% comment %} Feature modules — depend on component + core {% endcomment %}
+<link rel="modulepreload" href="{{ 'accordion.js'      | asset_url }}">
+<link rel="modulepreload" href="{{ 'modal.js'          | asset_url }}">
+<link rel="modulepreload" href="{{ 'buttons.js'        | asset_url }}">
+<link rel="modulepreload" href="{{ 'slider.js'         | asset_url }}">
+<link rel="modulepreload" href="{{ 'media.js'          | asset_url }}">
+<link rel="modulepreload" href="{{ 'animate.js'        | asset_url }}">
+<link rel="modulepreload" href="{{ 'header.js'         | asset_url }}">
+<link rel="modulepreload" href="{{ 'cart.js'           | asset_url }}">
+<link rel="modulepreload" href="{{ 'product.js'        | asset_url }}">
+<link rel="modulepreload" href="{{ 'sections.js'       | asset_url }}">
+<link rel="modulepreload" href="{{ 'ui.js'             | asset_url }}">
+
+{% comment %} 3. Entry point — all dependencies already in module cache {% endcomment %}
+<script src="{{ 'main.js' | asset_url }}" type="module"></script>

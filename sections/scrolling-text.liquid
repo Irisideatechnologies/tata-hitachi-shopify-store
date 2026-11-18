@@ -1,0 +1,278 @@
+<style>
+  #shopify-section-{{ section.id }} {
+    --section-padding-top: {{ section.settings.padding_top }}px;
+    --section-padding-bottom: {{ section.settings.padding_bottom }}px;
+    {%- render 'section-variables', section: section -%}
+    --section-grid-gap: {{ section.settings.grid_horizontal }}px;
+  }
+</style>
+
+{%- liquid
+  assign solid_background = true
+  if section.settings.gradient_background != blank and section.settings.gradient_background != 'rgba(0,0,0,0)'
+    assign solid_background = false
+  endif
+-%}
+
+<div class="section section--padding{% if section.settings.enable_twin %} section--plain{% endif %}{% if solid_background %} section--solid{% endif %}">
+  <div class="relative z-1">
+    {%- if section.blocks.size > 0 -%}
+      {%- capture marquee -%}
+        {%- liquid
+          assign first_block = section.blocks | first
+          assign last_block = section.blocks | last
+          if first_block.type == 'text' and last_block.type == 'text'
+            assign with_dot = true
+          endif
+
+        -%}
+        <div class="marquee{% if with_dot %} with-dot{% endif %} flex items-center shrink-0 whitespace-nowrap">
+          {%- for block in section.blocks -%}
+            {%- case block.type -%}
+              {%- when 'text' -%}
+                <div class="scrolling-text__item with-text{% if block.settings.text_size >= 100 %} with-xtext{% endif %} flex items-center shrink-0 {{ block.settings.text_font }}{% if block.settings.text_font == 'subtitle' %} uppercase tracking-widest{% endif %}{% if block.settings.text_font == 'heading' %} tracking-heading{% endif %}" style="--font-size: {{ block.settings.text_size }}px;" {{ block.shopify_attributes }}>
+                  <p>
+                    {{- block.settings.text -}}
+                  </p>
+                </div>
+
+              {%- when 'image' -%}
+                {%- capture image -%}
+                  {%- if block.settings.image != blank -%}
+                    {%- assign image_width = block.settings.height | times: block.settings.image.aspect_ratio | round -%}
+                    {%- assign max_width = block.settings.image.width -%}
+                    {%- capture sizes -%}{{ image_width }}px{%- endcapture -%}
+                    {%- capture widths -%}{{ image_width | times: 1.5 | at_most: max_width | round }}, {{ image_width | times: 2 | at_most: max_width }}, {{ image_width | times: 3 | at_most: max_width }}{%- endcapture -%}
+                    {{- block.settings.image | image_url: width: max_width | image_tag: loading: 'lazy', sizes: sizes, widths: widths, is: 'lazy-image' -}}
+                  {%- else -%}
+                    {{- 'logo' | placeholder_svg_tag: 'placeholder' -}}
+                  {%- endif -%}
+                {%- endcapture -%}
+
+                <div class="scrolling-text__item with-media flex items-center shrink-0 media media--transparent relative" style="--image-height: {{ block.settings.height }}px;" {{ block.shopify_attributes }}>
+                  {%- if block.settings.link != blank -%}
+                    <a class="leading-none" href="{{ block.settings.link }}"{% if block.settings.external %} target="_blank" rel="noopener"{% endif %} aria-label="{{ block.settings.accessibility_info | escape }}">
+                      {{- image -}}
+                    </a>
+                  {%- else -%}
+                    {{- image -}}
+                  {%- endif -%}
+                </div>
+            {%- endcase -%}
+          {%- endfor -%}
+        </div>
+      {%- endcapture -%}
+
+      {%- if section.settings.enable_twin -%}
+        {%- liquid
+          assign direction = section.settings.direction
+          if direction == 'left'
+            assign reversed = 'right'
+          else
+            assign reversed = 'left'
+          endif
+        -%}
+        <div class="scrolling-wrapper with-{{ direction }} relative z-1">
+          <marquee-element class="scrolling-text scrolling-text--{{ direction }} flex items-center" data-speed="{{ section.settings.speed }}" data-direction="{{ direction }}"{% if section.settings.enable_parallax %} data-parallax="1.5"{% endif %}>
+            {{- marquee -}}
+          </marquee-element>
+        </div>
+        <div class="scrolling-wrapper with-{{ direction }} relative">
+          <marquee-element class="scrolling-text scrolling-text--{{ reversed }} flex items-center" data-speed="{{ section.settings.speed }}" data-direction="{{ reversed }}"{% if section.settings.enable_parallax %} data-parallax="1.5"{% endif %}>
+            {{- marquee -}}
+          </marquee-element>
+        </div>
+      {%- else -%}
+        <marquee-element class="scrolling-text scrolling-text--{{ section.settings.direction }} flex items-center" data-speed="{{ section.settings.speed }}" data-direction="{{ section.settings.direction }}"{% if section.settings.enable_parallax %} data-parallax="1.5"{% endif %}>
+          {{- marquee -}}
+        </marquee-element>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.scrolling-text.name",
+  "class": "scrolling-text-section",
+  "settings": [
+    {
+      "type": "select",
+      "id": "direction",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:sections.scrolling-text.settings.direction.options__1.label"
+        },
+        {
+          "value": "right",
+          "label": "t:sections.scrolling-text.settings.direction.options__2.label"
+        }
+      ],
+      "default": "left",
+      "label": "t:sections.scrolling-text.settings.direction.label"
+    },
+    {
+      "type": "range",
+      "id": "speed",
+      "min": 1,
+      "max": 30,
+      "step": 1,
+      "label": "t:sections.scrolling-text.settings.speed.label",
+      "unit": "x",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "grid_horizontal",
+      "min": 50,
+      "max": 200,
+      "step": 5,
+      "default": 70,
+      "unit": "px",
+      "label": "t:sections.scrolling-text.settings.grid_horizontal.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_twin",
+      "label": "t:sections.scrolling-text.settings.enable_twin.label",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_parallax",
+      "label": "t:sections.global.settings.enable_parallax.label",
+      "default": true
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "default": "scheme-1",
+      "label": "t:settings.color_scheme"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.global.settings.header__section.content"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.global.settings.padding_top.label",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.global.settings.padding_bottom.label",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "text",
+      "name": "t:sections.global.blocks.text.name",
+      "settings": [
+        {
+          "type": "inline_richtext",
+          "id": "text",
+          "default": "Welcome to our store",
+          "label": "t:sections.global.settings.text.label"
+        },
+        {
+          "type": "range",
+          "id": "text_size",
+          "default": 160,
+          "min": 12,
+          "max": 180,
+          "step": 2,
+          "unit": "px",
+          "label": "t:sections.global.settings.text_size.label"
+        },
+        {
+          "type": "select",
+          "id": "text_font",
+          "options": [
+            {
+              "value": "body",
+              "label": "t:sections.global.settings.text_font.options__1.label"
+            },
+            {
+              "value": "heading",
+              "label": "t:sections.global.settings.text_font.options__2.label"
+            },
+            {
+              "value": "subtitle",
+              "label": "t:sections.global.settings.text_font.options__3.label"
+            }
+          ],
+          "default": "body",
+          "label": "t:sections.global.settings.text_font.label"
+        }
+      ]
+    },
+    {
+      "type": "image",
+      "name": "t:sections.global.blocks.image.name",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:sections.global.settings.image.label"
+        },
+        {
+          "type": "range",
+          "id": "height",
+          "min": 0,
+          "max": 200,
+          "step": 4,
+          "default": 80,
+          "unit": "px",
+          "label": "t:sections.scrolling-text.blocks.image.settings.image_height.label"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "t:sections.global.settings.link.label"
+        },
+        {
+          "type": "text",
+          "id": "accessibility_info",
+          "label": "t:sections.global.settings.accessibility.label",
+          "info": "t:sections.global.settings.accessibility.info",
+          "visible_if": "{{ block.settings.link != blank }}"
+        },
+        {
+          "type": "checkbox",
+          "id": "external",
+          "label": "t:sections.global.settings.button_external.label",
+          "default": false
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.scrolling-text.name",
+      "category": "t:categories.storytelling",
+      "blocks": [
+        {
+          "type": "text"
+        }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": [
+      "custom.overlay"
+    ]
+  }
+}
+{% endschema %}

@@ -1,0 +1,92 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main-article": {
+      "type": "main-article",
+      "blocks": {
+        "share": {
+          "type": "share",
+          "settings": {
+            "share_label": "Share",
+            "show_comments": true
+          }
+        },
+        "next_previous_posts": {
+          "type": "next_previous_posts",
+          "settings": {
+            "show_date": true,
+            "show_comments": false,
+            "show_author": true
+          }
+        },
+        "comments": {
+          "type": "comments",
+          "settings": {
+            "show_gravatar": true
+          }
+        }
+      },
+      "block_order": [
+        "share",
+        "next_previous_posts",
+        "comments"
+      ],
+      "settings": {
+        "heading_size": "title-lg tracking-heading",
+        "heading_tag": "h1",
+        "show_tags": true,
+        "show_date": true,
+        "show_comments": false,
+        "show_author": true,
+        "show_image": true,
+        "image_height": "750px",
+        "enable_parallax": true,
+        "parallax_direction": "vertical",
+        "color_scheme": "scheme-1",
+        "padding_top": 90,
+        "padding_bottom": 90,
+        "narrow": true
+      }
+    },
+    "blog-posts": {
+      "type": "blog-posts",
+      "settings": {
+        "blog": "news",
+        "post_limit": 12,
+        "columns": 3,
+        "carousel_on_desktop": true,
+        "show_view_all": false,
+        "columns_mobile": "1",
+        "swipe_on_mobile": false,
+        "image_ratio": "landscape",
+        "show_tags": false,
+        "show_date": true,
+        "show_comments": true,
+        "show_author": false,
+        "show_excerpt": true,
+        "heading": "Latest Stories",
+        "heading_size": "title-sm",
+        "heading_alignment": "text-left md:items-end md:flex-row",
+        "heading_tag": "h2",
+        "subheading": "",
+        "description": "",
+        "color_scheme": "scheme-1",
+        "padding_top": 0,
+        "padding_bottom": 90,
+        "full_width": false
+      }
+    }
+  },
+  "order": [
+    "main-article",
+    "blog-posts"
+  ]
+}

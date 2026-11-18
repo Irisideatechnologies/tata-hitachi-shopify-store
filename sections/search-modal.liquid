@@ -1,0 +1,48 @@
+{%- if settings.enable_search -%}
+  {%- if request.page_type != 'search' -%}
+    <script src="{{ 'search.js' | asset_url }}" defer></script>
+  {%- endif -%}
+  <tw-modal id="header-search-modal" class="nova-search-modal overlay modal nova-modal overlay-open:opacity-100 overlay-open:duration-300 modal-top hidden [--body-scroll:true]" role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-dialog-lg overlay-open:mt-20 overlay-open:duration-300 transition-all ease-out">
+      <div class="modal-content color-{{ section.settings.color_scheme }}">
+        <div class="modal-header">
+        </div>
+        <div class="modal-body [&::-webkit-scrollbar]:w-1">
+          {%- render 'predictive-search', section_id: section.id, context: 'drawer' -%}
+        </div>
+
+        <div class="modal-footer">
+        </div>
+
+      </div>
+    </div>
+  </tw-modal>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:sections.search-modal.name",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:sections.search-modal.settings.paragraph.content"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.global.settings.header__colors.content"
+      
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "default": "scheme-1",
+      "label": "t:settings.color_scheme"
+    },
+  ],
+  "enabled_on": {
+    "groups": [
+      "custom.overlay"
+    ]
+  }
+}
+{% endschema %}

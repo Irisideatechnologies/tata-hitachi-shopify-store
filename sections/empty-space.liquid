@@ -1,0 +1,53 @@
+<style>
+  #shopify-section-{{ section.id }} {
+    --spacing-height-desktop: {{ section.settings.desktop_height }}px;
+    --spacing-height-mobile: {{ section.settings.mobile_height }}px;
+    {%- render 'section-variables', section: section -%}
+  }
+</style>
+
+{% schema %}
+{
+  "name": "t:sections.empty-space.name",
+  "class": "section spacing-section",
+  "settings": [
+    {
+      "type": "range",
+      "id": "desktop_height",
+      "label": "t:sections.empty-space.settings.height.label",
+      "default": 40,
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "mobile_height",
+      "label": "t:sections.empty-space.settings.height_mobile.label",
+      "default": 28,
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "default": "scheme-1",
+      "label": "t:settings.color_scheme"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.empty-space.name",
+      "category": "t:categories.layout"
+    }
+  ],
+  "disabled_on": {
+    "groups": [
+      "custom.overlay"
+    ]
+  }
+}
+{% endschema %}

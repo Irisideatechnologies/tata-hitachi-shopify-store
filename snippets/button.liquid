@@ -1,0 +1,87 @@
+{%- doc -%}
+  Renders a button or link component with customizable styling and behavior.
+
+  Creates either a button-styled link or plain text link based on style parameter.
+
+  @param {string} label - Button text content (HTML-escaped)
+  @param {string} [link] - Target URL (omit for disabled state)
+  @param {string} [size] - Button size variant
+    - 'sm' - Small button
+    - 'md' - Medium button (default)
+    - 'lg' - Large button
+  @param {string} [style] - Visual style variant
+    - 'primary' - Primary button with fill animation
+    - 'secondary' - Secondary button with fill animation
+    - 'link' - Plain text link without button styling
+  @param {boolean} [external] - Open link in new tab with security
+  @param {boolean} [show_icon] - Display icon after label
+  @param {string} [icon] - Icon name to display (defaults to 'arrow-right')
+  @param {string} [size_style] - Custom styles
+  @param {string} [classes] - Additional CSS classes
+  @param {string} [shopify_attributes] - Shopify-specific attributes
+
+  @example Primary button with icon
+  {% render 'button',
+     label: 'Shop Now',
+     link: '/collections/all',
+     style: 'primary',
+     show_icon: true
+  %}
+
+  @example Secondary small button
+  {% render 'button',
+     label: 'Learn More',
+     link: '/pages/about',
+     style: 'secondary',
+     size: 'sm'
+  %}
+
+  @example External link button
+  {% render 'button',
+     label: 'Visit Instagram',
+     link: 'https://instagram.com/brand',
+     external: true,
+     show_icon: true
+  %}
+{%- enddoc -%}
+
+{%- liquid
+  assign show_icon_final = show_icon
+  if icon_only
+    assign show_icon_final = true
+  endif
+  assign icon_size_style = ''
+  if icon_size and icon_size > 0
+    assign icon_size_style = '--custom-icon-size: ' | append: icon_size | append: 'px'
+  endif
+-%}
+{%- if style == 'link' -%}
+  <a class="link inline-block{% if classes != blank %} {{ classes }}{% endif %}{% if show_icon_final %} icon-with-text{% endif %}"{% if link != blank %} href="{{ link }}"{% if external %} target="_blank" rel="noopener noreferrer"{% endif %}{% else %} role="link" aria-disabled="true"{% endif %}{% if size_style != blank %} style="{{ size_style }}"{% endif %} {{ shopify_attributes }}>
+    <span class="link-text{% if icon_only %} sr-only{% endif %}">{{ label | escape }}</span>
+    {%- liquid
+      if show_icon_final
+        assign icon_name = icon | default: 'arrow-right'
+        render 'icon', icon: icon_name, size: 'sm', class: 'transform'
+      endif
+    -%}
+  </a>
+{%- else -%}
+  <a class="btn btn--{{ style | default: 'primary' }} btn--{{ size | default: 'md' }}{% if icon_only %} btn--icon-only{% endif %}{% if classes != blank %} {{ classes }}{% endif %}{% if show_icon_final %} icon-with-text{% endif %}"{% if link != blank %} href="{{ link }}"{% if external %} target="_blank" rel="noopener noreferrer"{% endif %}{% else %} role="link" {% endif %}{% if size_style != blank %} style="{{ size_style }}"{% endif %} {{ shopify_attributes }}>
+    <span class="btn__text{% if icon_only %} sr-only{% endif %}">
+      {{- label | escape -}}
+    </span>
+    {%- if show_icon_final -%}
+    <span class="btn__icon-icon"{% if icon_size_style != '' %} style="{{ icon_size_style }}"{% endif %}>
+      {%- if icon_source == 'custom' and icon_image != blank -%}
+        {%- assign img_size = icon_size | default: 24 -%}
+        {{- icon_image | image_url: width: 96 | image_tag: loading: 'lazy', class: 'transform block', alt: '', width: img_size, height: img_size, style: 'width:100%;height:100%;object-fit:contain' -}}
+      {%- else -%}
+        {%- liquid
+          assign icon_name = icon | default: 'arrow-right'
+          render 'icon', icon: icon_name, size: 'sm', class: 'transform'
+        -%}
+      {%- endif -%}
+    </span>
+    {%- endif -%}
+  </a>
+{%- endif -%}

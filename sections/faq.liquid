@@ -1,0 +1,619 @@
+<style>
+  #shopify-section-{{ section.id }} {
+    --section-padding-top: {{ section.settings.padding_top }}px;
+    --section-padding-bottom: {{ section.settings.padding_bottom }}px;
+    {%- render 'section-variables', section: section -%}
+  }
+
+  #shopify-section-{{ section.id }} .faq {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  #shopify-section-{{ section.id }} .faq .accordion {
+    border: 1px solid rgb(var(--color-border));
+    border-radius: 6px;
+  }
+
+  #shopify-section-{{ section.id }} .faq .accordion + .accordion {
+    border-block-start: 1px solid rgb(var(--color-border));
+  }
+
+  #shopify-section-{{ section.id }} .faq .accordion .details__summary {
+    padding-block: var(--sp-4);
+    padding-inline: var(--sp-5);
+  }
+
+  #shopify-section-{{ section.id }} .faq .accordion .details__content {
+    padding-inline: var(--sp-5);
+    padding-block-end: var(--sp-4);
+    margin-block-start: 0;
+  }
+
+  #shopify-section-{{ section.id }} .faqs.with-border .faq {
+    border: none;
+    padding: 0;
+  }
+
+  #shopify-section-{{ section.id }} .faq-two-col {
+    grid-template-columns: 1fr;
+  }
+
+  @media screen and (min-width: 768px) {
+    #shopify-section-{{ section.id }} .faq-two-col {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>
+<div class="section section--padding{% if section.settings.style == 'with-background' %} section--plain{% endif %} color-{{ section.settings.color_scheme }}" id="shopify-section-{{ section.id }}">
+  {% if section.settings.style == 'with-background' %}
+    <div class="section__background">
+      {% if section.settings.overlay_opacity > 0 %}
+        <div class="section__overlay" style="background-color: rgb(var(--color-overlay) / {{ section.settings.overlay_opacity | divided_by: 100 }});"></div>
+      {% endif %}
+    </div>
+  {% endif %}
+  <div class="page-width{% if section.settings.narrow %} page-width--narrow{% endif %} relative">
+    {%- if section.settings.style == 'with-border' -%}
+      {%- render 'section-heading', section: section -%}
+    {%- endif -%}
+
+    {%- if section.blocks.size > 0 -%}
+      {%- liquid
+
+        assign contact = section.blocks | where: "type", "contact" | first
+      -%}
+      <div class="faqs {{ section.settings.style }} flex flex-col lg:flex-row relative z-1">
+        <div class="grow grid gap-8 md:gap-12">
+          {%- if section.settings.style == 'with-background' -%}
+            {%- if section.settings.heading != blank or section.settings.description != blank or section.settings.button_label != blank -%}
+              <div class="grid gap-4 {{ section.settings.heading_alignment }}">
+                {%- if section.settings.heading != blank or section.settings.description != blank -%}
+                  <div class="title-wrapper leading-none grid gap-4 {{ section.settings.heading_alignment }}">
+                    {%- if section.settings.heading != blank -%}
+                      <{{ section.settings.heading_tag }} class="heading {{ section.settings.heading_size }}">
+                        {%- render 'heading-content', content: section.settings.heading -%}
+                      </{{ section.settings.heading_tag }}>
+                    {%- endif -%}
+                    
+                    {%- if section.settings.description != blank -%}
+                      <div class="page-width--narrow rte leading-normal text-sm xl:text-base">
+                        {{- section.settings.description -}}
+                      </div>
+                    {%- endif -%}
+                  </div>
+                {%- endif -%}
+
+                {%- if section.settings.button_label != blank -%}
+                  <p>
+                    {%- render 'button',
+                      style: 'secondary',
+                      label: section.settings.button_label,
+                      link: section.settings.button_link,
+                      external: section.settings.button_external,
+                      show_icon: section.settings.button_icon
+                    -%}
+                  </p>
+                {%- endif -%}
+              </div>
+            {%- endif -%}
+          {%- endif -%}
+          {%- liquid
+            assign question_blocks = section.blocks | where: 'type', 'question'
+            assign richtext_blocks = section.blocks | where: 'type', 'rich-text'
+          -%}
+
+          {%- for block in richtext_blocks -%}
+            <div class="accordion accordion--text" {{ block.shopify_attributes }}>
+              <div class="grid gap-2d5">
+                <p class="heading lg:text-3xl text-2xl leading-none tracking-tight">
+                  {{- block.settings.heading -}}
+                </p>
+                <div class="text-opacity text-base rte">
+                  {{- block.settings.text -}}
+                </div>
+              </div>
+            </div>
+          {%- endfor -%}
+
+          {%- if section.settings.two_columns and question_blocks.size > 1 -%}
+            {%- assign half = question_blocks.size | divided_by: 2 | ceil -%}
+            <div class="faq-two-col grid gap-x-8 md:gap-x-12">
+              <div class="faq">
+                {%- for block in question_blocks limit: half -%}
+                  <div class="accordion">
+                    <details class="details" is="accordion-details" {{ block.shopify_attributes }}>
+                      <summary class="details__summary flex items-center justify-between gap-2 cursor-pointer">
+                        <span class="text-base lg:text-lg font-medium leading-tight">{{- block.settings.title -}}</span>
+                        {%- render 'icon', icon: 'plus-2', size: 'xs', class: 'shrink-0' -%}
+                      </summary>
+                      <div class="details__content text-base text-opacity rte">{{- block.settings.text -}}</div>
+                    </details>
+                  </div>
+                {%- endfor -%}
+              </div>
+              <div class="faq">
+                {%- for block in question_blocks offset: half -%}
+                  <div class="accordion">
+                    <details class="details" is="accordion-details" {{ block.shopify_attributes }}>
+                      <summary class="details__summary flex items-center justify-between gap-2 cursor-pointer">
+                        <span class="text-base lg:text-lg font-medium leading-tight">{{- block.settings.title -}}</span>
+                        {%- render 'icon', icon: 'plus-2', size: 'xs', class: 'shrink-0' -%}
+                      </summary>
+                      <div class="details__content text-base text-opacity rte">{{- block.settings.text -}}</div>
+                    </details>
+                  </div>
+                {%- endfor -%}
+              </div>
+            </div>
+          {%- else -%}
+            <div class="faq">
+              {%- for block in question_blocks -%}
+                <div class="accordion">
+                  <details class="details" is="accordion-details" {{ block.shopify_attributes }}>
+                    <summary class="details__summary flex items-center justify-between gap-2 cursor-pointer">
+                      <span class="text-base lg:text-lg xl:text-xl font-medium leading-tight">{{- block.settings.title -}}</span>
+                      {%- render 'icon', icon: 'plus-2', size: 'xs', class: 'shrink-0' -%}
+                    </summary>
+                    <div class="details__content text-base rte">{{- block.settings.text -}}</div>
+                  </details>
+                </div>
+              {%- endfor -%}
+            </div>
+          {%- endif -%}
+        </div>
+
+        {%- if contact != blank -%}
+          {%- assign form_id = 'ContactForm-' | append: section.id -%}
+          {%- form 'contact', id: form_id, class: 'grow-0' -%}
+            <sticky-element class="contact__sidebar grid gap-7d5 md:gap-10 lg:sticky top-0">
+              <div class="flex justify-between gap-6">
+                <div class="grid gap-2d5">
+                  <p class="heading lg:text-3xl text-2xl leading-none tracking-tight">
+                    {{- contact.settings.heading -}}
+                  </p>
+                  <div class="text-opacity text-base rte">
+                    {{- contact.settings.text -}}
+                  </div>
+                </div>
+
+                {%- if contact.settings.avatar != blank -%}
+                  {%- assign avatar_width = contact.settings.avatar_height | times: contact.settings.avatar.aspect_ratio | round -%}
+                  {%- assign max_width = contact.settings.avatar.width -%}
+                  {%- capture sizes -%}{{ avatar_width }}px{%- endcapture -%}
+                  {%- capture widths -%}{{ avatar_width | times: 1.5 | at_most: max_width | round }}, {{ avatar_width | times: 2 | at_most: max_width }}, {{ avatar_width | times: 3 | at_most: max_width }}{%- endcapture -%}
+                  {%- capture style -%}--image-width: {{ avatar_width }}px; --image-height: {{ contact.settings.avatar_height }}px;{%- endcapture -%}
+
+                  <div class="media media--transparent relative">
+                    {{- contact.settings.avatar | image_url: width: max_width | image_tag: loading: 'lazy', sizes: sizes, widths: widths, style: style, is: 'lazy-image' -}}
+                  </div>
+                {%- endif -%}
+              </div>
+              <div class="grid gap-4d5 md:gap-6">
+                {%- if form.errors -%}
+                  <div class="field">
+                    {%- liquid
+                      assign form_errors = form.errors | default_errors
+                      render 'alert', status: 'error', content: form_errors
+                    -%}
+                  </div>
+                {%- endif -%}
+      
+                {%- if form.posted_successfully? -%}
+                  <div class="field">
+                    {%- liquid
+                      assign success_message = 'contact.form.post_success' | t
+                      render 'alert', status: 'success', content: success_message
+                    -%}
+                  </div>
+                {%- endif -%}
+
+                <div class="field">
+                  <input
+                    class="input is-floating"
+                    autocomplete="name"
+                    type="text"
+                    id="ContactFormName-{{ section.id }}"
+                    name="contact[{{ 'contact.form.name' | t }}]"
+                    value="{% if form.name %}{{ form.name }}{% elsif customer %}{{ customer.name }}{% endif %}"
+                    placeholder="{{ 'contact.form.name' | t | escape }}"
+                  />
+                  <label class="label is-floating" for="ContactFormName-{{ section.id }}">{{ 'contact.form.name' | t }}</label>
+                </div>
+                <div class="field">
+                  <input
+                    class="input is-floating{% if form.errors contains 'email' %} invalid{% endif %}"
+                    autocomplete="email"
+                    type="email"
+                    id="ContactFormEmail-{{ section.id }}"
+                    name="contact[email]"
+                    spellcheck="false"
+                    autocapitalize="off"
+                    value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}"
+                    placeholder="{{ 'contact.form.email' | t | escape }}"
+                    required
+                  >
+                  <label class="label is-floating" for="ContactFormEmail-{{ section.id }}">{{ 'contact.form.email' | t }}</label>
+                </div>
+
+                {%- if contact.settings.show_phone -%}
+                  <div class="field">
+                    <input
+                      class="input is-floating"
+                      autocomplete="phone"
+                      type="tel"
+                      id="ContactFormPhone-{{ section.id }}"
+                      name="contact[{{ 'contact.form.phone' | t }}]"
+                      value="{% if form.phone %}{{ form.phone }}{% elsif customer %}{{ customer.phone }}{% endif %}"
+                      placeholder="{{ 'contact.form.phone' | t | escape }}"
+                      pattern="[0-9\-]*"
+                    />
+                    <label class="label is-floating" for="ContactFormPhone-{{ section.id }}">{{ 'contact.form.phone' | t }}</label>
+                  </div>
+                {%- endif -%}
+
+                <div class="field">
+                  <textarea
+                    class="textarea is-floating"
+                    rows="4"
+                    id="ContactFormMessage-{{ section.id }}"
+                    name="contact[{{ 'contact.form.message' | t }}]"
+                    placeholder=" "
+                  >
+                    {{- form.body -}}
+                  </textarea>
+                  <label class="label is-floating" for="ContactFormMessage-{{ section.id }}">{{ 'contact.form.message' | t }}</label>
+                </div>
+                <div class="field">
+                  <label for="ContactSubmit-{{ section.id }}" class="sr-only">{{ 'contact.form.send' | t }}</label>
+                  <button type="submit" id="ContactSubmit-{{ section.id }}" class="button button--primary button--fixed" is="hover-button">
+                    
+                    <span class="btn-text">{{ 'contact.form.send' | t }}</span>
+                  </button>
+                </div>
+              </div>
+            </sticky-element>
+          {%- endform -%}
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+  </div>
+</div>
+
+{%- assign question_blocks = section.blocks | where: 'type', 'question' -%}
+{%- if question_blocks.size > 0 -%}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {%- for block in question_blocks -%}
+          {
+            "@type": "Question",
+            "name": {{ block.settings.title | json }},
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": {{ block.settings.text | json }}
+            }
+          }{% unless forloop.last %},{% endunless %}
+        {% endfor -%}
+      ]
+    }
+  </script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:sections.faq.name",
+  "settings": [
+    {
+      "type": "select",
+      "id": "style",
+      "label": "t:sections.faq.settings.style.label",
+      "options": [
+        {
+          "value": "with-border",
+          "label": "t:sections.faq.settings.style.options__1.label"
+        },
+        {
+          "value": "with-background",
+          "label": "t:sections.faq.settings.style.options__2.label"
+        }
+      ],
+      "default": "with-border"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.global.settings.header__heading.content"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "t:sections.global.settings.heading.label",
+      "default": "FAQs"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        {
+          "value": "title-sm",
+          "label": "t:sections.global.settings.heading_size.options__1.label"
+        },
+        {
+          "value": "title-md",
+          "label": "t:sections.global.settings.heading_size.options__2.label"
+        },
+        {
+          "value": "title-lg tracking-heading",
+          "label": "t:sections.global.settings.heading_size.options__3.label"
+        },
+        {
+          "value": "title-xl tracking-heading",
+          "label": "t:sections.global.settings.heading_size.options__4.label"
+        }
+      ],
+      "default": "title-md",
+      "label": "t:sections.global.settings.heading_size.label"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "t:sections.global.settings.heading_alignment.label",
+      "options": [
+        {
+          "value": "text-left md:items-end md:flex-row",
+          "label": "t:sections.global.settings.heading_alignment.options__1.label"
+        },
+        {
+          "value": "text-center md:items-center",
+          "label": "t:sections.global.settings.heading_alignment.options__2.label"
+        },
+        {
+          "value": "text-right md:items-end md:flex-row-reverse",
+          "label": "t:sections.global.settings.heading_alignment.options__3.label"
+        }
+      ],
+      "default": "text-left md:items-end md:flex-row"
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "t:sections.global.settings.heading_tag.options__1.label"
+        },
+        {
+          "value": "h2",
+          "label": "t:sections.global.settings.heading_tag.options__2.label"
+        },
+        {
+          "value": "h3",
+          "label": "t:sections.global.settings.heading_tag.options__3.label"
+        },
+        {
+          "value": "h4",
+          "label": "t:sections.global.settings.heading_tag.options__4.label"
+        },
+        {
+          "value": "h5",
+          "label": "t:sections.global.settings.heading_tag.options__5.label"
+        },
+        {
+          "value": "h6",
+          "label": "t:sections.global.settings.heading_tag.options__6.label"
+        },
+        {
+          "value": "div",
+          "label": "t:sections.global.settings.heading_tag.options__7.label"
+        },
+        {
+          "value": "span",
+          "label": "t:sections.global.settings.heading_tag.options__8.label"
+        },
+        {
+          "value": "p",
+          "label": "t:sections.global.settings.heading_tag.options__9.label"
+        }
+      ],
+      "default": "h2",
+      "label": "t:sections.global.settings.heading_tag.label",
+      "info": "t:sections.global.settings.heading_tag.info"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "t:sections.global.settings.subheading.label"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "t:sections.global.settings.description.label"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "t:sections.global.settings.button_label.label",
+      "info": "t:sections.global.settings.button_label.info"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "t:sections.global.settings.button_link.label"
+    },
+    {
+      "visible_if": "{{ section.settings.button_label != blank }}",
+      "type": "checkbox",
+      "id": "button_external",
+      "label": "t:sections.global.settings.button_external.label",
+      "default": false
+    },
+    {
+      "visible_if": "{{ section.settings.button_label != blank }}",
+      "type": "checkbox",
+      "id": "button_icon",
+      "label": "t:sections.global.settings.button_icon.label",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "t:settings.color"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "default": "scheme-1",
+      "label": "t:settings.color_scheme"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "t:sections.global.settings.overlay_opacity.label",
+      "default": 4
+    },
+    {
+      "type": "header",
+      "content": "t:sections.global.settings.header__section.content"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "label": "t:sections.global.settings.padding_top.label",
+      "default": 90
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "label": "t:sections.global.settings.padding_bottom.label",
+      "default": 90
+    },
+    {
+      "type": "checkbox",
+      "id": "narrow",
+      "label": "t:sections.global.settings.narrow.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "two_columns",
+      "label": "t:sections.faq.settings.two_columns.label",
+      "default": false
+    }
+  ],
+  "blocks": [
+    {
+      "type": "rich-text",
+      "name": "t:sections.faq.blocks.rich_text.name",
+      "settings": [
+        {
+          "type": "inline_richtext",
+          "id": "heading",
+          "label": "t:sections.global.settings.heading.label",
+          "default": "Rich text"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "t:sections.global.settings.text.label",
+          "default": "<p>Use this section for any descriptive text you need to fill out your pages or to add introductory headings between other blocks.</p>"
+        }
+      ]
+    },
+    {
+      "type": "question",
+      "name": "t:sections.faq.blocks.question.name",
+      "settings": [
+        {
+          "type": "inline_richtext",
+          "id": "title",
+          "label": "t:sections.faq.blocks.question.settings.title.label",
+          "default": "Frequently asked question"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "t:sections.faq.blocks.question.settings.text.label",
+          "default": "<p>Use this text to answer questions in as much detail as possible for your customers.</p>"
+        }
+      ]
+    },
+    {
+      "type": "contact",
+      "name": "t:sections.faq.blocks.contact.name",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "inline_richtext",
+          "id": "heading",
+          "label": "t:sections.global.settings.heading.label",
+          "default": "Didn’t find your answer?"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "t:sections.global.settings.text.label",
+          "default": "<p>Don't hestitate to contact us</p>"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_phone",
+          "label": "t:sections.faq.blocks.contact.settings.show_phone.label"
+        },
+        {
+          "type": "image_picker",
+          "id": "avatar",
+          "label": "t:sections.faq.blocks.contact.settings.avatar.label"
+        },
+        {
+          "type": "range",
+          "id": "avatar_height",
+          "min": 20,
+          "max": 100,
+          "step": 1,
+          "unit": "px",
+          "label": "t:sections.faq.blocks.contact.settings.avatar_height.label",
+          "default": 60
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.faq.name",
+      "category": "t:categories.brand_trust",
+      "blocks": [
+        {
+          "type": "question"
+        },
+        {
+          "type": "question"
+        },
+        {
+          "type": "question"
+        }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": [
+      "footer",
+      "header",
+      "custom.overlay"
+    ]
+  }
+}
+{% endschema %}

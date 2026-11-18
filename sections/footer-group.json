@@ -1,0 +1,84 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "footer",
+  "name": "t:sections.footer-group.name",
+  "sections": {
+    "footer": {
+      "type": "footer",
+      "blocks": {
+        "brand_information": {
+          "type": "brand_information",
+          "settings": {
+            "heading": "Our story",
+            "text": "<p>Miniture is one of the biggest international fashion companies, one of the world’s largest distribution groups.</p>",
+            "opened": false
+          }
+        },
+        "link_list-1": {
+          "type": "link_list",
+          "settings": {
+            "heading": "Quick links",
+            "menu": "footer",
+            "container_width": 50,
+            "opened": false
+          }
+        },
+        "link_list-2": {
+          "type": "link_list",
+          "settings": {
+            "heading": "Information",
+            "menu": "company",
+            "container_width": 50,
+            "opened": false
+          }
+        }
+      },
+      "block_order": [
+        "brand_information",
+        "link_list-1",
+        "link_list-2"
+      ],
+      "settings": {
+        "invert_newsletter_others": false,
+        "enable_newsletter": true,
+        "newsletter_heading": "Let’s get in touch",
+        "newsletter_heading_size": "md:title-sm",
+        "newsletter_text": "",
+        "newsletter_logo_height": 50,
+        "show_social": true,
+        "enable_follow_on_shop": false,
+        "color_scheme": "scheme-2",
+        "padding_top": 90,
+        "padding_bottom": 72,
+        "full_width": false,
+        "enable_parallax": false
+      }
+    },
+    "footer-copyright": {
+      "type": "footer-copyright",
+      "settings": {
+        "enable_language_selector": true,
+        "enable_country_selector": true,
+        "show_payment_icons": true,
+        "monochrome_payment_icons": false,
+        "show_copyright": true,
+        "copyright_text": "",
+        "color_scheme": "scheme-2",
+        "full_width": false,
+        "enable_parallax": false
+      }
+    }
+  },
+  "order": [
+    "footer",
+    "footer-copyright"
+  ]
+}

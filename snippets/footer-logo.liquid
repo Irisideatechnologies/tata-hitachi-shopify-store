@@ -1,0 +1,38 @@
+{%- doc -%}
+  Renders a footer logo block with optional social icons and Shop follow button.
+
+  Displays brand logo, social media links, and Shop app integration in footer.
+
+  @param {object} block - Shopify block object with settings and attributes
+
+  @example
+  {% render 'footer-logo', block: block %}
+{%- enddoc -%}
+
+{%- if block.settings.logo or block.settings.show_social or shop.features.follow_on_shop? and block.settings.enable_follow_on_shop -%}
+  <div class="footer__logo flex flex-col gap-10" {{ block.shopify_attributes }}>
+    {%- if block.settings.logo -%}
+      <p class="leading-none">
+        <a href="{{ routes.root_url }}">
+          <span class="sr-only">{{ shop.name }}</span>
+          {%- assign logo_width = block.settings.logo_height | times: block.settings.logo.aspect_ratio | round -%}
+          {%- assign max_width = block.settings.logo.width -%}
+          {%- capture sizes -%}{{ logo_width }}px{%- endcapture -%}
+          {%- capture widths -%}{{ logo_width | times: 1.5 | at_most: max_width | round }}, {{ logo_width | times: 2 | at_most: max_width }}, {{ logo_width | times: 3 | at_most: max_width }}{%- endcapture -%}
+          {%- capture style -%}--image-width: {{ logo_width }}px; --image-height: {{ block.settings.logo_height }}px;{%- endcapture -%}
+          {{- block.settings.logo | image_url: width: max_width | image_tag: loading: 'lazy', widths: widths, sizes: sizes, style: style, preload: true, is: 'lazy-image' -}}
+        </a>
+      </p>
+    {%- endif -%}
+
+    {%- liquid
+      if block.settings.show_social
+        render 'social-icons', size: 'lg', gap: '7'
+      endif
+
+      if shop.features.follow_on_shop? and block.settings.enable_follow_on_shop
+        echo shop | login_button: action: 'follow'
+      endif
+    -%}
+  </div>
+{%- endif -%}

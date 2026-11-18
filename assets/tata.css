@@ -766,6 +766,12 @@ footer {
   scrollbar-width: thin;
 }
 
+.thcm-source-count {
+  margin-left: 3px;
+  font-size: .9em;
+  opacity: .75;
+}
+
 .thcm-analytics {
   margin-top: 26px;
   padding-top: 4px;

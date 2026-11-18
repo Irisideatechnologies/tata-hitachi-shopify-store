@@ -23,6 +23,11 @@
       {%- endif -%}
     </header>
 
+    <div class="thcm-tabs thcm-tabs--main" data-admin-source-tabs role="tablist" aria-label="Order source" hidden>
+      <button type="button" role="tab" class="thcm-tab is-active" data-admin-source="STORE" aria-selected="true">Store Orders <span class="thcm-source-count" data-source-count="STORE" aria-label="Store Orders count"></span></button>
+      <button type="button" role="tab" class="thcm-tab" data-admin-source="MAP" aria-selected="false">MAP Orders <span class="thcm-source-count" data-source-count="MAP" aria-label="MAP Orders count"></span></button>
+    </div>
+
     <div class="thcm-tabs thcm-tabs--main" role="tablist" aria-label="Orders">
       <button type="button" role="tab" class="thcm-tab is-active" data-main-tab="daily" aria-selected="true"{% unless request.design_mode %} hidden{% endunless %}>{{ section.settings.tab_daily }}</button>
       <button type="button" role="tab" class="thcm-tab" data-main-tab="my" aria-selected="false">{{ section.settings.tab_my }}</button>

@@ -55,6 +55,10 @@
   .map-login__label { display: block; font-size: 13px; font-weight: 600; margin: 0 0 6px; }
   .map-login__input { width: 100%; box-sizing: border-box; padding: 12px; margin: 0 0 16px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 15px; font-family: inherit; color: #111827; background: #fff; }
   .map-login__input:focus { outline: 2px solid #C94F0C; outline-offset: 1px; border-color: #C94F0C; }
+  /* Use the theme's single password toggle; suppress browser-native reveal controls. */
+  .map-login__input[type='password']::-ms-reveal,
+  .map-login__input[type='password']::-ms-clear,
+  .map-login__input[type='password']::-webkit-credentials-auto-fill-button { display: none !important; visibility: hidden; pointer-events: none; }
   .map-login__pass { position: relative; }
   .map-login__pass .map-login__input { padding-right: 44px; }
   .map-login__eye { position: absolute; top: 0; right: 0; height: 44px; width: 44px; display: flex; align-items: center; justify-content: center; background: none; border: 0; color: #4B5563; cursor: pointer; }

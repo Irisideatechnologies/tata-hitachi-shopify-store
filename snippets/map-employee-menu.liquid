@@ -10,6 +10,7 @@
     <div class="mem-drawer" data-mem="drawer" hidden>
       <p class="mem-drawer__name" data-mem-name></p>
       <p class="mem-drawer__id" data-mem-id-row hidden>Employee ID: <span data-mem-id></span></p>
+      <a class="mem-drawer__admin-link" href="/pages/employee-management" data-mem-admin hidden>Employee Management</a>
       <button type="button" class="mem-drawer__logout" data-mem-logout>Log out</button>
     </div>
   {%- else -%}
@@ -29,6 +30,7 @@
       <div class="mem__panel" data-mem-panel hidden>
         <p class="mem__label">Employee ID</p>
         <p class="mem__value" data-mem-id></p>
+        <a class="mem__admin-link" href="/pages/employee-management" data-mem-admin hidden>Employee Management</a>
         <button type="button" class="mem__logout" data-mem-logout>Log out</button>
       </div>
     </div>
@@ -42,8 +44,9 @@
     .mem__panel { position: absolute; top: calc(100% + 8px); right: 0; z-index: 60; min-width: 220px; padding: 16px; background: var(--color-background); color: var(--color-foreground); border: 1px solid var(--color-border, #E5E7EB); border-radius: 8px; box-shadow: 0 12px 32px rgba(17, 24, 39, 0.16); }
     .mem__label { margin: 0 0 2px; font-size: 0.75rem; opacity: 0.7; }
     .mem__value { margin: 0 0 12px; font-weight: 600; word-break: break-all; }
+    .mem__admin-link, .mem-drawer__admin-link { display: block; width: 100%; box-sizing: border-box; margin: 0 0 10px; padding: 10px 14px; border: 1px solid currentColor; border-radius: 8px; color: inherit; font-size: 0.875rem; font-weight: 600; text-decoration: none; }
     .mem__logout, .mem-drawer__logout { width: 100%; padding: 10px 14px; border: 1px solid currentColor; border-radius: 8px; background: transparent; color: inherit; font: inherit; font-size: 0.875rem; font-weight: 600; cursor: pointer; }
-    .mem__logout:hover, .mem-drawer__logout:hover { background: var(--color-foreground); color: var(--color-background); }
+    .mem__admin-link:hover, .mem-drawer__admin-link:hover, .mem__logout:hover, .mem-drawer__logout:hover { background: var(--color-foreground); color: var(--color-background); }
     .mem-drawer { margin-top: 24px; padding: 16px 18px 0; border-top: 1px solid var(--color-border, #E5E7EB); }
     .mem-drawer__name { margin: 0; font-weight: 600; }
     .mem-drawer__id { margin: 4px 0 12px; font-size: 0.875rem; opacity: 0.7; }
@@ -70,6 +73,7 @@
           root.setAttribute('data-mem-ready', '');
           root.querySelectorAll('[data-mem-name]').forEach(function (el) { el.textContent = emp.name || 'Account'; });
           root.querySelectorAll('[data-mem-id]').forEach(function (el) { el.textContent = emp.employeeId || '-'; });
+          root.querySelectorAll('[data-mem-admin]').forEach(function (el) { el.hidden = !window.MAP_AUTH.isAdmin(); });
           var row = root.querySelector('[data-mem-id-row]');
           if (row && emp.employeeId) row.hidden = false;
           root.hidden = false;

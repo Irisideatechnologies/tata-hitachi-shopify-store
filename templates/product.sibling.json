@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "main-product": {
@@ -24,7 +33,9 @@
         },
         "description": {
           "type": "description",
-          "settings": { "text_size": "text-base" }
+          "settings": {
+            "text_size": "text-base"
+          }
         },
         "countdown": {
           "type": "countdown",
@@ -127,7 +138,10 @@
             "text_size": "text-sm"
           }
         },
-        "sticky_buy_button": { "type": "sticky_buy_button", "settings": {} }
+        "sticky_buy_button": {
+          "type": "sticky_buy_button",
+          "settings": {}
+        }
       },
       "block_order": [
         "vendor",
@@ -161,9 +175,7 @@
         "mobile_thumbnail": false,
         "padding_top": 0,
         "padding_bottom": 84,
-        "divider": false,
-        "full_width": true,
-        "rounded": false
+        "full_width": true
       }
     },
     "video-hero": {
@@ -207,15 +219,15 @@
         "description": {
           "type": "description",
           "settings": {
-            "heading": "Description",
-            "icon": "none"
+            "icon": "none",
+            "heading": "Description"
           }
         },
         "collapsible_tab": {
           "type": "collapsible_tab",
           "settings": {
-            "heading": "Shipping & Returns",
             "icon": "none",
+            "heading": "Shipping & Returns",
             "content": "<p>Free standard shipping and free 60-day returns</p>"
           }
         }
@@ -240,8 +252,6 @@
       "type": "product-recommendations",
       "settings": {
         "heading": "You may also like",
-        "products_to_show": 4,
-        "columns_desktop": 4,
         "padding_top": 36,
         "padding_bottom": 36
       }
@@ -250,8 +260,6 @@
       "type": "recently-viewed",
       "settings": {
         "heading": "Recently viewed",
-        "products_to_show": 4,
-        "columns_desktop": 4,
         "padding_top": 36,
         "padding_bottom": 36
       }

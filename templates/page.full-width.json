@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "main-page": {
@@ -8,9 +17,7 @@
         "heading_tag": "h1",
         "text_size": "text-base",
         "padding_top": 72,
-        "padding_bottom": 120,
-        "divider": false,
-        "rounded": false
+        "padding_bottom": 120
       }
     }
   },

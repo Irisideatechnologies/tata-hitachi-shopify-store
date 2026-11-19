@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "main-page": {
@@ -10,9 +19,7 @@
         "text_size": "text-base",
         "padding_top": 72,
         "padding_bottom": 120,
-        "divider": false,
-        "narrow": true,
-        "rounded": false
+        "narrow": true
       }
     },
     "rich-text": {
@@ -23,25 +30,24 @@
           "settings": {
             "heading": "Example title",
             "heading_size": "title-xl tracking-heading",
-            "heading_tag": "h1",
-            "highlighted_text": "none",
-            "highlighted_scribble": "circle"
+            "heading_tag": "h1"
           }
         },
         "text": {
           "type": "text",
           "settings": {
-            "text": "<p>Use this section to explain a set of product features, to link to a series of pages, or to answer common questions about your products.<\/p>",
+            "text": "<p>Use this section to explain a set of product features, to link to a series of pages, or to answer common questions about your products.</p>",
             "text_font": "body",
             "text_size": "subtext-lg",
             "text_max_size": 32,
-            "secondary_color": false,
-            "highlighted_text": "none",
-            "highlighted_scribble": "circle"
+            "secondary_color": false
           }
         }
       },
-      "block_order": ["heading", "text"],
+      "block_order": [
+        "heading",
+        "text"
+      ],
       "settings": {
         "text_alignment": "center",
         "text_alignment_mobile": "center",
@@ -56,21 +62,9 @@
         "button_link": "",
         "button_external": false,
         "button_icon": true,
-        "highlighted_text": "none",
-        "highlighted_scribble": "circle",
-        "color_text": "",
-        "color_background": "",
-        "gradient_background": "",
-        "color_highlight": "",
-        "gradient_highlight": "",
-        "color_button_text": "",
-        "color_button_background": "",
-        "color_button_gradient": "",
         "padding_top": 28,
         "padding_bottom": 32,
-        "divider": false,
-        "narrow": true,
-        "rounded": false
+        "narrow": true
       }
     },
     "multicolumn-1": {
@@ -86,14 +80,12 @@
             "image_ratio": "portrait",
             "heading": "Heading 1",
             "heading_size": "text-2xl lg:text-3xl",
-            "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.<\/p>",
+            "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.</p>",
             "button_label": "Button label",
             "button_link": "",
             "button_style": "link",
             "button_external": false,
-            "button_icon": false,
-            "highlighted_text": "none",
-            "highlighted_scribble": "circle"
+            "button_icon": false
           }
         },
         "column-2": {
@@ -106,14 +98,12 @@
             "image_ratio": "portrait",
             "heading": "Heading 2",
             "heading_size": "text-2xl lg:text-3xl",
-            "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.<\/p>",
+            "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.</p>",
             "button_label": "Button label",
             "button_link": "",
             "button_style": "link",
             "button_external": false,
-            "button_icon": false,
-            "highlighted_text": "none",
-            "highlighted_scribble": "circle"
+            "button_icon": false
           }
         },
         "column-3": {
@@ -126,14 +116,12 @@
             "image_ratio": "portrait",
             "heading": "Heading 3",
             "heading_size": "text-2xl lg:text-3xl",
-            "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.<\/p>",
+            "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.</p>",
             "button_label": "Button label",
             "button_link": "",
             "button_style": "link",
             "button_external": false,
-            "button_icon": false,
-            "highlighted_text": "none",
-            "highlighted_scribble": "circle"
+            "button_icon": false
           }
         },
         "column-4": {
@@ -146,18 +134,21 @@
             "image_ratio": "portrait",
             "heading": "Heading 4",
             "heading_size": "text-2xl lg:text-3xl",
-            "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.<\/p>",
+            "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.</p>",
             "button_label": "Button label",
             "button_link": "",
             "button_style": "link",
             "button_external": false,
-            "button_icon": false,
-            "highlighted_text": "none",
-            "highlighted_scribble": "circle"
+            "button_icon": false
           }
         }
       },
-      "block_order": ["column-1", "column-2", "column-3", "column-4"],
+      "block_order": [
+        "column-1",
+        "column-2",
+        "column-3",
+        "column-4"
+      ],
       "settings": {
         "gap": "medium",
         "columns": 4,
@@ -173,21 +164,9 @@
         "button_link": "",
         "button_external": false,
         "button_icon": true,
-        "highlighted_text": "none",
-        "highlighted_scribble": "circle",
-        "color_text": "",
-        "color_background": "",
-        "gradient_background": "",
-        "color_highlight": "",
-        "gradient_highlight": "",
-        "color_button_text": "",
-        "color_button_background": "",
-        "color_button_gradient": "",
         "padding_top": 28,
         "padding_bottom": 60,
-        "divider": false,
-        "full_width": false,
-        "rounded": false
+        "full_width": false
       }
     },
     "video-hero": {
@@ -198,9 +177,7 @@
           "settings": {
             "heading": "Video slide 1",
             "heading_size": "title-lg tracking-heading",
-            "heading_tag": "h2",
-            "highlighted_text": "none",
-            "highlighted_scribble": "circle"
+            "heading_tag": "h2"
           }
         },
         "slide-2": {
@@ -208,9 +185,7 @@
           "settings": {
             "heading": "Video slide 2",
             "heading_size": "title-lg tracking-heading",
-            "heading_tag": "h2",
-            "highlighted_text": "none",
-            "highlighted_scribble": "circle"
+            "heading_tag": "h2"
           }
         },
         "slide-3": {
@@ -218,9 +193,7 @@
           "settings": {
             "heading": "Video slide 3",
             "heading_size": "title-lg tracking-heading",
-            "heading_tag": "h2",
-            "highlighted_text": "none",
-            "highlighted_scribble": "circle"
+            "heading_tag": "h2"
           }
         },
         "slide-4": {
@@ -228,31 +201,29 @@
           "settings": {
             "heading": "Video slide 4",
             "heading_size": "title-lg tracking-heading",
-            "heading_tag": "h2",
-            "highlighted_text": "none",
-            "highlighted_scribble": "circle"
+            "heading_tag": "h2"
           }
         }
       },
-      "block_order": ["slide-1", "slide-2", "slide-3", "slide-4"],
+      "block_order": [
+        "slide-1",
+        "slide-2",
+        "slide-3",
+        "slide-4"
+      ],
       "settings": {
         "transparent_header": false,
-        "video_url": "https:\/\/www.youtube.com\/watch?v=_9VUPq3SxOc",
+        "video_url": "https://www.youtube.com/watch?v=_9VUPq3SxOc",
         "description": "",
         "enable_video_autoplay": true,
         "enable_video_looping": true,
         "content_width": "medium",
         "video_url_mobile": "",
-        "color_text": "#ffffff",
-        "color_highlight": "",
-        "gradient_highlight": "",
         "color_overlay": "#171717",
         "overlay_opacity": 30,
         "padding_top": 0,
         "padding_bottom": 0,
-        "divider": false,
-        "full_width": true,
-        "rounded": true
+        "full_width": true
       }
     },
     "multicolumn-2": {
@@ -268,14 +239,12 @@
             "image_ratio": "portrait",
             "heading": "Heading 1",
             "heading_size": "text-2xl lg:text-3xl",
-            "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.<\/p>",
+            "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.</p>",
             "button_label": "Button label",
             "button_link": "",
             "button_style": "link",
             "button_external": false,
-            "button_icon": false,
-            "highlighted_text": "none",
-            "highlighted_scribble": "circle"
+            "button_icon": false
           }
         },
         "column-2": {
@@ -288,14 +257,12 @@
             "image_ratio": "portrait",
             "heading": "Heading 2",
             "heading_size": "text-2xl lg:text-3xl",
-            "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.<\/p>",
+            "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.</p>",
             "button_label": "Button label",
             "button_link": "",
             "button_style": "link",
             "button_external": false,
-            "button_icon": false,
-            "highlighted_text": "none",
-            "highlighted_scribble": "circle"
+            "button_icon": false
           }
         },
         "column-3": {
@@ -308,14 +275,12 @@
             "image_ratio": "portrait",
             "heading": "Heading 3",
             "heading_size": "text-2xl lg:text-3xl",
-            "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.<\/p>",
+            "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.</p>",
             "button_label": "Button label",
             "button_link": "",
             "button_style": "link",
             "button_external": false,
-            "button_icon": false,
-            "highlighted_text": "none",
-            "highlighted_scribble": "circle"
+            "button_icon": false
           }
         },
         "column-4": {
@@ -328,18 +293,21 @@
             "image_ratio": "portrait",
             "heading": "Heading 4",
             "heading_size": "text-2xl lg:text-3xl",
-            "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.<\/p>",
+            "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.</p>",
             "button_label": "Button label",
             "button_link": "",
             "button_style": "link",
             "button_external": false,
-            "button_icon": false,
-            "highlighted_text": "none",
-            "highlighted_scribble": "circle"
+            "button_icon": false
           }
         }
       },
-      "block_order": ["column-1", "column-2", "column-3", "column-4"],
+      "block_order": [
+        "column-1",
+        "column-2",
+        "column-3",
+        "column-4"
+      ],
       "settings": {
         "gap": "medium",
         "columns": 4,
@@ -355,21 +323,9 @@
         "button_link": "",
         "button_external": false,
         "button_icon": true,
-        "highlighted_text": "none",
-        "highlighted_scribble": "circle",
-        "color_text": "",
-        "color_background": "",
-        "gradient_background": "",
-        "color_highlight": "",
-        "gradient_highlight": "",
-        "color_button_text": "",
-        "color_button_background": "",
-        "color_button_gradient": "",
         "padding_top": 60,
         "padding_bottom": 0,
-        "divider": false,
-        "full_width": false,
-        "rounded": true
+        "full_width": false
       }
     }
   },

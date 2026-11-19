@@ -175,6 +175,7 @@ endif
           </div>
         {%- endif -%}
         <div class="drawer__footer-bottom flex items-center justify-between gap-6">
+          {%- render 'map-employee-menu', variant: 'drawer' -%}
           {%- if shop.customer_accounts_enabled -%}
             <shopify-account menu="{{ settings.customer_account_menu }}">
               <hover-element class="button button--primary icon-with-text" slot="signed-out-avatar">

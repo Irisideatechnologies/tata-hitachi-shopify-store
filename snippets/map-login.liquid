@@ -287,10 +287,11 @@
             var data = json.data || {};
             if (!data.token) throw new Error('Something went wrong. Please try again.');
 
-            window.MAP_AUTH.saveLogin(data.token, data.user || {});
+            var user = data.user || {};
+            window.MAP_AUTH.saveLogin(data.token, user);
             passInput.value = '';
             button.textContent = 'Signing you in...';
-            window.location.reload();
+            window.location.href = '/';
           } catch (err) {
             console.error('MAP login request failed:', (err && err.message) || 'Request failed');
             showError('Something went wrong. Please try again.');

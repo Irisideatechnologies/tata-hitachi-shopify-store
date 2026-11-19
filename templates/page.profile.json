@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "main-page": {
@@ -10,9 +19,7 @@
         "text_size": "text-base",
         "padding_top": 72,
         "padding_bottom": 120,
-        "divider": false,
-        "narrow": true,
-        "rounded": false
+        "narrow": true
       }
     },
     "image-with-text": {
@@ -22,12 +29,10 @@
           "type": "text",
           "settings": {
             "text": "<p>Add a tagline</p>",
+            "text_font": "body",
             "text_size": "subtext-md",
             "text_max_size": 32,
-            "text_font": "body",
-            "secondary_color": true,
-            "highlighted_text": "none",
-            "highlighted_scribble": "circle"
+            "secondary_color": true
           }
         },
         "heading": {
@@ -35,9 +40,7 @@
           "settings": {
             "heading": "Example heading",
             "heading_size": "title-xl tracking-heading",
-            "heading_tag": "h1",
-            "highlighted_text": "none",
-            "highlighted_scribble": "circle"
+            "heading_tag": "h1"
           }
         }
       },
@@ -57,21 +60,9 @@
         "content_position": "align-self-end",
         "image_height_mobile": "auto",
         "text_alignment_mobile": "left",
-        "color_text": "",
-        "color_background": "",
-        "gradient_background": "",
-        "color_background_2": "",
-        "gradient_background_2": "",
-        "color_highlight": "",
-        "gradient_highlight": "",
-        "color_button_text": "",
-        "color_button_background": "",
-        "color_button_gradient": "",
         "padding_top": 60,
         "padding_bottom": 40,
-        "divider": false,
         "full_width": false,
-        "rounded": false,
         "enable_parallax": false,
         "parallax_direction": "vertical"
       }
@@ -93,9 +84,7 @@
             "button_link": "",
             "button_style": "link",
             "button_external": false,
-            "button_icon": false,
-            "highlighted_text": "none",
-            "highlighted_scribble": "circle"
+            "button_icon": false
           }
         },
         "column-2": {
@@ -112,9 +101,7 @@
             "button_link": "",
             "button_style": "link",
             "button_external": false,
-            "button_icon": false,
-            "highlighted_text": "none",
-            "highlighted_scribble": "circle"
+            "button_icon": false
           }
         }
       },
@@ -140,21 +127,9 @@
         "button_link": "",
         "button_external": false,
         "button_icon": true,
-        "highlighted_text": "none",
-        "highlighted_scribble": "circle",
-        "color_text": "",
-        "color_background": "",
-        "gradient_background": "",
-        "color_highlight": "",
-        "gradient_highlight": "",
-        "color_button_text": "",
-        "color_button_background": "",
-        "color_button_gradient": "",
         "padding_top": 40,
         "padding_bottom": 80,
-        "divider": false,
-        "full_width": false,
-        "rounded": false
+        "full_width": false
       }
     },
     "images-with-text": {
@@ -173,21 +148,17 @@
           "settings": {
             "heading": "Give customers details about the banner image(s) or content on the template.",
             "heading_size": "title-sm",
-            "heading_tag": "h2",
-            "highlighted_text": "none",
-            "highlighted_scribble": "circle"
+            "heading_tag": "h2"
           }
         },
         "text": {
           "type": "text",
           "settings": {
             "text": "<p><em>— Add a tagline</em></p>",
+            "text_font": "body",
             "text_size": "subtext-md",
             "text_max_size": 32,
-            "text_font": "body",
-            "secondary_color": false,
-            "highlighted_text": "none",
-            "highlighted_scribble": "circle"
+            "secondary_color": false
           }
         }
       },
@@ -204,19 +175,9 @@
         "layout": "image_first",
         "text_alignment": "center",
         "text_alignment_mobile": "center",
-        "color_text": "",
-        "color_background": "#faf7f7",
-        "gradient_background": "",
-        "color_highlight": "",
-        "gradient_highlight": "",
-        "color_button_text": "",
-        "color_button_background": "",
-        "color_button_gradient": "",
         "padding_top": 100,
         "padding_bottom": 100,
-        "divider": false,
         "full_width": false,
-        "rounded": true,
         "enable_parallax": true
       }
     },
@@ -237,21 +198,9 @@
         "heading_tag": "h2",
         "subheading": "",
         "description": "",
-        "highlighted_text": "none",
-        "highlighted_scribble": "circle",
-        "color_text": "",
-        "color_background": "",
-        "gradient_background": "",
-        "color_highlight": "",
-        "gradient_highlight": "",
-        "color_button_text": "",
-        "color_button_background": "",
-        "color_button_gradient": "",
         "padding_top": 100,
         "padding_bottom": 40,
-        "divider": false,
-        "full_width": false,
-        "rounded": true
+        "full_width": false
       }
     }
   },

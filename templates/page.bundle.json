@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "main-page": {
@@ -10,9 +19,7 @@
         "text_size": "text-base",
         "padding_top": 72,
         "padding_bottom": 120,
-        "divider": false,
-        "narrow": true,
-        "rounded": false
+        "narrow": true
       }
     },
     "image-with-text-overlay": {
@@ -27,9 +34,7 @@
           "settings": {
             "heading": "Build Your Bundle",
             "heading_size": "title-xl tracking-heading",
-            "heading_tag": "h1",
-            "highlighted_text": "none",
-            "highlighted_scribble": "circle"
+            "heading_tag": "h1"
           }
         }
       },
@@ -47,19 +52,11 @@
         "image_height_mobile": "auto",
         "content_position_mobile": "items-end justify-start",
         "text_alignment_mobile": "left",
-        "color_text": "#ffffff",
-        "color_highlight": "#e0a580",
-        "gradient_highlight": "",
-        "color_button_text": "#171717",
-        "color_button_background": "#ffffff",
-        "color_button_gradient": "",
         "color_overlay": "#171717",
         "overlay_opacity": 50,
         "padding_top": 0,
         "padding_bottom": 0,
-        "divider": false,
         "full_width": true,
-        "rounded": true,
         "enable_parallax": true,
         "parallax_direction": "vertical"
       }
@@ -83,21 +80,9 @@
         "button_link": "",
         "button_external": false,
         "button_icon": true,
-        "highlighted_text": "scribble",
-        "highlighted_scribble": "squiggle-underline",
-        "color_text": "",
-        "color_background": "",
-        "gradient_background": "",
-        "color_highlight": "",
-        "gradient_highlight": "",
-        "color_button_text": "",
-        "color_button_background": "",
-        "color_button_gradient": "",
         "padding_top": 100,
         "padding_bottom": 28,
-        "divider": false,
-        "narrow": false,
-        "rounded": true
+        "narrow": false
       }
     },
     "product-bundle": {
@@ -128,21 +113,9 @@
         "heading_tag": "h2",
         "subheading": "",
         "description": "",
-        "highlighted_text": "none",
-        "highlighted_scribble": "circle",
-        "color_text": "",
-        "color_background": "",
-        "gradient_background": "",
-        "color_highlight": "",
-        "gradient_highlight": "",
-        "color_button_text": "",
-        "color_button_background": "",
-        "color_button_gradient": "",
         "padding_top": 24,
         "padding_bottom": 100,
-        "divider": false,
-        "full_width": false,
-        "rounded": false
+        "full_width": false
       }
     },
     "floating-product-bundle": {
@@ -161,21 +134,17 @@
           "settings": {
             "heading": "Create Your Bundle",
             "heading_size": "title-md",
-            "heading_tag": "h2",
-            "highlighted_text": "none",
-            "highlighted_scribble": "circle"
+            "heading_tag": "h2"
           }
         },
         "text": {
           "type": "text",
           "settings": {
             "text": "<p>Save $30 when buying all 3 items</p>",
+            "text_font": "body",
             "text_size": "subtext-md",
             "text_max_size": 32,
-            "text_font": "body",
-            "secondary_color": false,
-            "highlighted_text": "none",
-            "highlighted_scribble": "circle"
+            "secondary_color": false
           }
         }
       },
@@ -201,19 +170,11 @@
         "picker_type": "button",
         "enable_color_swatches": true,
         "color_swatch_type": "variant",
-        "color_text": "#ffffff",
-        "color_highlight": "",
-        "gradient_highlight": "",
-        "color_button_text": "#171717",
-        "color_button_background": "#ffffff",
-        "color_button_gradient": "",
         "color_overlay": "#171717",
         "overlay_opacity": 30,
         "padding_top": 0,
         "padding_bottom": 0,
-        "divider": false,
         "full_width": true,
-        "rounded": true,
         "enable_parallax": false,
         "parallax_direction": "vertical"
       }
@@ -234,21 +195,17 @@
           "settings": {
             "heading": "Create Your Bundle",
             "heading_size": "title-md",
-            "heading_tag": "h2",
-            "highlighted_text": "none",
-            "highlighted_scribble": "circle"
+            "heading_tag": "h2"
           }
         },
         "text": {
           "type": "text",
           "settings": {
             "text": "<p>Save $30 when buying all 3 items</p>",
+            "text_font": "body",
             "text_size": "subtext-md",
             "text_max_size": 32,
-            "text_font": "body",
-            "secondary_color": false,
-            "highlighted_text": "none",
-            "highlighted_scribble": "circle"
+            "secondary_color": false
           }
         }
       },
@@ -273,21 +230,11 @@
         "picker_type": "button",
         "enable_color_swatches": true,
         "color_swatch_type": "variant",
-        "color_text": "",
-        "color_background": "",
-        "gradient_background": "",
-        "color_highlight": "",
-        "gradient_highlight": "",
-        "color_button_text": "",
-        "color_button_background": "",
-        "color_button_gradient": "",
         "color_overlay": "#171717",
         "overlay_opacity": 30,
         "padding_top": 100,
         "padding_bottom": 100,
-        "divider": false,
         "full_width": false,
-        "rounded": true,
         "enable_parallax": false,
         "parallax_direction": "vertical"
       }

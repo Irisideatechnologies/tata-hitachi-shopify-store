@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "main": {
@@ -11,8 +20,7 @@
         },
         "subtotal": {
           "type": "subtotal",
-          "settings": {
-          }
+          "settings": {}
         },
         "cart_note": {
           "type": "cart_note",
@@ -22,8 +30,7 @@
         },
         "buttons": {
           "type": "buttons",
-          "settings": {
-          }
+          "settings": {}
         }
       },
       "block_order": [
@@ -40,9 +47,7 @@
         "show_shipping_calculator": true,
         "padding_top": 72,
         "padding_bottom": 60,
-        "divider": false,
-        "full_width": false,
-        "rounded": false
+        "full_width": false
       }
     },
     "recently-viewed": {
@@ -59,21 +64,9 @@
         "heading_tag": "h2",
         "subheading": "",
         "description": "",
-        "highlighted_text": "none",
-        "highlighted_scribble": "circle",
-        "color_text": "",
-        "color_background": "",
-        "gradient_background": "",
-        "color_highlight": "",
-        "gradient_highlight": "",
-        "color_button_text": "",
-        "color_button_background": "",
-        "color_button_gradient": "",
         "padding_top": 60,
         "padding_bottom": 100,
-        "divider": false,
-        "full_width": false,
-        "rounded": false
+        "full_width": false
       }
     }
   },

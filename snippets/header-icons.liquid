@@ -210,6 +210,10 @@
       </shopify-account>
     {%- endif -%}
 
+    {%- if show_account -%}
+      {%- render 'map-employee-menu', variant: 'header' -%}
+    {%- endif -%}
+
     {%- if show_cart -%}
       <a href="{{ routes.cart_url }}" class="cart-drawer-button flex items-center justify-center relative" aria-controls="CartDrawer" aria-expanded="false" data-no-instant>
         <span class="sr-only">{{ 'general.cart.title' | t }}</span>

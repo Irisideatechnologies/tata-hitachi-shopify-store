@@ -51,8 +51,13 @@
       try { return JSON.parse(getCookie(EMPLOYEE_COOKIE) || '{}'); } catch (e) { return {}; }
     }
 
+    function isAdminUser(employee) {
+      var role = String(employee && (employee.role || employee.userRole || '')).toLowerCase();
+      return employee && (employee.isAdmin === true || employee.is_admin === true || role === 'admin' || role === 'administrator');
+    }
+
     function isAdmin() {
-      return isLoggedIn() && getEmployee().isAdmin === true;
+      return isLoggedIn() && isAdminUser(getEmployee());
     }
 
     function getToken() {
@@ -87,7 +92,7 @@
         ticketId: employee.ticketId || '',
         name: employee.name || '',
         phone: employee.phone || '',
-        isAdmin: employee.isAdmin === true
+        isAdmin: isAdminUser(employee)
       }), maxAge);
       syncEmployeeToCart();
     }

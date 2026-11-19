@@ -11,6 +11,7 @@
   "sections": {
     "main-page": {
       "type": "main-page",
+      "disabled": true,
       "settings": {
         "heading_size": "title-xl tracking-heading",
         "heading_alignment": "text-left",
@@ -20,9 +21,15 @@
         "padding_bottom": 120,
         "narrow": true
       }
+    },
+    "map_admin_employees_hkQyKA": {
+      "type": "map-admin-employees",
+      "name": "MAP Employee Admin",
+      "settings": {}
     }
   },
   "order": [
-    "main-page"
+    "main-page",
+    "map_admin_employees_hkQyKA"
   ]
 }

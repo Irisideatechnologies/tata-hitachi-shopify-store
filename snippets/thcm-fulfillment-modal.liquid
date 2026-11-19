@@ -1,0 +1,76 @@
+<dialog id="thcm-fulfillment-dialog" class="thcm-fulfillment-dialog color-scheme-1" aria-modal="true" aria-labelledby="thcm-fulfillment-title">
+  <form method="dialog" class="thcm-fulfillment-dialog__panel" data-thcm-fulfillment-form novalidate>
+    <h2 id="thcm-fulfillment-title">Fulfill Order <span data-thcm-display-number></span></h2>
+    <p class="thcm-fulfillment-dialog__order">Order ID: <output data-thcm-order-id></output></p>
+    <p class="thcm-fulfillment-dialog__order">MAP No: <output data-thcm-map-no></output></p>
+    <p class="thcm-fulfillment-dialog__hint" data-thcm-map-hint></p>
+    <label for="thcm-tracking-id">Tracking ID</label>
+    <input id="thcm-tracking-id" name="trackingId" type="text" maxlength="100" autocomplete="off" required aria-describedby="thcm-tracking-id-error">
+    <p id="thcm-tracking-id-error" class="thcm-fulfillment-dialog__field-error" data-thcm-id-error></p>
+    <label for="thcm-tracking-url">Tracking URL</label>
+    <input id="thcm-tracking-url" name="trackingUrl" type="url" maxlength="500" inputmode="url" autocomplete="url" required aria-describedby="thcm-tracking-url-error">
+    <p id="thcm-tracking-url-error" class="thcm-fulfillment-dialog__field-error" data-thcm-url-error></p>
+    <p class="thcm-fulfillment-dialog__error" data-thcm-error role="alert" aria-live="assertive"></p>
+    <div class="thcm-fulfillment-dialog__actions">
+      <button type="button" class="button button--secondary" data-thcm-cancel>Cancel</button>
+      <button type="submit" class="button" data-thcm-submit>Submit</button>
+    </div>
+  </form>
+</dialog>
+<style>
+  .thcm-fulfillment-dialog { width:min(calc(100% - 2rem),31rem); max-width:31rem; max-height:calc(100dvh - 2rem); margin:auto; padding:0; overflow:auto; border:1px solid rgb(var(--color-foreground-rgb,18 18 18)/.16); border-radius:1rem; color:rgb(var(--color-foreground-rgb,18 18 18)); background:rgb(var(--color-background-rgb,255 255 255)); box-shadow:0 1.5rem 4rem rgb(0 0 0/.2); }
+  .thcm-fulfillment-dialog::backdrop { background:rgb(0 0 0/.58); }
+  .thcm-fulfillment-dialog__panel { display:grid; gap:.25rem; padding:1.5rem 1.65rem 1.4rem; }
+  .thcm-fulfillment-dialog h2 { margin:0 0 .35rem; font-size:1.65rem; line-height:1.15; letter-spacing:-.02em; }
+  .thcm-fulfillment-dialog__order,.thcm-fulfillment-dialog__hint { margin:0; font-size:.9rem; line-height:1.45; }
+  .thcm-fulfillment-dialog__order + .thcm-fulfillment-dialog__order { margin-top:-.1rem; }
+  .thcm-fulfillment-dialog__hint { min-height:1.2em; color:#b3261e; }
+  .thcm-fulfillment-dialog label { margin-top:.65rem; font-size:.84rem; font-weight:600; line-height:1.25; }
+  .thcm-fulfillment-dialog__field-error,.thcm-fulfillment-dialog__error { min-height:.9rem; color:#b3261e; }
+  .thcm-fulfillment-dialog__field-error { margin:0; font-size:.78rem; }
+  .thcm-fulfillment-dialog__error { margin:.5rem 0 0; font-size:.88rem; }
+  .thcm-fulfillment-dialog input { width:100%; min-height:2.7rem; box-sizing:border-box; margin-top:.1rem; padding:.55rem .75rem; color:inherit; background:rgb(var(--color-background-rgb,255 255 255)); border:1px solid rgb(var(--color-foreground-rgb,18 18 18)/.25); border-radius:.45rem; outline:none; transition:border-color .2s,box-shadow .2s; }
+  .thcm-fulfillment-dialog input:focus { border-color:rgb(var(--color-foreground-rgb,18 18 18)/.8); box-shadow:0 0 0 .2rem rgb(var(--color-foreground-rgb,18 18 18)/.1); }
+  .thcm-fulfillment-dialog input[aria-invalid="true"] { border-color:#b3261e; }
+  .thcm-fulfillment-dialog__actions { display:flex; justify-content:flex-end; gap:.6rem; margin-top:.7rem; }
+  .thcm-fulfillment-dialog button { min-height:2.55rem; min-width:7rem; cursor:pointer; border-radius:.45rem; }
+  .thcm-fulfillment-dialog button:disabled { cursor:wait; opacity:.6; }
+  @media (max-width:480px) { .thcm-fulfillment-dialog { width:calc(100% - 1rem); max-height:calc(100dvh - 1rem); border-radius:1rem; } .thcm-fulfillment-dialog__panel { padding:1.25rem; } .thcm-fulfillment-dialog__actions { flex-direction:column-reverse; } .thcm-fulfillment-dialog button { width:100%; } }
+</style>
+<script>
+  (function () {
+    var dialog = document.getElementById('thcm-fulfillment-dialog');
+    if (!dialog || dialog.__thcmReady) return;
+    var auth = window.MAP_AUTH;
+    if (!auth || !auth.isLoggedIn || !auth.isLoggedIn() || !auth.isAdmin || !auth.isAdmin()) { dialog.remove(); return; }
+    var key = 'hjOM38wnqN8Bt47ltQNX2zXaRaRAgbItLkhqdg04CsD';
+    var form = dialog.querySelector('[data-thcm-fulfillment-form]'), idInput = dialog.querySelector('[name="trackingId"]'), urlInput = dialog.querySelector('[name="trackingUrl"]');
+    var idError = dialog.querySelector('[data-thcm-id-error]'), urlError = dialog.querySelector('[data-thcm-url-error]'), error = dialog.querySelector('[data-thcm-error]');
+    var submit = dialog.querySelector('[data-thcm-submit]'), cancel = dialog.querySelector('[data-thcm-cancel]');
+    var activeTrigger, current, markFulfilled, submitting = false, sentOrders = {};
+    function nodes() { return Array.prototype.slice.call(dialog.querySelectorAll('button,input,[tabindex]:not([tabindex="-1"])')).filter(function (n) { return !n.disabled && n.offsetParent !== null; }); }
+    function resetField(input, message) { input.removeAttribute('aria-invalid'); message.textContent = ''; }
+    function validate() {
+      var ok = true, id = idInput.value.trim(), url = urlInput.value.trim(); resetField(idInput,idError); resetField(urlInput,urlError); error.textContent = '';
+      if (!id) { idInput.setAttribute('aria-invalid','true'); idError.textContent = 'Enter a tracking ID.'; ok = false; } else if (id.length > 100) { idInput.setAttribute('aria-invalid','true'); idError.textContent = 'Tracking ID must be 100 characters or fewer.'; ok = false; }
+      if (!url) { urlInput.setAttribute('aria-invalid','true'); urlError.textContent = 'Enter a tracking URL.'; ok = false; } else if (url.length > 500) { urlInput.setAttribute('aria-invalid','true'); urlError.textContent = 'Tracking URL must be 500 characters or fewer.'; ok = false; } else { try { var parsed = new URL(url); if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') throw new Error(); } catch (e) { urlInput.setAttribute('aria-invalid','true'); urlError.textContent = 'Enter a valid HTTP or HTTPS URL.'; ok = false; } }
+      if (!ok) { var invalid = dialog.querySelector('[aria-invalid="true"]'); if (invalid) invalid.focus(); } return ok;
+    }
+    function setBusy(value, label) { submitting = value; submit.disabled = value; cancel.disabled = value; submit.textContent = label || 'Submit'; }
+    function close() { if (submitting) return; if (dialog.open) dialog.close(); if (activeTrigger) activeTrigger.focus(); activeTrigger = null; }
+    function storageKey() { return 'thcm_tracking_sent_' + current.shopifyOrderId; }
+    function alreadySent() { if (sentOrders[current.shopifyOrderId]) return true; try { return localStorage.getItem(storageKey()) === 'true'; } catch (e) { return false; } }
+    function rememberSent() { sentOrders[current.shopifyOrderId] = true; try { localStorage.setItem(storageKey(),'true'); } catch (e) {} }
+    function thcm(values) {
+      if (!key) return Promise.reject(new Error('Server configuration error, contact admin'));
+      var controller = new AbortController(), timer = setTimeout(function () { controller.abort(); }, 15000);
+      return fetch('https://thcmconnect.tatahitachi.co.in/api/v1/crf/order/tracking', { method:'POST', headers:{'Content-Type':'application/json','x-api-key':key}, body:JSON.stringify({ orderId:String(current.shopifyOrderId), epcId:current.mapNo, trackingId:values.trackingId, trackingUrl:values.trackingUrl }), signal:controller.signal }).then(function (res) { return res.text().then(function (text) { var body = {}; try { body = text ? JSON.parse(text) : {}; } catch (e) {} if (res.status === 400) throw new Error('Fill all fields' + (current.mapNo ? '' : ' This order may not have a MAP ID')); if (res.status === 401) throw new Error('Server configuration error, contact admin'); if (res.status === 404) throw new Error('Order not found in MAP'); if (!res.ok || body.success !== true) throw new Error('Please try again'); rememberSent(); }); }).catch(function (e) { if (e && e.message && /Fill all fields|Server configuration|Order not found/.test(e.message)) throw e; throw new Error('Please try again'); }).finally(function () { clearTimeout(timer); });
+    }
+    window.THCM_FULFILLMENT_MODAL = { open:function (order, trigger, handler) { current=order; activeTrigger=trigger; markFulfilled=handler; dialog.querySelector('[data-thcm-display-number]').textContent=String(order.orderNumber || ''); dialog.querySelector('[data-thcm-order-id]').textContent=String(order.shopifyOrderId || ''); dialog.querySelector('[data-thcm-map-no]').textContent=order.mapNo || '-'; dialog.querySelector('[data-thcm-map-hint]').textContent=order.mapNo || !order.allowEmptyEpc ? '' : 'MAP No not found in order note'; idInput.value=''; urlInput.value=''; resetField(idInput,idError); resetField(urlInput,urlError); error.textContent=''; setBusy(false,'Submit'); if (!order.mapNo && !order.allowEmptyEpc) { submit.disabled=true; error.textContent='MAP No not found for this order'; } if (dialog.showModal) dialog.showModal(); else dialog.setAttribute('open',''); setTimeout(function () { idInput.focus(); },0); }, close:close };
+    idInput.addEventListener('input',function () { resetField(idInput,idError); }); urlInput.addEventListener('input',function () { resetField(urlInput,urlError); }); cancel.addEventListener('click',close);
+    dialog.addEventListener('click',function (e) { if (e.target === dialog && !submitting) close(); }); dialog.addEventListener('cancel',function (e) { if (submitting) e.preventDefault(); else close(); });
+    dialog.addEventListener('keydown',function (e) { if (e.key !== 'Tab') return; var all=nodes(); if (!all.length) return; if (e.shiftKey && document.activeElement===all[0]) { e.preventDefault(); all[all.length-1].focus(); } else if (!e.shiftKey && document.activeElement===all[all.length-1]) { e.preventDefault(); all[0].focus(); } });
+    form.addEventListener('submit',function (e) { e.preventDefault(); if (submitting || !validate()) return; var values={trackingId:idInput.value.trim(),trackingUrl:urlInput.value.trim()}; setBusy(true,'Submitting...'); (alreadySent() ? Promise.resolve() : thcm(values)).then(function () { return markFulfilled(values); }).then(function () { setBusy(false,'Submit'); close(); }).catch(function (e) { setBusy(false,/tracking sent to MAP/i.test(e.message) ? 'Retry' : 'Submit'); error.textContent=e.message || 'Please try again'; }); });
+    dialog.__thcmReady = true;
+  }());
+</script>

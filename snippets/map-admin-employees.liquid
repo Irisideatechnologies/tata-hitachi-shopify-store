@@ -42,7 +42,7 @@
     </div>
   </div>
 
-  <dialog class="mae-dialog" id="mae-form-dialog">
+  <dialog class="mae-dialog" id="mae-form-dialog" aria-modal="true" aria-labelledby="mae-form-title">
     <form id="mae-form" novalidate>
       <h3 id="mae-form-title">Add User</h3>
       <div class="mae-field"><label for="mae-f-name">Name</label><input class="mae-input" id="mae-f-name" name="name" autocomplete="off"><small class="mae-err" data-err="name"></small></div>
@@ -60,8 +60,8 @@
     </form>
   </dialog>
 
-  <dialog class="mae-dialog" id="mae-confirm-dialog">
-    <h3>Delete user</h3>
+  <dialog class="mae-dialog" id="mae-confirm-dialog" aria-modal="true" aria-labelledby="mae-confirm-title">
+    <h3 id="mae-confirm-title">Delete user</h3>
     <p id="mae-confirm-text"></p>
     <p class="mae-err mae-err--form" id="mae-confirm-error" hidden></p>
     <div class="mae-dialog__actions">
@@ -88,6 +88,7 @@
   .mae-btn:disabled { opacity: .45; cursor: not-allowed; }
   .mae-btn--primary { background: #111; color: #fff; border-color: #111; }
   .mae-btn--danger { background: #c62828; color: #fff; border-color: #c62828; }
+  .mae-btn--danger:hover, .mae-btn--danger:focus-visible { background: #c62828; color: #fff; border-color: #c62828; }
   .mae-btn--sm { padding: 5px 10px; font-size: 13px; }
   .mae__tablewrap { overflow-x: auto; }
   .mae__table { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -105,23 +106,33 @@
   @keyframes mae-spin { to { transform: rotate(360deg); } }
   .mae__pager { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 16px; font-size: 14px; }
   .mae__pager div { display: flex; gap: 8px; }
-  .mae-dialog { width: min(480px, calc(100vw - 32px)); padding: 24px; border: 0; border-radius: 14px; color: var(--color-foreground, #111); background: var(--color-background, #fff); box-shadow: 0 10px 40px rgba(0,0,0,.25); }
+  .mae-dialog { position: fixed; inset: 0; z-index: 10001; box-sizing: border-box; display: block; width: min(480px, calc(100vw - 32px)); max-width: calc(100vw - 32px); max-height: calc(100dvh - 32px); margin: auto; padding: 24px; overflow-y: auto; border: 0; border-radius: 14px; color: #111; background: #fff !important; background-image: none !important; opacity: 1; box-shadow: 0 10px 40px rgba(0,0,0,.25); }
+  .mae-dialog:hover, .mae-dialog:focus-within, .mae-dialog form:hover, .mae-dialog .mae-field:hover, .mae-dialog .mae-field:focus-within { background: #fff !important; background-color: #fff !important; background-image: none !important; }
+  .mae-dialog::before, .mae-dialog::after, .mae-dialog form::before, .mae-dialog form::after, .mae-dialog .mae-field::before, .mae-dialog .mae-field::after { content: none !important; display: none !important; }
+  .mae-dialog:not([open]), .mae-dialog[hidden] { display: none !important; }
+  body.mae-modal-open { overflow: hidden; }
   .mae-dialog::backdrop { background: rgba(0,0,0,.5); }
   .mae-dialog h3 { margin: 0 0 16px; }
-  .mae-field { margin-bottom: 14px; }
+  .mae-field { display: block; width: 100%; margin-bottom: 14px; }
   .mae-field label { display: block; margin-bottom: 4px; font-size: 13px; font-weight: 600; }
   .mae-admin-option label { display: flex; align-items: center; gap: 8px; }
   .mae-admin-option input { margin: 0; }
   .mae-err { display: block; min-height: 0; margin-top: 4px; color: #c62828; font-size: 12px; }
   .mae-err--form { font-size: 13px; margin: 0 0 12px; }
   .mae-dialog__actions { display: flex; justify-content: flex-end; gap: 8px; }
-  .mae-toasts { position: fixed; right: 16px; bottom: 16px; z-index: 10000; display: flex; flex-direction: column; gap: 8px; }
+  .mae-dialog form { display: block; width: 100%; margin: 0; }
+  .mae-dialog .mae-field > .mae-input { display: block; width: 100%; min-height: 42px; color: #111; background: #fff; border: 1px solid #c7cdd4; border-radius: 8px; appearance: none; }
+  .mae-dialog .mae-field > .mae-input:focus { border-color: #111; outline: 2px solid rgba(17,17,17,.15); outline-offset: 1px; }
+  .mae-toasts { position: fixed; right: 16px; bottom: 16px; z-index: 10002; display: flex; flex-direction: column; gap: 8px; }
   .mae-toast { padding: 12px 16px; border-radius: 8px; color: #fff; background: #2e7d32; font-size: 14px; box-shadow: 0 4px 16px rgba(0,0,0,.25); }
   .mae-toast--error { background: #c62828; }
   @media (max-width: 749px) {
     .mae__tablewrap { display: none; }
     .mae__cards { display: block; }
     .mae__head .mae-btn { width: 100%; }
+  }
+  @media (max-width: 520px) {
+    .mae-dialog { width: calc(100vw - 20px); max-width: calc(100vw - 20px); max-height: calc(100dvh - 20px); padding: 18px; }
   }
 </style>
 
@@ -130,16 +141,21 @@
     var root = document.getElementById('mae-root');
     if (!root) return;
 
+    var $ = function (id) { return document.getElementById(id); };
     var auth = window.MAP_AUTH;
-    if (!auth || !auth.isLoggedIn() || !auth.isAdmin()) return;
+    if (!auth || !auth.isLoggedIn() || !auth.isAdmin()) {
+      root.hidden = false;
+      $('mae-body').hidden = true;
+      $('mae-denied').hidden = false;
+      $('mae-add').hidden = true;
+      return;
+    }
 
     var api = window.THCM_API;
     var API = '/api/admin/employees';
     var EDIT_METHOD = 'PUT'; // Edit endpoint is unconfirmed; change method/path here only
     var editUrl = function (id) { return API + '/' + encodeURIComponent(id); };
     var LIMIT = 50;
-
-    var $ = function (id) { return document.getElementById(id); };
     var state = { q: '', after: '', before: '', start: 0, items: [], pageInfo: null, loadedOnce: false, editing: null, deleting: null, saving: false };
 
     function toast(msg, isError) {
@@ -299,6 +315,46 @@
     var form = $('mae-form');
     var formDialog = $('mae-form-dialog');
     var FIELDS = ['name', 'email', 'employeeId', 'ticketId', 'phone', 'password'];
+    var activeDialog = null;
+    var activeOpener = null;
+
+    function focusable(dialog) {
+      return Array.prototype.slice.call(dialog.querySelectorAll('button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])')).filter(function (el) {
+        return el.offsetParent !== null;
+      });
+    }
+
+    function closeDialog(dialog, restoreFocus, force) {
+      if (!dialog || !dialog.open) return;
+      if (!force && (state.saving || (state.deleting && $('mae-confirm-ok').disabled))) return;
+      dialog.close();
+      if (dialog === formDialog) {
+        form.reset();
+        state.editing = null;
+        FIELDS.forEach(function (f) { setFieldError(f, ''); });
+        setFormError('');
+        form.elements.admin.checked = false;
+      }
+      if (dialog === confirmDialog) {
+        state.deleting = null;
+        $('mae-confirm-error').textContent = '';
+        $('mae-confirm-error').hidden = true;
+      }
+      activeDialog = null;
+      document.body.classList.remove('mae-modal-open');
+      if (restoreFocus && activeOpener && document.contains(activeOpener)) activeOpener.focus();
+      activeOpener = null;
+    }
+
+    function openDialog(dialog, opener) {
+      if (activeDialog && activeDialog !== dialog) closeDialog(activeDialog, false);
+      activeDialog = dialog;
+      activeOpener = opener || document.activeElement;
+      document.body.classList.add('mae-modal-open');
+      dialog.showModal();
+      var first = focusable(dialog)[0];
+      if (first) window.setTimeout(function () { first.focus(); }, 0);
+    }
 
     function setFieldError(name, msg) {
       form.querySelector('[data-err="' + name + '"]').textContent = msg || '';
@@ -320,8 +376,7 @@
       if (emp) {
         ['name', 'email', 'employeeId', 'ticketId', 'phone'].forEach(function (f) { form.elements[f].value = emp[f] == null ? '' : emp[f]; });
       }
-      formDialog.showModal();
-      form.elements.name.focus();
+      openDialog(formDialog, document.activeElement);
     }
 
     function validate(values, isEdit) {
@@ -365,8 +420,7 @@
       setSaving(true);
       var req = isEdit ? request(EDIT_METHOD, editUrl(state.editing.id), body) : request('POST', API, body);
       req.then(function () {
-        formDialog.close();
-        form.elements.admin.checked = false;
+        closeDialog(formDialog, true, true);
         toast(isEdit ? 'User updated.' : 'User added.');
         return load();
       }).catch(function (err) {
@@ -379,8 +433,7 @@
 
     $('mae-add').addEventListener('click', function () { openForm(null); });
     $('mae-form-cancel').addEventListener('click', function () {
-      form.elements.admin.checked = false;
-      formDialog.close();
+      closeDialog(formDialog, true);
     });
 
     // Delete dialog
@@ -388,21 +441,21 @@
 
     function openConfirm(emp) {
       state.deleting = emp;
-      $('mae-confirm-text').textContent = 'Delete ' + emp.name + ' (' + emp.employeeId + ')? This cannot be undone.';
+      $('mae-confirm-text').textContent = 'Delete ' + emp.name + ' (ID ' + emp.employeeId + ')? This cannot be undone.';
       $('mae-confirm-error').hidden = true;
       $('mae-confirm-ok').disabled = false;
-      confirmDialog.showModal();
+      openDialog(confirmDialog, document.activeElement);
     }
 
-    $('mae-confirm-cancel').addEventListener('click', function () { confirmDialog.close(); });
+    $('mae-confirm-cancel').addEventListener('click', function () { closeDialog(confirmDialog, true); });
     $('mae-confirm-ok').addEventListener('click', function () {
       var okBtn = $('mae-confirm-ok');
       if (okBtn.disabled || !state.deleting) return;
-      okBtn.disabled = true;
+      confirmDialog.querySelectorAll('button').forEach(function (button) { button.disabled = true; });
       okBtn.classList.add('is-loading');
       okBtn.textContent = 'Please wait...';
       request('DELETE', editUrl(state.deleting.id)).then(function () {
-        confirmDialog.close();
+        closeDialog(confirmDialog, true, true);
         toast('User deleted.');
         // Step back a page when the last row of a later page was removed
         if (state.items.length === 1 && state.pageInfo && state.pageInfo.hasPreviousPage) {
@@ -417,9 +470,31 @@
         box.textContent = (err && err.message) || 'Could not delete user.';
         box.hidden = false;
       }).then(function () {
-        okBtn.disabled = false;
+        confirmDialog.querySelectorAll('button').forEach(function (button) { button.disabled = false; });
         okBtn.classList.remove('is-loading');
         okBtn.textContent = 'Delete';
+      });
+    });
+
+    [formDialog, confirmDialog].forEach(function (dialog) {
+      dialog.addEventListener('cancel', function (event) {
+        event.preventDefault();
+        closeDialog(dialog, true);
+      });
+      dialog.addEventListener('click', function (event) {
+        if (event.target === dialog) closeDialog(dialog, true);
+      });
+      dialog.addEventListener('keydown', function (event) {
+        if (event.key !== 'Tab') return;
+        var items = focusable(dialog);
+        if (!items.length) return;
+        if (event.shiftKey && document.activeElement === items[0]) {
+          event.preventDefault();
+          items[items.length - 1].focus();
+        } else if (!event.shiftKey && document.activeElement === items[items.length - 1]) {
+          event.preventDefault();
+          items[0].focus();
+        }
       });
     });
 

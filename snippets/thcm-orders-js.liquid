@@ -15,6 +15,8 @@
     var SHOP_LABEL = root.getAttribute('data-shop-label') || 'Shop now';
     var SUMMARY_PAGE_LIMIT = 50;
     var DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
+    var THCM_FOR_STORE_ORDERS = false;
+    var THCM_ALLOW_EMPTY_EPC = true;
 
     var $ = function (sel) { return root.querySelector(sel); };
     var listEl = $('[data-list]');
@@ -89,6 +91,12 @@
 
     function lower(v) { return String(v == null ? '' : v).trim().toLowerCase(); }
 
+    function getMapNo(order) {
+      if (!order || !order.orderNote) return '';
+      var match = /MAP\s*NO[ \t]*:[ \t]*([^\r\n]*)/i.exec(String(order.orderNote));
+      return match ? match[1].trim() : '';
+    }
+
     function titleCase(v) {
       return String(v).replace(/[_-]+/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
     }
@@ -112,6 +120,8 @@
     }
 
     function orderNo(o) {
+      var orderNumber = String(o.orderNumber || '');
+      if (orderNumber) return orderNumber;
       var name = String(o.name || '');
       if (name.charAt(0) === '#') return name;
       return o.shopifyOrderId ? String(o.shopifyOrderId) : (name || String(o.id || ''));
@@ -225,6 +235,7 @@
       badges.appendChild(badgeGroup('Payment', paymentBadge(o)));
       badges.appendChild(badgeGroup('Fulfillment', fulfillmentBadge(o)));
       badges.appendChild(badgeGroup('Delivery', deliveryBadge(o)));
+      if (String(o.channel || '').toUpperCase() === 'MAP') badges.appendChild(badgeGroup('MAP No', [getMapNo(o) || '-', 'grey']));
       body.appendChild(badges);
 
       body.appendChild(stepper(o, stage));
@@ -318,25 +329,52 @@
 
     function fulfillOrder(order, button) {
       if (!isAdmin || !order.shopifyOrderId || button.disabled || lower(order.financialStatus) !== 'paid') return;
-      if (!window.confirm('Mark order ' + orderNo(order) + ' as fulfilled?')) return;
-      button.disabled = true;
-      button.textContent = 'Fulfilling…';
-      orderRequest('POST', '/api/admin/orders/' + encodeURIComponent(order.shopifyOrderId) + '/mark-fulfilled', {})
-        .then(function (body) {
-          if (body.denied) throw new Error('You are not authorized to fulfill orders.');
-          if (body.success === false) throw new Error(body.message || 'Could not fulfill this order.');
-          replaceOrder(body.data);
-          if (state.allOrders) state.summary = tally(state.allOrders);
-          toast('Order marked as fulfilled!', false);
-          renderList();
-          renderChips();
-        })
-        .catch(function (err) {
-          if (err && err.handled) return;
-          button.disabled = false;
-          button.textContent = 'Mark as Fulfilled';
-          toast((err && err.message) || 'Could not fulfill this order.', true);
-        });
+      if (String(order.channel || '').toUpperCase() !== 'MAP') {
+        if (THCM_FOR_STORE_ORDERS) return;
+        if (!window.confirm('Mark order ' + orderNo(order) + ' as fulfilled?')) return;
+        button.disabled = true;
+        button.textContent = 'Fulfilling…';
+        return orderRequest('POST', '/api/admin/orders/' + encodeURIComponent(order.shopifyOrderId) + '/mark-fulfilled', {})
+          .then(function (body) {
+            if (body.denied) throw new Error('You are not authorized to fulfill orders.');
+            if (body.success === false) throw new Error(body.message || 'Could not fulfill this order.');
+            replaceOrder(body.data);
+            if (state.allOrders) state.summary = tally(state.allOrders);
+            toast('Order marked as fulfilled!', false);
+            renderList();
+            renderChips();
+          })
+          .catch(function (err) {
+            if (err && err.handled) return;
+            button.disabled = false;
+            button.textContent = 'Mark as Fulfilled';
+            toast((err && err.message) || 'Could not fulfill this order.', true);
+          });
+      }
+      if (!window.THCM_FULFILLMENT_MODAL) return;
+      window.THCM_FULFILLMENT_MODAL.open({
+        orderNumber: orderNo(order),
+        shopifyOrderId: String(order.shopifyOrderId),
+        mapNo: getMapNo(order),
+        allowEmptyEpc: THCM_ALLOW_EMPTY_EPC
+      }, button, function (values) {
+        return orderRequest('POST', '/api/admin/orders/' + encodeURIComponent(order.shopifyOrderId) + '/mark-fulfilled', values)
+          .then(function (body) {
+            if (body.denied) { var denied = new Error('You are not allowed to do this'); denied.status = 403; throw denied; }
+            if (body.success === false) { var failed = new Error(body.message || 'Please try again'); failed.status = body.status; throw failed; }
+            var updated = Object.assign({}, order, body.data || {});
+            replaceOrder(updated);
+            if (state.allOrders) state.summary = tally(state.allOrders);
+            toast('Tracking sent and order fulfilled', false);
+            renderList();
+            renderChips();
+          })
+          .catch(function (err) {
+            var failed = new Error('Tracking sent to MAP but fulfillment failed, click Retry');
+            failed.status = err && err.status;
+            throw failed;
+          });
+      });
     }
 
     function showSkeleton() {

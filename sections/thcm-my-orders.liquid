@@ -197,6 +197,7 @@
 {% render 'thcm-accordion-js' %}
 
 {%- unless request.design_mode -%}
+  {% render 'thcm-fulfillment-modal' %}
   {% render 'thcm-orders-js' %}
   {% render 'thcm-orders-daily-js' %}
   {% render 'thcm-order-analytics-js' %}

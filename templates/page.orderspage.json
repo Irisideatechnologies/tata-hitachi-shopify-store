@@ -11,6 +11,7 @@
   "sections": {
     "main-page": {
       "type": "main-page",
+      "disabled": true,
       "settings": {
         "heading_size": "title-xl tracking-heading",
         "heading_alignment": "text-left",
@@ -20,9 +21,31 @@
         "padding_bottom": 120,
         "narrow": true
       }
+    },
+    "thcm_my_orders_pRd6Yd": {
+      "type": "thcm-my-orders",
+      "name": "THCM All Orders",
+      "settings": {
+        "heading": "Orders",
+        "subheading": "Track and manage merchandise orders.",
+        "page_size": 10,
+        "show_summary": true,
+        "show_filters": true,
+        "tab_my": "",
+        "tab_daily": "Daily Orders",
+        "label_all": "All Orders",
+        "label_today": "Today's Orders",
+        "label_yesterday": "Yesterday",
+        "show_download": true,
+        "denied_text": "Access denied",
+        "empty_text": "You have not placed any orders yet",
+        "shop_label": "Shop now",
+        "shop_url": ""
+      }
     }
   },
   "order": [
-    "main-page"
+    "main-page",
+    "thcm_my_orders_pRd6Yd"
   ]
 }

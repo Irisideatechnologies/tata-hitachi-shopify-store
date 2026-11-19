@@ -31,7 +31,7 @@
         "page_size": 10,
         "show_summary": true,
         "show_filters": true,
-        "tab_my": "",
+        "tab_my": "All orders",
         "tab_daily": "Daily Orders",
         "label_all": "All Orders",
         "label_today": "Today's Orders",

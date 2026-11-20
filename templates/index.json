@@ -1017,6 +1017,7 @@
       ],
       "name": "t:sections.lookbook.name",
       "settings": {
+        "image": "shopify://shop_images/THCM_Banner_Website_Cart.png",
         "heading": "Your new forever favorites are here",
         "heading_alignment": "text-center md:items-center",
         "heading_tag": "h3",

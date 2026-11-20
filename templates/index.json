@@ -1117,6 +1117,7 @@
               "type": "banner",
               "name": "t:blocks.banner.name",
               "settings": {
+                "image": "shopify://shop_images/Apparel.jpg",
                 "aspect_ratio": "adapt",
                 "heading": "The Personalization Shop",
                 "heading_tag": "h3",
@@ -1193,6 +1194,7 @@
               "type": "banner",
               "name": "t:blocks.banner.name",
               "settings": {
+                "image": "shopify://shop_images/WhatsApp_Image_2026-11-20_at_11.57.49_AM.jpg",
                 "aspect_ratio": "adapt",
                 "heading": "New thyme hue from le creuset",
                 "heading_tag": "h3",

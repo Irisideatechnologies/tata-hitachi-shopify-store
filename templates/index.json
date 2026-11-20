@@ -403,6 +403,7 @@
           "type": "_slide-image",
           "name": "t:blocks.image-slide.name",
           "settings": {
+            "image": "shopify://shop_images/THCM_Banner_Website.png",
             "aspect_ratio": "adapt",
             "link": "",
             "accessibility_info": "",

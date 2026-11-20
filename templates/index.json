@@ -1373,6 +1373,7 @@
         "image_wYEV7t",
         "image_nPtqyf"
       ],
+      "disabled": true,
       "name": "Image Gallery With Text",
       "settings": {
         "layout": "text_first",
@@ -1384,7 +1385,7 @@
         "heading": "Instagram Shop",
         "heading_tag": "h3",
         "heading_size": "title-sm",
-        "description": "<p>Tag @miniture in your Instagram photos for<br/> a chance to be featured here.</p>",
+        "description": "<p>Tag @miniture in your Instagram photos for<br/>&nbsp;a chance to be featured here.</p>",
         "button_label": "Visit Our Instagram",
         "button_link": "#",
         "button_external": true,

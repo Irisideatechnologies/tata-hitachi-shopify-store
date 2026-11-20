@@ -591,10 +591,10 @@
               "type": "image-card",
               "name": "t:blocks.image-card.name",
               "settings": {
-                "image": "shopify://shop_images/WhatsApp_Image_2026-11-20_at_11.57.49_AM.jpg",
+                "image": "shopify://shop_images/Apparel.jpg",
                 "aspect_ratio": "adapt",
                 "button_alignment": "left",
-                "button_label": "Bed room",
+                "button_label": "Apparel",
                 "button_link": "shopify://collections/all",
                 "button_style": "link",
                 "button_external": false,
@@ -697,7 +697,7 @@
               "type": "image-card",
               "name": "t:blocks.image-card.name",
               "settings": {
-                "image": "shopify://shop_images/WhatsApp_Image_2026-11-20_at_11.57.50_AM.jpg",
+                "image": "shopify://shop_images/Slide_banner.png",
                 "aspect_ratio": "adapt",
                 "button_alignment": "right",
                 "button_label": "Apparel",

@@ -7,7 +7,6 @@
  * made to this file may be overwritten.
  * ------------------------------------------------------------
  */
-
 {
   "current": {
     "logo": "shopify://shop_images/Tata-Hitachi-Construction-Machinery-Logo-Vector-300x83.png",
@@ -18,7 +17,7 @@
     "logo_width_mobile": 80,
     "favicon": "",
     "color_drawer_overlay": "#181818",
-    "type_header_font": "outfit_n5",
+    "type_header_font": "open_sans_n6",
     "type_header_line_height": 1,
     "type_header_spacing": 0,
     "type_header_capitalize": false,

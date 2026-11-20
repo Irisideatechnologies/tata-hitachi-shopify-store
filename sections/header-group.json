@@ -106,7 +106,7 @@
         "menu_mobile": "",
         "menu_active": "dot",
         "hover_menu": true,
-        "header_layout": "left-center",
+        "header_layout": "center-split",
         "sticky_header_type": "always",
         "icons_size": "sm",
         "menu_drawer_icon_label": "",

@@ -182,9 +182,9 @@
     "color_schemes": {
       "scheme-1": {
         "settings": {
-          "color_text": "#4B4848",
+          "color_text": "#4b4848",
           "color_background": "#ffffff",
-          "color_highlight": "#ffa832",
+          "color_highlight": "#FF6600",
           "color_keyboard_focus": "#0b61cd",
           "color_shadow": "#a8e8e2",
           "color_image_background": "#fafafa",
@@ -194,8 +194,8 @@
           "color_sale_tag_text": "#ffffff",
           "color_rating": "#f59e0b",
           "color_button_text": "#ffffff",
-          "color_button_background": "#ffa832",
-          "color_button_border": "#ffa832",
+          "color_button_background": "#FF6600",
+          "color_button_border": "#FF6600",
           "color_button_gradient": "",
           "color_button_2_text": "#ffffff",
           "color_button_2_background": "#181818",

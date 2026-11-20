@@ -1119,7 +1119,7 @@
               "settings": {
                 "image": "shopify://shop_images/kids.jpg",
                 "aspect_ratio": "adapt",
-                "heading": "Apparel",
+                "heading": "",
                 "heading_tag": "h3",
                 "heading_position": "top-left",
                 "subheading": "even more special",

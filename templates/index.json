@@ -363,6 +363,7 @@
         "slide_image_GMFwYT": {
           "type": "_slide-image",
           "settings": {
+            "image": "shopify://shop_images/THCM_Banner_Website_Scale_Models_2.png",
             "aspect_ratio": "adapt",
             "link": "",
             "accessibility_info": "",

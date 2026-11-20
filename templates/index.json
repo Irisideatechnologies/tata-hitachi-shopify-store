@@ -591,6 +591,7 @@
               "type": "image-card",
               "name": "t:blocks.image-card.name",
               "settings": {
+                "image": "shopify://shop_images/WhatsApp_Image_2026-11-20_at_11.57.49_AM.jpg",
                 "aspect_ratio": "adapt",
                 "button_alignment": "left",
                 "button_label": "Bed room",

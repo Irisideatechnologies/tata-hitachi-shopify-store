@@ -121,8 +121,8 @@
         "enable_country_selector": true,
         "color_scheme": "",
         "color_localization": "",
-        "padding_top": 32,
-        "padding_bottom": 32,
+        "padding_top": 10,
+        "padding_bottom": 10,
         "full_width": false
       }
     }

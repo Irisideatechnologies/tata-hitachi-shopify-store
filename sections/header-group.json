@@ -100,6 +100,9 @@
       "block_order": [
         "mega-menu"
       ],
+      "custom_css": [
+        "body{font-size: 20px;}"
+      ],
       "settings": {
         "logo_h1": true,
         "menu": "main-menu",

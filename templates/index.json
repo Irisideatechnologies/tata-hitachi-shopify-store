@@ -1117,7 +1117,7 @@
               "type": "banner",
               "name": "t:blocks.banner.name",
               "settings": {
-                "image": "shopify://shop_images/kids.jpg",
+                "image": "shopify://shop_images/THCM_Website_Thumbnails_Kids.png",
                 "aspect_ratio": "adapt",
                 "heading": "",
                 "heading_tag": "h3",
@@ -1194,7 +1194,7 @@
               "type": "banner",
               "name": "t:blocks.banner.name",
               "settings": {
-                "image": "shopify://shop_images/Apparel.jpg",
+                "image": "shopify://shop_images/THCM_Website_Thumbnails_Scale_Models_1c6efc64-c46c-4586-9327-44f9809d3435.png",
                 "aspect_ratio": "adapt",
                 "heading": "New thyme hue from le creuset",
                 "heading_tag": "h3",

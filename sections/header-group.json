@@ -118,7 +118,7 @@
         "show_country_name_dekstop": false,
         "show_country_flag_desktop": false,
         "logo_position_mobile": "center",
-        "accordion_menu_mobile": false,
+        "accordion_menu_mobile": true,
         "show_social": true,
         "enable_language_selector": true,
         "enable_country_selector": true,

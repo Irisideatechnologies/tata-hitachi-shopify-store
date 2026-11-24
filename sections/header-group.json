@@ -16,6 +16,7 @@
       "blocks": {
         "mega-menu": {
           "type": "mega_menu_tab",
+          "disabled": true,
           "settings": {
             "menu_title": "Catalog",
             "button_label": "View All Products",

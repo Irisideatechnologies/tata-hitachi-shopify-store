@@ -20,11 +20,12 @@
             "heading": "Heading",
             "menu": "footer",
             "container_width": 50,
-            "opened": false
+            "opened": true
           }
         },
         "brand_information": {
           "type": "brand_information",
+          "disabled": true,
           "settings": {
             "heading": "Our story",
             "text": "<p>Miniture is one of the biggest international fashion companies, one of the world’s largest distribution groups.</p>",

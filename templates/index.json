@@ -1422,7 +1422,7 @@
             "collection": "men-clothing",
             "title": "",
             "description": "",
-            "overlay_content": false,
+            "overlay_content": true,
             "color_text": "#ffffff",
             "color_overlay": "#000000",
             "overlay_opacity": 30
@@ -1431,7 +1431,7 @@
         "collection_H9rfXB": {
           "type": "collection",
           "settings": {
-            "collection": "",
+            "collection": "scale-models",
             "title": "",
             "description": "",
             "overlay_content": false,

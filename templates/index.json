@@ -1029,6 +1029,7 @@
       ],
       "name": "Video Image with Text",
       "settings": {
+        "image": "shopify://shop_images/THCM_Website_Thumbnails_Clothing.png",
         "image_height": "adapt",
         "video_url": "https://www.youtube.com/watch?v=ACNPzOdko0s&t=117s",
         "play_button_label": "Play video",

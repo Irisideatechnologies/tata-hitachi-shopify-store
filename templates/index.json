@@ -836,6 +836,18 @@
     "collection_list_nVNYjK": {
       "type": "collection-list",
       "blocks": {
+        "collection_RDePUh": {
+          "type": "collection",
+          "settings": {
+            "collection": "mugs",
+            "title": "",
+            "description": "",
+            "overlay_content": true,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
+          }
+        },
         "collection_JnxhgW": {
           "type": "collection",
           "settings": {
@@ -874,6 +886,7 @@
         }
       },
       "block_order": [
+        "collection_RDePUh",
         "collection_JnxhgW",
         "collection_BtrwVP",
         "collection_H9rfXB"

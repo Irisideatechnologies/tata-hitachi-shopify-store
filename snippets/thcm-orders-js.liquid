@@ -356,6 +356,8 @@
         orderNumber: orderNo(order),
         shopifyOrderId: String(order.shopifyOrderId),
         mapNo: getMapNo(order),
+        channel: order.channel,
+        isShipping: order.isShipping === true,
         allowEmptyEpc: THCM_ALLOW_EMPTY_EPC
       }, button, function (values) {
         return orderRequest('POST', '/api/admin/orders/' + encodeURIComponent(order.shopifyOrderId) + '/mark-fulfilled', values)

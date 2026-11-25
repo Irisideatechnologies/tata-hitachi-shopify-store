@@ -4,12 +4,14 @@
     <p class="thcm-fulfillment-dialog__order">Order ID: <output data-thcm-order-id></output></p>
     <p class="thcm-fulfillment-dialog__order">MAP No: <output data-thcm-map-no></output></p>
     <p class="thcm-fulfillment-dialog__hint" data-thcm-map-hint></p>
-    <label for="thcm-tracking-id">Tracking ID</label>
-    <input id="thcm-tracking-id" name="trackingId" type="text" maxlength="100" autocomplete="off" required aria-describedby="thcm-tracking-id-error">
-    <p id="thcm-tracking-id-error" class="thcm-fulfillment-dialog__field-error" data-thcm-id-error></p>
-    <label for="thcm-tracking-url">Tracking URL</label>
-    <input id="thcm-tracking-url" name="trackingUrl" type="url" maxlength="500" inputmode="url" autocomplete="url" required aria-describedby="thcm-tracking-url-error">
-    <p id="thcm-tracking-url-error" class="thcm-fulfillment-dialog__field-error" data-thcm-url-error></p>
+    <div data-thcm-tracking-fields>
+      <label for="thcm-tracking-id">Tracking ID</label>
+      <input id="thcm-tracking-id" name="trackingId" type="text" maxlength="100" autocomplete="off" required aria-describedby="thcm-tracking-id-error">
+      <p id="thcm-tracking-id-error" class="thcm-fulfillment-dialog__field-error" data-thcm-id-error></p>
+      <label for="thcm-tracking-url">Tracking URL</label>
+      <input id="thcm-tracking-url" name="trackingUrl" type="url" maxlength="500" inputmode="url" autocomplete="url" required aria-describedby="thcm-tracking-url-error">
+      <p id="thcm-tracking-url-error" class="thcm-fulfillment-dialog__field-error" data-thcm-url-error></p>
+    </div>
     <p class="thcm-fulfillment-dialog__error" data-thcm-error role="alert" aria-live="assertive"></p>
     <div class="thcm-fulfillment-dialog__actions">
       <button type="button" class="button button--secondary" data-thcm-cancel>Cancel</button>
@@ -44,7 +46,7 @@
     var auth = window.MAP_AUTH;
     if (!auth || !auth.isLoggedIn || !auth.isLoggedIn() || !auth.isAdmin || !auth.isAdmin()) { dialog.remove(); return; }
     var key = 'hjOM38wnqN8Bt47ltQNX2zXaRaRAgbItLkhqdg04CsD';
-    var form = dialog.querySelector('[data-thcm-fulfillment-form]'), idInput = dialog.querySelector('[name="trackingId"]'), urlInput = dialog.querySelector('[name="trackingUrl"]');
+    var form = dialog.querySelector('[data-thcm-fulfillment-form]'), trackingFields = dialog.querySelector('[data-thcm-tracking-fields]'), idInput = dialog.querySelector('[name="trackingId"]'), urlInput = dialog.querySelector('[name="trackingUrl"]');
     var idError = dialog.querySelector('[data-thcm-id-error]'), urlError = dialog.querySelector('[data-thcm-url-error]'), error = dialog.querySelector('[data-thcm-error]');
     var submit = dialog.querySelector('[data-thcm-submit]'), cancel = dialog.querySelector('[data-thcm-cancel]');
     var activeTrigger, current, markFulfilled, submitting = false, sentOrders = {};
@@ -52,6 +54,7 @@
     function resetField(input, message) { input.removeAttribute('aria-invalid'); message.textContent = ''; }
     function validate() {
       var ok = true, id = idInput.value.trim(), url = urlInput.value.trim(); resetField(idInput,idError); resetField(urlInput,urlError); error.textContent = '';
+      if (current.isShipping === true) return true;
       if (!id) { idInput.setAttribute('aria-invalid','true'); idError.textContent = 'Enter a tracking ID.'; ok = false; } else if (id.length > 100) { idInput.setAttribute('aria-invalid','true'); idError.textContent = 'Tracking ID must be 100 characters or fewer.'; ok = false; }
       if (!url) { urlInput.setAttribute('aria-invalid','true'); urlError.textContent = 'Enter a tracking URL.'; ok = false; } else if (url.length > 500) { urlInput.setAttribute('aria-invalid','true'); urlError.textContent = 'Tracking URL must be 500 characters or fewer.'; ok = false; } else { try { var parsed = new URL(url); if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') throw new Error(); } catch (e) { urlInput.setAttribute('aria-invalid','true'); urlError.textContent = 'Enter a valid HTTP or HTTPS URL.'; ok = false; } }
       if (!ok) { var invalid = dialog.querySelector('[aria-invalid="true"]'); if (invalid) invalid.focus(); } return ok;
@@ -64,13 +67,13 @@
     function thcm(values) {
       if (!key) return Promise.reject(new Error('Server configuration error, contact admin'));
       var controller = new AbortController(), timer = setTimeout(function () { controller.abort(); }, 15000);
-      return fetch('https://thcmconnect.tatahitachi.co.in/api/v1/crf/order/tracking', { method:'POST', headers:{'Content-Type':'application/json','x-api-key':key}, body:JSON.stringify({ orderId:String(current.shopifyOrderId), epcId:current.mapNo, trackingId:values.trackingId, trackingUrl:values.trackingUrl }), signal:controller.signal }).then(function (res) { return res.text().then(function (text) { var body = {}; try { body = text ? JSON.parse(text) : {}; } catch (e) {} if (res.status === 400) throw new Error('Fill all fields' + (current.mapNo ? '' : ' This order may not have a MAP ID')); if (res.status === 401) throw new Error('Server configuration error, contact admin'); if (res.status === 404) throw new Error('Order not found in MAP'); if (!res.ok || body.success !== true) throw new Error('Please try again'); rememberSent(); }); }).catch(function (e) { if (e && e.message && /Fill all fields|Server configuration|Order not found/.test(e.message)) throw e; throw new Error('Please try again'); }).finally(function () { clearTimeout(timer); });
+      return fetch('https://thcmconnect.tatahitachi.co.in/api/v1/crf/order/tracking', { method:'POST', headers:{'Content-Type':'application/json','x-api-key':key}, body:JSON.stringify({ orderId:String(current.shopifyOrderId), epcId:current.mapNo, trackingId:values.trackingId, trackingUrl:values.trackingUrl, channelName:current.channel || '', isShipping:values.isShipping }), signal:controller.signal }).then(function (res) { return res.text().then(function (text) { var body = {}; try { body = text ? JSON.parse(text) : {}; } catch (e) {} if (res.status === 400) throw new Error('Fill all fields' + (current.mapNo ? '' : ' This order may not have a MAP ID')); if (res.status === 401) throw new Error('Server configuration error, contact admin'); if (res.status === 404) throw new Error('Order not found in MAP'); if (!res.ok || body.success !== true) throw new Error('Please try again'); rememberSent(); }); }).catch(function (e) { if (e && e.message && /Fill all fields|Server configuration|Order not found/.test(e.message)) throw e; throw new Error('Please try again'); }).finally(function () { clearTimeout(timer); });
     }
-    window.THCM_FULFILLMENT_MODAL = { open:function (order, trigger, handler) { current=order; activeTrigger=trigger; markFulfilled=handler; dialog.querySelector('[data-thcm-display-number]').textContent=String(order.orderNumber || ''); dialog.querySelector('[data-thcm-order-id]').textContent=String(order.shopifyOrderId || ''); dialog.querySelector('[data-thcm-map-no]').textContent=order.mapNo || '-'; dialog.querySelector('[data-thcm-map-hint]').textContent=order.mapNo || !order.allowEmptyEpc ? '' : 'MAP No not found in order note'; idInput.value=''; urlInput.value=''; resetField(idInput,idError); resetField(urlInput,urlError); error.textContent=''; setBusy(false,'Submit'); if (!order.mapNo && !order.allowEmptyEpc) { submit.disabled=true; error.textContent='MAP No not found for this order'; } if (dialog.showModal) dialog.showModal(); else dialog.setAttribute('open',''); setTimeout(function () { idInput.focus(); },0); }, close:close };
+    window.THCM_FULFILLMENT_MODAL = { open:function (order, trigger, handler) { current=order; activeTrigger=trigger; markFulfilled=handler; dialog.querySelector('[data-thcm-display-number]').textContent=String(order.orderNumber || ''); dialog.querySelector('[data-thcm-order-id]').textContent=String(order.shopifyOrderId || ''); dialog.querySelector('[data-thcm-map-no]').textContent=order.mapNo || '-'; dialog.querySelector('[data-thcm-map-hint]').textContent=order.mapNo || !order.allowEmptyEpc ? '' : 'MAP No not found in order note'; trackingFields.hidden = order.isShipping === true; idInput.value=''; urlInput.value=''; resetField(idInput,idError); resetField(urlInput,urlError); error.textContent=''; setBusy(false,'Submit'); if (!order.mapNo && !order.allowEmptyEpc && order.isShipping !== true) { submit.disabled=true; error.textContent='MAP No not found for this order'; } if (dialog.showModal) dialog.showModal(); else dialog.setAttribute('open',''); setTimeout(function () { (order.isShipping === true ? submit : idInput).focus(); },0); }, close:close };
     idInput.addEventListener('input',function () { resetField(idInput,idError); }); urlInput.addEventListener('input',function () { resetField(urlInput,urlError); }); cancel.addEventListener('click',close);
     dialog.addEventListener('click',function (e) { if (e.target === dialog && !submitting) close(); }); dialog.addEventListener('cancel',function (e) { if (submitting) e.preventDefault(); else close(); });
     dialog.addEventListener('keydown',function (e) { if (e.key !== 'Tab') return; var all=nodes(); if (!all.length) return; if (e.shiftKey && document.activeElement===all[0]) { e.preventDefault(); all[all.length-1].focus(); } else if (!e.shiftKey && document.activeElement===all[all.length-1]) { e.preventDefault(); all[0].focus(); } });
-    form.addEventListener('submit',function (e) { e.preventDefault(); if (submitting || !validate()) return; var values={trackingId:idInput.value.trim(),trackingUrl:urlInput.value.trim()}; setBusy(true,'Submitting...'); (alreadySent() ? Promise.resolve() : thcm(values)).then(function () { return markFulfilled(values); }).then(function () { setBusy(false,'Submit'); close(); }).catch(function (e) { setBusy(false,/tracking sent to MAP/i.test(e.message) ? 'Retry' : 'Submit'); error.textContent=e.message || 'Please try again'; }); });
+    form.addEventListener('submit',function (e) { e.preventDefault(); if (submitting || !validate()) return; var values = current.isShipping === true ? { isShipping:true, trackingId:'', trackingUrl:'' } : { isShipping:false, trackingId:idInput.value.trim(), trackingUrl:urlInput.value.trim() }; setBusy(true,'Submitting...'); thcm(values).then(function () { return markFulfilled(values); }).then(function () { setBusy(false,'Submit'); close(); }).catch(function (e) { setBusy(false,/tracking sent to MAP/i.test(e.message) ? 'Retry' : 'Submit'); error.textContent=e.message || 'Please try again'; }); });
     dialog.__thcmReady = true;
   }());
 </script>

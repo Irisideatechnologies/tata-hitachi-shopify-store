@@ -808,6 +808,7 @@
         "collection-2",
         "collection-3"
       ],
+      "disabled": true,
       "settings": {
         "tab_style": "dropdown_inline",
         "dropdown_inline_prefix": "You are in",
@@ -1399,6 +1400,74 @@
         "padding_bottom": 92,
         "full_width": false
       }
+    },
+    "collection_list_nVNYjK": {
+      "type": "collection-list",
+      "blocks": {
+        "collection_JnxhgW": {
+          "type": "collection",
+          "settings": {
+            "collection": "",
+            "title": "",
+            "description": "",
+            "overlay_content": false,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
+          }
+        },
+        "collection_BtrwVP": {
+          "type": "collection",
+          "settings": {
+            "collection": "",
+            "title": "",
+            "description": "",
+            "overlay_content": false,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
+          }
+        },
+        "collection_H9rfXB": {
+          "type": "collection",
+          "settings": {
+            "collection": "",
+            "title": "",
+            "description": "",
+            "overlay_content": false,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
+          }
+        }
+      },
+      "block_order": [
+        "collection_JnxhgW",
+        "collection_BtrwVP",
+        "collection_H9rfXB"
+      ],
+      "name": "t:sections.collection-list.name",
+      "settings": {
+        "card_style": "overlap",
+        "image_type": "collection",
+        "image_ratio": "square",
+        "show_products_count": true,
+        "show_view_all": false,
+        "columns": 4,
+        "carousel_on_desktop": true,
+        "columns_mobile": "1",
+        "swipe_on_mobile": true,
+        "heading": "Collections",
+        "heading_size": "title-md",
+        "heading_alignment": "text-left md:items-end md:flex-row",
+        "heading_tag": "h2",
+        "subheading": "",
+        "description": "",
+        "color_scheme": "",
+        "padding_top": 90,
+        "padding_bottom": 90,
+        "full_width": false
+      }
     }
   },
   "order": [
@@ -1411,6 +1480,7 @@
     "featured_collection_YjQHLR",
     "custom_section_HhnrjK",
     "multicolumn_with_icons_hkK7iY",
-    "image_gallery_with_text_NgLJ4p"
+    "image_gallery_with_text_NgLJ4p",
+    "collection_list_nVNYjK"
   ]
 }

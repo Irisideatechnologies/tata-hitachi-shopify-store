@@ -1111,31 +1111,6 @@
         "full_width": false
       }
     },
-    "featured_collection_YjQHLR": {
-      "type": "featured-collection",
-      "disabled": true,
-      "name": "t:sections.featured-collection.name",
-      "settings": {
-        "collection": "",
-        "products": [],
-        "product_limit": 6,
-        "columns": 4,
-        "carousel_on_desktop": true,
-        "show_view_all": false,
-        "columns_mobile": "1",
-        "swipe_on_mobile": true,
-        "heading": "Top Sellers",
-        "heading_size": "title-sm",
-        "heading_alignment": "text-center md:items-center",
-        "heading_tag": "h2",
-        "subheading": "",
-        "description": "",
-        "color_scheme": "scheme-1",
-        "padding_top": 0,
-        "padding_bottom": 40,
-        "full_width": false
-      }
-    },
     "custom_section_HhnrjK": {
       "type": "custom-section",
       "blocks": {
@@ -1340,7 +1315,6 @@
     "collection_list_nVNYjK",
     "video_image_with_text_FVwbKM",
     "lookbook_Kz3PAH",
-    "featured_collection_YjQHLR",
     "custom_section_HhnrjK"
   ]
 }

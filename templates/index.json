@@ -836,6 +836,18 @@
     "collection_list_nVNYjK": {
       "type": "collection-list",
       "blocks": {
+        "collection_WPiacd": {
+          "type": "collection",
+          "settings": {
+            "collection": "clothing-cap",
+            "title": "",
+            "description": "",
+            "overlay_content": false,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
+          }
+        },
         "collection_RDePUh": {
           "type": "collection",
           "settings": {
@@ -886,6 +898,7 @@
         }
       },
       "block_order": [
+        "collection_WPiacd",
         "collection_RDePUh",
         "collection_JnxhgW",
         "collection_BtrwVP",

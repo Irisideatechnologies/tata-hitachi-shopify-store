@@ -1041,6 +1041,74 @@
         "full_width": false
       }
     },
+    "collection_list_nVNYjK": {
+      "type": "collection-list",
+      "blocks": {
+        "collection_JnxhgW": {
+          "type": "collection",
+          "settings": {
+            "collection": "keychains-badges",
+            "title": "",
+            "description": "",
+            "overlay_content": true,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
+          }
+        },
+        "collection_BtrwVP": {
+          "type": "collection",
+          "settings": {
+            "collection": "men-clothing",
+            "title": "",
+            "description": "",
+            "overlay_content": true,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
+          }
+        },
+        "collection_H9rfXB": {
+          "type": "collection",
+          "settings": {
+            "collection": "scale-models",
+            "title": "",
+            "description": "",
+            "overlay_content": true,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
+          }
+        }
+      },
+      "block_order": [
+        "collection_JnxhgW",
+        "collection_BtrwVP",
+        "collection_H9rfXB"
+      ],
+      "name": "t:sections.collection-list.name",
+      "settings": {
+        "card_style": "overlap",
+        "image_type": "collection",
+        "image_ratio": "square",
+        "show_products_count": true,
+        "show_view_all": false,
+        "columns": 4,
+        "carousel_on_desktop": true,
+        "columns_mobile": "1",
+        "swipe_on_mobile": true,
+        "heading": "Explore Our Collections",
+        "heading_size": "title-md",
+        "heading_alignment": "text-center md:items-center",
+        "heading_tag": "h2",
+        "subheading": "",
+        "description": "",
+        "color_scheme": "",
+        "padding_top": 90,
+        "padding_bottom": 90,
+        "full_width": false
+      }
+    },
     "featured_collection_YjQHLR": {
       "type": "featured-collection",
       "disabled": true,
@@ -1400,74 +1468,6 @@
         "padding_bottom": 92,
         "full_width": false
       }
-    },
-    "collection_list_nVNYjK": {
-      "type": "collection-list",
-      "blocks": {
-        "collection_JnxhgW": {
-          "type": "collection",
-          "settings": {
-            "collection": "keychains-badges",
-            "title": "",
-            "description": "",
-            "overlay_content": true,
-            "color_text": "#ffffff",
-            "color_overlay": "#000000",
-            "overlay_opacity": 30
-          }
-        },
-        "collection_BtrwVP": {
-          "type": "collection",
-          "settings": {
-            "collection": "men-clothing",
-            "title": "",
-            "description": "",
-            "overlay_content": true,
-            "color_text": "#ffffff",
-            "color_overlay": "#000000",
-            "overlay_opacity": 30
-          }
-        },
-        "collection_H9rfXB": {
-          "type": "collection",
-          "settings": {
-            "collection": "scale-models",
-            "title": "",
-            "description": "",
-            "overlay_content": true,
-            "color_text": "#ffffff",
-            "color_overlay": "#000000",
-            "overlay_opacity": 30
-          }
-        }
-      },
-      "block_order": [
-        "collection_JnxhgW",
-        "collection_BtrwVP",
-        "collection_H9rfXB"
-      ],
-      "name": "t:sections.collection-list.name",
-      "settings": {
-        "card_style": "overlap",
-        "image_type": "collection",
-        "image_ratio": "square",
-        "show_products_count": true,
-        "show_view_all": false,
-        "columns": 4,
-        "carousel_on_desktop": true,
-        "columns_mobile": "1",
-        "swipe_on_mobile": true,
-        "heading": "Explore Our Collections",
-        "heading_size": "title-md",
-        "heading_alignment": "text-center md:items-center",
-        "heading_tag": "h2",
-        "subheading": "",
-        "description": "",
-        "color_scheme": "",
-        "padding_top": 90,
-        "padding_bottom": 90,
-        "full_width": false
-      }
     }
   },
   "order": [
@@ -1475,12 +1475,12 @@
     "slideshow",
     "custom_section_ggk46J",
     "featured-collections",
+    "collection_list_nVNYjK",
     "video_image_with_text_FVwbKM",
     "lookbook_Kz3PAH",
     "featured_collection_YjQHLR",
     "custom_section_HhnrjK",
     "multicolumn_with_icons_hkK7iY",
-    "image_gallery_with_text_NgLJ4p",
-    "collection_list_nVNYjK"
+    "image_gallery_with_text_NgLJ4p"
   ]
 }

@@ -82,7 +82,7 @@
         "menu_mobile": "",
         "menu_active": "dot",
         "hover_menu": true,
-        "header_layout": "left",
+        "header_layout": "center",
         "sticky_header_type": "on-scroll-up",
         "icons_size": "sm",
         "menu_drawer_icon_label": "",
@@ -97,8 +97,8 @@
         "enable_country_selector": true,
         "color_scheme": "",
         "color_localization": "",
-        "padding_top": 28,
-        "padding_bottom": 28,
+        "padding_top": 10,
+        "padding_bottom": 10,
         "full_width": true
       }
     }

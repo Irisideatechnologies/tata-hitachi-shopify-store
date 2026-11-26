@@ -83,7 +83,7 @@
         "menu_active": "dot",
         "hover_menu": true,
         "header_layout": "center",
-        "sticky_header_type": "on-scroll-up",
+        "sticky_header_type": "always",
         "icons_size": "sm",
         "menu_drawer_icon_label": "",
         "enable_language_selector_desktop": false,

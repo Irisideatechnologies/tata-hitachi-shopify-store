@@ -451,7 +451,7 @@
         "show_navigation": true,
         "section_width": "full_width",
         "corner_radius": 20,
-        "image_height": "650px",
+        "image_height": "500px",
         "content_width": "small",
         "image_height_mobile": "300px",
         "accessibility_info": "Slideshow about our brand",

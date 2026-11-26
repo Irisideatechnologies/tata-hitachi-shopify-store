@@ -170,7 +170,7 @@
         "menu_mobile": "",
         "menu_active": "block",
         "hover_menu": true,
-        "header_layout": "left-center",
+        "header_layout": "center-drawer",
         "sticky_header_type": "on-scroll-up",
         "icons_size": "sm",
         "menu_drawer_icon_label": "",

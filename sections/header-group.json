@@ -166,7 +166,7 @@
       ],
       "settings": {
         "logo_h1": true,
-        "menu": "main-menu",
+        "menu": "new-menu",
         "menu_mobile": "",
         "menu_active": "block",
         "hover_menu": true,

@@ -54,7 +54,7 @@
     function resetField(input, message) { input.removeAttribute('aria-invalid'); message.textContent = ''; }
     function validate() {
       var ok = true, id = idInput.value.trim(), url = urlInput.value.trim(); resetField(idInput,idError); resetField(urlInput,urlError); error.textContent = '';
-      if (current.isShipping === true) return true;
+      if (current.isShipping === false) return true;
       if (!id) { idInput.setAttribute('aria-invalid','true'); idError.textContent = 'Enter a tracking ID.'; ok = false; } else if (id.length > 100) { idInput.setAttribute('aria-invalid','true'); idError.textContent = 'Tracking ID must be 100 characters or fewer.'; ok = false; }
       if (!url) { urlInput.setAttribute('aria-invalid','true'); urlError.textContent = 'Enter a tracking URL.'; ok = false; } else if (url.length > 500) { urlInput.setAttribute('aria-invalid','true'); urlError.textContent = 'Tracking URL must be 500 characters or fewer.'; ok = false; } else { try { var parsed = new URL(url); if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') throw new Error(); } catch (e) { urlInput.setAttribute('aria-invalid','true'); urlError.textContent = 'Enter a valid HTTP or HTTPS URL.'; ok = false; } }
       if (!ok) { var invalid = dialog.querySelector('[aria-invalid="true"]'); if (invalid) invalid.focus(); } return ok;

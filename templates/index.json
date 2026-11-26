@@ -461,6 +461,73 @@
         "parallax_direction": "vertical"
       }
     },
+    "multicolumn_with_icons_hkK7iY": {
+      "type": "multicolumn-with-icons",
+      "blocks": {
+        "column_KR96fE": {
+          "type": "column",
+          "settings": {
+            "icon": "truck",
+            "custom_icon": "",
+            "heading": "Free Shipping",
+            "text": "<p>Free Shipping for orders</p>"
+          }
+        },
+        "column_cHF8mR": {
+          "type": "column",
+          "settings": {
+            "icon": "wallet",
+            "custom_icon": "",
+            "heading": "Money Guarantee",
+            "text": "<p>Within 30 days</p>"
+          }
+        },
+        "column_j7rwGm": {
+          "type": "column",
+          "settings": {
+            "icon": "support",
+            "custom_icon": "",
+            "heading": "Online Support",
+            "text": "<p>24 hours a day, 7 days a week</p>"
+          }
+        },
+        "column_BKMtrh": {
+          "type": "column",
+          "settings": {
+            "icon": "creadit_card",
+            "custom_icon": "",
+            "heading": "Flexible Payment",
+            "text": "<p>Pay with Multiple Credit Cards</p>"
+          }
+        }
+      },
+      "block_order": [
+        "column_KR96fE",
+        "column_cHF8mR",
+        "column_j7rwGm",
+        "column_BKMtrh"
+      ],
+      "name": "t:sections.multicolumn-with-icons.name",
+      "settings": {
+        "style": "with-border",
+        "columns": 4,
+        "text_alignment": "left",
+        "heading": "",
+        "heading_size": "title-md",
+        "heading_alignment": "text-left md:items-end md:flex-row",
+        "heading_tag": "h2",
+        "subheading": "",
+        "description": "",
+        "button_label": "",
+        "button_link": "",
+        "button_external": false,
+        "button_icon": true,
+        "color_scheme": "scheme-1",
+        "padding_top": 68,
+        "padding_bottom": 90,
+        "full_width": false
+      }
+    },
     "custom_section_ggk46J": {
       "type": "custom-section",
       "blocks": {
@@ -766,64 +833,95 @@
         "hide_on_mobile": false
       }
     },
-    "featured-collections": {
-      "type": "featured-collections",
+    "collection_list_nVNYjK": {
+      "type": "collection-list",
       "blocks": {
-        "collection-1": {
+        "collection_WPiacd": {
           "type": "collection",
           "settings": {
-            "collection": "kids",
-            "products": [
-              "kids-t-shirt",
-              "keychain-excavator",
-              "t-shirt-excavator-black",
-              "fridge-magnet-backhoe-loader",
-              "t-shirt-backhoe-loader-black-graphic"
-            ],
-            "title": "Kitchen",
-            "color_scheme": ""
+            "collection": "clothing-cap",
+            "title": "",
+            "description": "",
+            "overlay_content": false,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
           }
         },
-        "collection-2": {
+        "collection_RDePUh": {
           "type": "collection",
           "settings": {
-            "collection": "",
-            "products": [],
-            "title": "Living Room",
-            "color_scheme": ""
+            "collection": "mugs",
+            "title": "",
+            "description": "",
+            "overlay_content": true,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
           }
         },
-        "collection-3": {
+        "collection_JnxhgW": {
           "type": "collection",
           "settings": {
-            "collection": "",
-            "products": [],
-            "title": "Bed room",
-            "color_scheme": ""
+            "collection": "keychains-badges",
+            "title": "",
+            "description": "",
+            "overlay_content": true,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
+          }
+        },
+        "collection_BtrwVP": {
+          "type": "collection",
+          "settings": {
+            "collection": "men-clothing",
+            "title": "",
+            "description": "",
+            "overlay_content": true,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
+          }
+        },
+        "collection_H9rfXB": {
+          "type": "collection",
+          "settings": {
+            "collection": "scale-models",
+            "title": "",
+            "description": "",
+            "overlay_content": true,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
           }
         }
       },
       "block_order": [
-        "collection-1",
-        "collection-2",
-        "collection-3"
+        "collection_WPiacd",
+        "collection_RDePUh",
+        "collection_JnxhgW",
+        "collection_BtrwVP",
+        "collection_H9rfXB"
       ],
+      "name": "t:sections.collection-list.name",
       "settings": {
-        "tab_style": "dropdown_inline",
-        "dropdown_inline_prefix": "You are in",
-        "product_limit": 8,
+        "card_style": "overlap",
+        "image_type": "collection",
+        "image_ratio": "square",
+        "show_products_count": true,
+        "show_view_all": false,
         "columns": 4,
-        "carousel_on_desktop": false,
-        "show_view_all": true,
+        "carousel_on_desktop": true,
         "columns_mobile": "1",
         "swipe_on_mobile": true,
-        "heading": "Best Sellers",
+        "heading": "Explore Our Collections",
         "heading_size": "title-md",
         "heading_alignment": "text-center md:items-center",
         "heading_tag": "h2",
         "subheading": "",
         "description": "",
-        "color_scheme": "scheme-3",
+        "color_scheme": "",
         "padding_top": 90,
         "padding_bottom": 90,
         "full_width": false
@@ -955,9 +1053,9 @@
         "spacer_Uapci3",
         "button_KfBbxn"
       ],
-      "disabled": true,
       "name": "Video Image with Text",
       "settings": {
+        "image": "shopify://shop_images/THCM_Website_Thumbnails_Clothing.png",
         "image_height": "adapt",
         "video_url": "https://www.youtube.com/watch?v=ACNPzOdko0s&t=117s",
         "play_button_label": "Play video",
@@ -1037,31 +1135,6 @@
         "overlay_opacity": 5,
         "padding_top": 0,
         "padding_bottom": 90,
-        "full_width": false
-      }
-    },
-    "featured_collection_YjQHLR": {
-      "type": "featured-collection",
-      "disabled": true,
-      "name": "t:sections.featured-collection.name",
-      "settings": {
-        "collection": "",
-        "products": [],
-        "product_limit": 6,
-        "columns": 4,
-        "carousel_on_desktop": true,
-        "show_view_all": false,
-        "columns_mobile": "1",
-        "swipe_on_mobile": true,
-        "heading": "Top Sellers",
-        "heading_size": "title-sm",
-        "heading_alignment": "text-center md:items-center",
-        "heading_tag": "h2",
-        "subheading": "",
-        "description": "",
-        "color_scheme": "scheme-1",
-        "padding_top": 0,
-        "padding_bottom": 40,
         "full_width": false
       }
     },
@@ -1259,158 +1332,16 @@
         "padding_bottom": 90,
         "hide_on_mobile": false
       }
-    },
-    "multicolumn_with_icons_hkK7iY": {
-      "type": "multicolumn-with-icons",
-      "blocks": {
-        "column_KR96fE": {
-          "type": "column",
-          "settings": {
-            "icon": "truck",
-            "custom_icon": "",
-            "heading": "Free Shipping",
-            "text": "<p>Free Shipping for orders</p>"
-          }
-        },
-        "column_cHF8mR": {
-          "type": "column",
-          "settings": {
-            "icon": "wallet",
-            "custom_icon": "",
-            "heading": "Money Guarantee",
-            "text": "<p>Within 30 days</p>"
-          }
-        },
-        "column_j7rwGm": {
-          "type": "column",
-          "settings": {
-            "icon": "support",
-            "custom_icon": "",
-            "heading": "Online Support",
-            "text": "<p>24 hours a day, 7 days a week</p>"
-          }
-        },
-        "column_BKMtrh": {
-          "type": "column",
-          "settings": {
-            "icon": "creadit_card",
-            "custom_icon": "",
-            "heading": "Flexible Payment",
-            "text": "<p>Pay with Multiple Credit Cards</p>"
-          }
-        }
-      },
-      "block_order": [
-        "column_KR96fE",
-        "column_cHF8mR",
-        "column_j7rwGm",
-        "column_BKMtrh"
-      ],
-      "name": "t:sections.multicolumn-with-icons.name",
-      "settings": {
-        "style": "with-border",
-        "columns": 4,
-        "text_alignment": "left",
-        "heading": "",
-        "heading_size": "title-md",
-        "heading_alignment": "text-left md:items-end md:flex-row",
-        "heading_tag": "h2",
-        "subheading": "",
-        "description": "",
-        "button_label": "",
-        "button_link": "",
-        "button_external": false,
-        "button_icon": true,
-        "color_scheme": "scheme-1",
-        "padding_top": 0,
-        "padding_bottom": 90,
-        "full_width": false
-      }
-    },
-    "image_gallery_with_text_NgLJ4p": {
-      "type": "image-gallery-with-text",
-      "blocks": {
-        "image_PyWiCC": {
-          "type": "image",
-          "settings": {
-            "caption": ""
-          }
-        },
-        "image_DRY7FC": {
-          "type": "image",
-          "settings": {
-            "caption": ""
-          }
-        },
-        "image_Lf6DGR": {
-          "type": "image",
-          "settings": {
-            "caption": ""
-          }
-        },
-        "image_WWH7Hq": {
-          "type": "image",
-          "settings": {
-            "caption": ""
-          }
-        },
-        "image_wYEV7t": {
-          "type": "image",
-          "settings": {
-            "caption": ""
-          }
-        },
-        "image_nPtqyf": {
-          "type": "image",
-          "settings": {
-            "caption": ""
-          }
-        }
-      },
-      "block_order": [
-        "image_PyWiCC",
-        "image_DRY7FC",
-        "image_Lf6DGR",
-        "image_WWH7Hq",
-        "image_wYEV7t",
-        "image_nPtqyf"
-      ],
-      "disabled": true,
-      "name": "Image Gallery With Text",
-      "settings": {
-        "layout": "text_first",
-        "columns": 3,
-        "columns_mobile": 3,
-        "image_ratio": "adapt",
-        "image_icon": "instagram",
-        "subheading": "",
-        "heading": "Instagram Shop",
-        "heading_tag": "h3",
-        "heading_size": "title-sm",
-        "description": "<p>Tag @miniture in your Instagram photos for<br/>&nbsp;a chance to be featured here.</p>",
-        "button_label": "Visit Our Instagram",
-        "button_link": "#",
-        "button_external": true,
-        "button_icon": false,
-        "button_style": "outline",
-        "button_size": "sm",
-        "color_scheme": "",
-        "padding_top": 0,
-        "padding_bottom": 92,
-        "full_width": false
-      }
     }
   },
   "order": [
     "custom_section_EbFmEy",
     "slideshow",
+    "multicolumn_with_icons_hkK7iY",
     "custom_section_ggk46J",
-    "featured-collections",
+    "collection_list_nVNYjK",
     "video_image_with_text_FVwbKM",
     "lookbook_Kz3PAH",
-    "featured_collection_YjQHLR",
-    "custom_section_HhnrjK",
-    "multicolumn_with_icons_hkK7iY",
-    "image_gallery_with_text_NgLJ4p"
+    "custom_section_HhnrjK"
   ]
 }

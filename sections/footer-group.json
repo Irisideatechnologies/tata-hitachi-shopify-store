@@ -14,8 +14,18 @@
     "footer": {
       "type": "footer",
       "blocks": {
+        "link_list_WWnqeQ": {
+          "type": "link_list",
+          "settings": {
+            "heading": "Heading",
+            "menu": "footer",
+            "container_width": 50,
+            "opened": true
+          }
+        },
         "brand_information": {
           "type": "brand_information",
+          "disabled": true,
           "settings": {
             "heading": "Our story",
             "text": "<p>Miniture is one of the biggest international fashion companies, one of the world’s largest distribution groups.</p>",
@@ -35,13 +45,14 @@
           "type": "link_list",
           "settings": {
             "heading": "Information",
-            "menu": "company",
+            "menu": "",
             "container_width": 50,
             "opened": false
           }
         }
       },
       "block_order": [
+        "link_list_WWnqeQ",
         "brand_information",
         "link_list-1",
         "link_list-2"

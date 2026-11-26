@@ -82,7 +82,7 @@
         "menu_mobile": "",
         "menu_active": "dot",
         "hover_menu": true,
-        "header_layout": "center-drawer",
+        "header_layout": "center",
         "sticky_header_type": "on-scroll-up",
         "icons_size": "sm",
         "menu_drawer_icon_label": "",

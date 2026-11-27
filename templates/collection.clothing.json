@@ -56,7 +56,7 @@
         "subcollections": {
           "type": "subcollections",
           "settings": {
-            "menu": "new-menu",
+            "menu": "",
             "show_count": false
           }
         },
@@ -111,7 +111,7 @@
         "pagination": "paginated",
         "enable_filtering": true,
         "filter_type": "sidebar",
-        "filter_collapsed": false,
+        "filter_collapsed": true,
         "filter_color_swatches": true,
         "enable_sorting": true,
         "show_on_model": false,

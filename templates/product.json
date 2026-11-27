@@ -12,6 +12,13 @@
     "main-product": {
       "type": "main-product",
       "blocks": {
+        "breadcrumb_ULhyJt": {
+          "type": "breadcrumb",
+          "settings": {
+            "show_collections_link": true,
+            "show_product_title": true
+          }
+        },
         "title": {
           "type": "title",
           "settings": {
@@ -100,6 +107,7 @@
         }
       },
       "block_order": [
+        "breadcrumb_ULhyJt",
         "title",
         "price_AG7YPg",
         "countdown",

@@ -329,11 +329,105 @@
         "mobile-dock-5",
         "mobile-dock-6"
       ],
-      "disabled": true,
       "settings": {
         "color_scheme": "",
         "padding_top": 8,
         "padding_bottom": 8
+      }
+    },
+    "collection_list_FefGA3": {
+      "type": "collection-list",
+      "blocks": {
+        "collection_fyigYq": {
+          "type": "collection",
+          "settings": {
+            "collection": "clothing-t-shirt",
+            "image": "shopify://shop_images/Tata_Hitachi_Graphic_T-shirt_Born_To_Be_Unique_1_3eb3692f-1837-4491-bb02-e711eefa312d.jpg",
+            "title": "",
+            "description": "",
+            "overlay_content": false,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
+          }
+        },
+        "collection_6rX9h9": {
+          "type": "collection",
+          "settings": {
+            "collection": "clothing-jacket",
+            "title": "",
+            "description": "",
+            "overlay_content": false,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
+          }
+        },
+        "collection_DtDUa9": {
+          "type": "collection",
+          "settings": {
+            "collection": "clothing-polo",
+            "title": "",
+            "description": "",
+            "overlay_content": false,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
+          }
+        },
+        "collection_LzMTDK": {
+          "type": "collection",
+          "settings": {
+            "collection": "clothing-hoodie",
+            "title": "",
+            "description": "",
+            "overlay_content": false,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
+          }
+        },
+        "collection_99gzkG": {
+          "type": "collection",
+          "settings": {
+            "collection": "clothing-cap",
+            "title": "",
+            "description": "",
+            "overlay_content": false,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
+          }
+        }
+      },
+      "block_order": [
+        "collection_fyigYq",
+        "collection_6rX9h9",
+        "collection_DtDUa9",
+        "collection_LzMTDK",
+        "collection_99gzkG"
+      ],
+      "name": "t:sections.collection-list.name",
+      "settings": {
+        "card_style": "card",
+        "image_type": "collection",
+        "image_ratio": "square",
+        "show_products_count": true,
+        "show_view_all": true,
+        "columns": 4,
+        "carousel_on_desktop": false,
+        "columns_mobile": "2",
+        "swipe_on_mobile": true,
+        "heading": "Collections",
+        "heading_size": "title-md",
+        "heading_alignment": "text-left md:items-end md:flex-row",
+        "heading_tag": "h2",
+        "subheading": "",
+        "description": "",
+        "color_scheme": "",
+        "padding_top": 90,
+        "padding_bottom": 90,
+        "full_width": false
       }
     }
   },
@@ -343,6 +437,7 @@
     "newsletter-popup",
     "age-verifier",
     "cookie-banner",
-    "mobile-dock"
+    "mobile-dock",
+    "collection_list_FefGA3"
   ]
 }

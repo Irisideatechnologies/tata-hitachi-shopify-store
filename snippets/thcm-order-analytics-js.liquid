@@ -85,7 +85,7 @@
       limit.value = bodyData.limit;
       var id = ++state.requestId; state.page = 0; loading();
       console.log('[analytics] request', bodyData);
-      api.jwtRequest('POST', '/api/trending-products', bodyData).then(function (response) {
+      api.keyRequest('POST', '/api/trending-products', bodyData).then(function (response) {
         if (id !== state.requestId) return;
         state.rows = Array.isArray(response && response.data) ? response.data : [];
         var responseStart = response && response.startDate;

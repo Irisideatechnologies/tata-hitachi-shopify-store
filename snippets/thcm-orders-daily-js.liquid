@@ -287,7 +287,7 @@
       if (detailRequests[key]) return detailRequests[key];
       setModalState('is-loading');
       var detailPath = dailyBase + '/' + encodeURIComponent(record.id) + '/view';
-      var request = api.jwtRequest('GET', detailPath).then(function (res) {
+      var request = api.keyRequest('GET', detailPath).then(function (res) {
         if (!res.data || !Array.isArray(res.data.rows)) throw new Error('The export preview is incomplete.');
         detailCache[key] = res.data;
         delete detailRequests[key];
@@ -362,7 +362,7 @@
     function loadHistory(id, from, to, cursor) {
       var path = dailyBase + '?from=' + encodeURIComponent(from) + '&to=' + encodeURIComponent(to) + '&limit=' + PAGE_SIZE;
       if (cursor) path += '&after=' + encodeURIComponent(cursor);
-      return api.jwtRequest('GET', path).then(function (res) {
+      return api.keyRequest('GET', path).then(function (res) {
         if (id !== state.requestId) return;
         if (res.denied) throw new Error('Access denied.');
         if (res.success === false) throw new Error(res.message || 'Could not load daily exports.');

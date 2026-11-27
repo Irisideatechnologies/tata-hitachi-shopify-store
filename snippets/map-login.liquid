@@ -78,7 +78,7 @@
 
   <script>
     (function () {
-        var API_BASE = 'https://8bc1-2401-4900-c7b3-e2b2-b0a1-514e-4f3c-5e47.ngrok-free.app';
+        var API_BASE = 'https://eb77-2401-4900-8967-301b-e9ff-d981-4c64-8097.ngrok-free.app';
   // =====================================================
  var LOGIN_URL = API_BASE + '/api/auth/login';
 
@@ -151,7 +151,7 @@
         showResetError('New password and confirm password must match.');
         return;
       }
-      if (!window.THCM_API || typeof window.THCM_API.keyRequest !== 'function') {
+      if (!window.THCM_API || typeof window.THCM_API.jwtRequest !== 'function') {
         showResetError('Password reset is not available. Please contact support.');
         return;
       }
@@ -159,7 +159,7 @@
       resetSubmitButton.disabled = true;
       resetSubmitButton.textContent = 'Please wait...';
       try {
-        var resetResponse = await window.THCM_API.keyRequest('POST', '/api/auth/reset-password', {
+        var resetResponse = await window.THCM_API.jwtRequest('POST', '/api/auth/reset-password', {
           email: email,
           newPassword: newPassword
         }, { mode: 'overlay' });

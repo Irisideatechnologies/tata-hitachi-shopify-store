@@ -116,7 +116,7 @@
     }
 
     function orderRequest(method, requestPath, body, options) {
-      return isAdmin ? api.jwtRequest(method, requestPath, body, options) : api.keyRequest(method, requestPath, body, options);
+      return api.keyRequest(method, requestPath, body, options);
     }
 
     function orderNo(o) {

@@ -167,7 +167,7 @@
     }
 
     function request(method, url, body) {
-      return api.jwtRequest(method, url, body, method === 'GET' ? undefined : { mode: 'overlay' }).then(function (json) {
+      return api.keyRequest(method, url, body, method === 'GET' ? undefined : { mode: 'overlay' }).then(function (json) {
         if (json && json.denied) { showDenied(); throw { handled: true }; }
         return json;
       }).catch(function (err) {

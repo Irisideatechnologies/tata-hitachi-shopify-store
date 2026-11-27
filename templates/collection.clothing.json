@@ -33,7 +33,7 @@
       "settings": {
         "transparent_header": false,
         "show_image": true,
-        "image": "shopify://shop_images/page_header.jpg",
+        "image": "shopify://shop_images/THCM_Website_Thumbnails_Clothing.png",
         "image_height": "400px",
         "content_position": "md:items-center md:justify-start",
         "text_alignment": "left",
@@ -116,6 +116,7 @@
         "enable_sorting": true,
         "show_on_model": false,
         "buttons_style": "secondary",
+        "color_scheme": "",
         "padding_top": 40,
         "padding_bottom": 100,
         "full_width": false

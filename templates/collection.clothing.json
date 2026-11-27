@@ -104,6 +104,7 @@
         "subcollections",
         "promotion-2"
       ],
+      "disabled": true,
       "settings": {
         "products_per_page": 12,
         "columns": 4,
@@ -121,10 +122,105 @@
         "padding_bottom": 100,
         "full_width": false
       }
+    },
+    "collection_list_awLhV9": {
+      "type": "collection-list",
+      "blocks": {
+        "collection_f3jrBN": {
+          "type": "collection",
+          "settings": {
+            "collection": "clothing-t-shirt",
+            "title": "",
+            "description": "",
+            "overlay_content": false,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
+          }
+        },
+        "collection_dkDwHp": {
+          "type": "collection",
+          "settings": {
+            "collection": "clothing-jacket",
+            "title": "",
+            "description": "",
+            "overlay_content": false,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
+          }
+        },
+        "collection_CNitXV": {
+          "type": "collection",
+          "settings": {
+            "collection": "clothing-polo",
+            "title": "",
+            "description": "",
+            "overlay_content": false,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
+          }
+        },
+        "collection_8i6xGB": {
+          "type": "collection",
+          "settings": {
+            "collection": "clothing-hoodie",
+            "title": "",
+            "description": "",
+            "overlay_content": false,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
+          }
+        },
+        "collection_YzaxFH": {
+          "type": "collection",
+          "settings": {
+            "collection": "clothing-cap",
+            "title": "",
+            "description": "",
+            "overlay_content": false,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
+          }
+        }
+      },
+      "block_order": [
+        "collection_f3jrBN",
+        "collection_dkDwHp",
+        "collection_CNitXV",
+        "collection_8i6xGB",
+        "collection_YzaxFH"
+      ],
+      "name": "t:sections.collection-list.name",
+      "settings": {
+        "card_style": "card",
+        "image_type": "collection",
+        "image_ratio": "portrait",
+        "show_products_count": true,
+        "show_view_all": false,
+        "columns": 4,
+        "carousel_on_desktop": true,
+        "columns_mobile": "1",
+        "swipe_on_mobile": true,
+        "heading": "",
+        "heading_size": "title-md",
+        "heading_alignment": "text-left md:items-end md:flex-row",
+        "heading_tag": "h2",
+        "subheading": "",
+        "description": "",
+        "color_scheme": "",
+        "padding_top": 90,
+        "padding_bottom": 90,
+        "full_width": false
+      }
     }
   },
   "order": [
     "main-collection-banner",
-    "main-collection"
+    "main-collection",
+    "collection_list_awLhV9"
   ]
 }

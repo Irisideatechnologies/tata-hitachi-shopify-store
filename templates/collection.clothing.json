@@ -56,8 +56,8 @@
         "subcollections": {
           "type": "subcollections",
           "settings": {
-            "menu": "",
-            "show_count": true
+            "menu": "new-menu",
+            "show_count": false
           }
         },
         "promotion-2": {

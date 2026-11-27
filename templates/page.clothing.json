@@ -75,7 +75,7 @@
         "collection_LcdicY": {
           "type": "collection",
           "settings": {
-            "collection": "clothing-cap",
+            "collection": "clothing",
             "title": "",
             "description": "",
             "overlay_content": false,

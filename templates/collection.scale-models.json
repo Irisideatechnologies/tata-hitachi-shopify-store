@@ -33,7 +33,7 @@
       "settings": {
         "transparent_header": false,
         "show_image": true,
-        "image": "shopify://shop_images/THCM_Website_Thumbnails_Clothing.png",
+        "image": "shopify://shop_images/THCM_Banner_Website_Scale_Models_2.png",
         "image_height": "400px",
         "content_position": "md:items-center md:justify-start",
         "text_alignment": "left",
@@ -129,7 +129,7 @@
         "collection_f3jrBN": {
           "type": "collection",
           "settings": {
-            "collection": "clothing-t-shirt",
+            "collection": "scale-model-backhoe-loader",
             "title": "",
             "description": "",
             "overlay_content": false,
@@ -141,7 +141,7 @@
         "collection_dkDwHp": {
           "type": "collection",
           "settings": {
-            "collection": "clothing-jacket",
+            "collection": "scale-model-dump-truck",
             "title": "",
             "description": "",
             "overlay_content": false,
@@ -153,7 +153,7 @@
         "collection_CNitXV": {
           "type": "collection",
           "settings": {
-            "collection": "clothing-polo",
+            "collection": "scale-model-excavator",
             "title": "",
             "description": "",
             "overlay_content": false,
@@ -165,7 +165,7 @@
         "collection_8i6xGB": {
           "type": "collection",
           "settings": {
-            "collection": "clothing-hoodie",
+            "collection": "scale-model-wheel-loader",
             "title": "",
             "description": "",
             "overlay_content": false,
@@ -177,7 +177,7 @@
         "collection_YzaxFH": {
           "type": "collection",
           "settings": {
-            "collection": "clothing-cap",
+            "collection": "scale-model-toy",
             "title": "",
             "description": "",
             "overlay_content": false,

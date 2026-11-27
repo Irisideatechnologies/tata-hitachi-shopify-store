@@ -1,0 +1,226 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main-collection-banner": {
+      "type": "main-collection-banner",
+      "blocks": {
+        "title": {
+          "type": "title",
+          "settings": {
+            "title_size": "title-sm"
+          }
+        },
+        "breadcrumb": {
+          "type": "breadcrumb",
+          "settings": {
+            "show_collections_link": true,
+            "show_collection_title": true
+          }
+        }
+      },
+      "block_order": [
+        "title",
+        "breadcrumb"
+      ],
+      "settings": {
+        "transparent_header": false,
+        "show_image": true,
+        "image": "shopify://shop_images/THCM_Banner_Website_Scale_Models_2.png",
+        "image_height": "400px",
+        "content_position": "md:items-start md:justify-center",
+        "text_alignment": "center",
+        "image_height_mobile": "auto",
+        "content_position_mobile": "items-end justify-start",
+        "text_alignment_mobile": "center",
+        "color_scheme": "scheme-b0cab4b8-1393-4bda-9c0a-f2033453def0",
+        "color_overlay": "#171717",
+        "overlay_opacity": 0,
+        "padding_top": 0,
+        "padding_bottom": 0,
+        "full_width": false,
+        "enable_parallax": true,
+        "parallax_direction": "vertical"
+      }
+    },
+    "main-collection": {
+      "type": "main-collection",
+      "blocks": {
+        "subcollections": {
+          "type": "subcollections",
+          "settings": {
+            "menu": "",
+            "show_count": false
+          }
+        },
+        "promotion-2": {
+          "type": "promotion_video",
+          "disabled": true,
+          "settings": {
+            "position": 8,
+            "column_size": "1",
+            "row_size": "1",
+            "video_url": "https://www.youtube.com/watch?v=_9VUPq3SxOc",
+            "description": "",
+            "content_position": "md:items-center",
+            "text_alignment": "center",
+            "content_layout": "default",
+            "subheading": "",
+            "heading": "Example heading",
+            "heading_size": "title-xl tracking-heading",
+            "content": "",
+            "button_label": "Shop now",
+            "button_link": "",
+            "button_style": "secondary",
+            "button_size": "md",
+            "button_external": false,
+            "button_icon": true,
+            "video_url_mobile": "",
+            "content_position_mobile": "items-center",
+            "text_alignment_mobile": "center",
+            "direction": "left",
+            "speed": 20,
+            "color_text": "#ffffff",
+            "color_background": "#171717",
+            "gradient_background": "",
+            "color_highlight": "",
+            "gradient_highlight": "",
+            "color_button_text": "#171717",
+            "color_button_background": "#ffffff",
+            "color_button_gradient": "",
+            "color_overlay": "#171717",
+            "overlay_opacity": 30
+          }
+        }
+      },
+      "block_order": [
+        "subcollections",
+        "promotion-2"
+      ],
+      "disabled": true,
+      "settings": {
+        "products_per_page": 12,
+        "columns": 4,
+        "columns_mobile": "2",
+        "pagination": "paginated",
+        "enable_filtering": true,
+        "filter_type": "sidebar",
+        "filter_collapsed": true,
+        "filter_color_swatches": true,
+        "enable_sorting": true,
+        "show_on_model": false,
+        "buttons_style": "secondary",
+        "color_scheme": "",
+        "padding_top": 40,
+        "padding_bottom": 100,
+        "full_width": false
+      }
+    },
+    "collection_list_awLhV9": {
+      "type": "collection-list",
+      "blocks": {
+        "collection_f3jrBN": {
+          "type": "collection",
+          "settings": {
+            "collection": "scale-model-backhoe-loader",
+            "title": "",
+            "description": "",
+            "overlay_content": false,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
+          }
+        },
+        "collection_dkDwHp": {
+          "type": "collection",
+          "settings": {
+            "collection": "scale-model-dump-truck",
+            "title": "",
+            "description": "",
+            "overlay_content": false,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
+          }
+        },
+        "collection_CNitXV": {
+          "type": "collection",
+          "settings": {
+            "collection": "scale-model-excavator",
+            "title": "",
+            "description": "",
+            "overlay_content": false,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
+          }
+        },
+        "collection_8i6xGB": {
+          "type": "collection",
+          "settings": {
+            "collection": "scale-model-wheel-loader",
+            "title": "",
+            "description": "",
+            "overlay_content": false,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
+          }
+        },
+        "collection_YzaxFH": {
+          "type": "collection",
+          "settings": {
+            "collection": "scale-model-toy",
+            "title": "",
+            "description": "",
+            "overlay_content": false,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 30
+          }
+        }
+      },
+      "block_order": [
+        "collection_f3jrBN",
+        "collection_dkDwHp",
+        "collection_CNitXV",
+        "collection_8i6xGB",
+        "collection_YzaxFH"
+      ],
+      "name": "t:sections.collection-list.name",
+      "settings": {
+        "card_style": "standard",
+        "image_type": "collection",
+        "image_ratio": "portrait",
+        "show_products_count": false,
+        "show_view_all": false,
+        "columns": 6,
+        "carousel_on_desktop": false,
+        "columns_mobile": "1",
+        "swipe_on_mobile": true,
+        "heading": "",
+        "heading_size": "title-md",
+        "heading_alignment": "text-left md:items-end md:flex-row",
+        "heading_tag": "h2",
+        "subheading": "",
+        "description": "",
+        "color_scheme": "",
+        "padding_top": 90,
+        "padding_bottom": 90,
+        "full_width": false
+      }
+    }
+  },
+  "order": [
+    "main-collection-banner",
+    "main-collection",
+    "collection_list_awLhV9"
+  ]
+}

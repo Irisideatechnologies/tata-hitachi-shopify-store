@@ -461,69 +461,96 @@
         "parallax_direction": "vertical"
       }
     },
-    "multicolumn_with_icons_hkK7iY": {
-      "type": "multicolumn-with-icons",
+    "collection_list_nVNYjK": {
+      "type": "collection-list",
       "blocks": {
-        "column_KR96fE": {
-          "type": "column",
+        "collection_WPiacd": {
+          "type": "collection",
           "settings": {
-            "icon": "truck",
-            "custom_icon": "",
-            "heading": "Free Shipping",
-            "text": "<p>Free Shipping for orders</p>"
+            "collection": "clothing-cap",
+            "title": "",
+            "description": "",
+            "overlay_content": false,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 0
           }
         },
-        "column_cHF8mR": {
-          "type": "column",
+        "collection_RDePUh": {
+          "type": "collection",
           "settings": {
-            "icon": "wallet",
-            "custom_icon": "",
-            "heading": "Money Guarantee",
-            "text": "<p>Within 30 days</p>"
+            "collection": "mugs",
+            "title": "",
+            "description": "",
+            "overlay_content": true,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 0
           }
         },
-        "column_j7rwGm": {
-          "type": "column",
+        "collection_JnxhgW": {
+          "type": "collection",
           "settings": {
-            "icon": "support",
-            "custom_icon": "",
-            "heading": "Online Support",
-            "text": "<p>24 hours a day, 7 days a week</p>"
+            "collection": "keychains-badges",
+            "title": "",
+            "description": "",
+            "overlay_content": true,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 0
           }
         },
-        "column_BKMtrh": {
-          "type": "column",
+        "collection_BtrwVP": {
+          "type": "collection",
           "settings": {
-            "icon": "creadit_card",
-            "custom_icon": "",
-            "heading": "Flexible Payment",
-            "text": "<p>Pay with Multiple Credit Cards</p>"
+            "collection": "men-clothing",
+            "title": "",
+            "description": "",
+            "overlay_content": true,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 0
+          }
+        },
+        "collection_H9rfXB": {
+          "type": "collection",
+          "settings": {
+            "collection": "scale-models",
+            "title": "",
+            "description": "",
+            "overlay_content": true,
+            "color_text": "#ffffff",
+            "color_overlay": "#000000",
+            "overlay_opacity": 0
           }
         }
       },
       "block_order": [
-        "column_KR96fE",
-        "column_cHF8mR",
-        "column_j7rwGm",
-        "column_BKMtrh"
+        "collection_WPiacd",
+        "collection_RDePUh",
+        "collection_JnxhgW",
+        "collection_BtrwVP",
+        "collection_H9rfXB"
       ],
-      "name": "t:sections.multicolumn-with-icons.name",
+      "name": "t:sections.collection-list.name",
       "settings": {
-        "style": "with-border",
+        "card_style": "overlap",
+        "image_type": "collection",
+        "image_ratio": "square",
+        "show_products_count": true,
+        "show_view_all": false,
         "columns": 4,
-        "text_alignment": "left",
-        "heading": "",
+        "carousel_on_desktop": true,
+        "columns_mobile": "1",
+        "swipe_on_mobile": true,
+        "heading": "Shop By category",
         "heading_size": "title-md",
         "heading_alignment": "text-left md:items-end md:flex-row",
         "heading_tag": "h2",
         "subheading": "",
         "description": "",
-        "button_label": "",
-        "button_link": "",
-        "button_external": false,
-        "button_icon": true,
-        "color_scheme": "scheme-1",
-        "padding_top": 68,
+        "color_scheme": "",
+        "padding_top": 90,
         "padding_bottom": 90,
         "full_width": false
       }
@@ -833,96 +860,69 @@
         "hide_on_mobile": false
       }
     },
-    "collection_list_nVNYjK": {
-      "type": "collection-list",
+    "multicolumn_with_icons_hkK7iY": {
+      "type": "multicolumn-with-icons",
       "blocks": {
-        "collection_WPiacd": {
-          "type": "collection",
+        "column_KR96fE": {
+          "type": "column",
           "settings": {
-            "collection": "clothing-cap",
-            "title": "",
-            "description": "",
-            "overlay_content": false,
-            "color_text": "#ffffff",
-            "color_overlay": "#000000",
-            "overlay_opacity": 30
+            "icon": "truck",
+            "custom_icon": "",
+            "heading": "Free Shipping",
+            "text": "<p>Free Shipping for orders</p>"
           }
         },
-        "collection_RDePUh": {
-          "type": "collection",
+        "column_cHF8mR": {
+          "type": "column",
           "settings": {
-            "collection": "mugs",
-            "title": "",
-            "description": "",
-            "overlay_content": true,
-            "color_text": "#ffffff",
-            "color_overlay": "#000000",
-            "overlay_opacity": 30
+            "icon": "wallet",
+            "custom_icon": "",
+            "heading": "Money Guarantee",
+            "text": "<p>Within 30 days</p>"
           }
         },
-        "collection_JnxhgW": {
-          "type": "collection",
+        "column_j7rwGm": {
+          "type": "column",
           "settings": {
-            "collection": "keychains-badges",
-            "title": "",
-            "description": "",
-            "overlay_content": true,
-            "color_text": "#ffffff",
-            "color_overlay": "#000000",
-            "overlay_opacity": 30
+            "icon": "support",
+            "custom_icon": "",
+            "heading": "Online Support",
+            "text": "<p>24 hours a day, 7 days a week</p>"
           }
         },
-        "collection_BtrwVP": {
-          "type": "collection",
+        "column_BKMtrh": {
+          "type": "column",
           "settings": {
-            "collection": "men-clothing",
-            "title": "",
-            "description": "",
-            "overlay_content": true,
-            "color_text": "#ffffff",
-            "color_overlay": "#000000",
-            "overlay_opacity": 30
-          }
-        },
-        "collection_H9rfXB": {
-          "type": "collection",
-          "settings": {
-            "collection": "scale-models",
-            "title": "",
-            "description": "",
-            "overlay_content": true,
-            "color_text": "#ffffff",
-            "color_overlay": "#000000",
-            "overlay_opacity": 30
+            "icon": "creadit_card",
+            "custom_icon": "",
+            "heading": "Flexible Payment",
+            "text": "<p>Pay with Multiple Credit Cards</p>"
           }
         }
       },
       "block_order": [
-        "collection_WPiacd",
-        "collection_RDePUh",
-        "collection_JnxhgW",
-        "collection_BtrwVP",
-        "collection_H9rfXB"
+        "column_KR96fE",
+        "column_cHF8mR",
+        "column_j7rwGm",
+        "column_BKMtrh"
       ],
-      "name": "t:sections.collection-list.name",
+      "name": "t:sections.multicolumn-with-icons.name",
       "settings": {
-        "card_style": "overlap",
-        "image_type": "collection",
-        "image_ratio": "square",
-        "show_products_count": true,
-        "show_view_all": false,
+        "style": "with-border",
         "columns": 4,
-        "carousel_on_desktop": true,
-        "columns_mobile": "1",
-        "swipe_on_mobile": true,
-        "heading": "Explore Our Collections",
+        "text_alignment": "left",
+        "heading": "",
         "heading_size": "title-md",
-        "heading_alignment": "text-center md:items-center",
+        "heading_alignment": "text-left md:items-end md:flex-row",
         "heading_tag": "h2",
         "subheading": "",
         "description": "",
-        "color_scheme": "",
-        "padding_top": 90,
+        "button_label": "",
+        "button_link": "",
+        "button_external": false,
+        "button_icon": true,
+        "color_scheme": "scheme-1",
+        "padding_top": 68,
         "padding_bottom": 90,
         "full_width": false
       }
@@ -1053,6 +1053,7 @@
         "spacer_Uapci3",
         "button_KfBbxn"
       ],
+      "disabled": true,
       "name": "Video Image with Text",
       "settings": {
         "image": "shopify://shop_images/THCM_Website_Thumbnails_Clothing.png",
@@ -1337,9 +1338,9 @@
   "order": [
     "custom_section_EbFmEy",
     "slideshow",
-    "multicolumn_with_icons_hkK7iY",
-    "custom_section_ggk46J",
     "collection_list_nVNYjK",
+    "custom_section_ggk46J",
+    "multicolumn_with_icons_hkK7iY",
     "video_image_with_text_FVwbKM",
     "lookbook_Kz3PAH",
     "custom_section_HhnrjK"

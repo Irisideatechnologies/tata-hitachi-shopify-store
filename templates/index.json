@@ -604,7 +604,7 @@
         "text_alignment_mobile": "left",
         "color_scheme": "scheme-2",
         "color_overlay": "#171717",
-        "overlay_opacity": 70,
+        "overlay_opacity": 0,
         "padding_top": 0,
         "padding_bottom": 0,
         "full_width": true,

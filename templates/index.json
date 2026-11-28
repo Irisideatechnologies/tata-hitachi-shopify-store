@@ -461,160 +461,6 @@
         "parallax_direction": "vertical"
       }
     },
-    "collection_list_nVNYjK": {
-      "type": "collection-list",
-      "blocks": {
-        "collection_WPiacd": {
-          "type": "collection",
-          "settings": {
-            "collection": "clothing-cap",
-            "title": "",
-            "description": "",
-            "overlay_content": false,
-            "color_text": "#000000",
-            "color_overlay": "#000000",
-            "overlay_opacity": 0
-          }
-        },
-        "collection_RDePUh": {
-          "type": "collection",
-          "settings": {
-            "collection": "mugs",
-            "title": "",
-            "description": "",
-            "overlay_content": true,
-            "color_text": "#000000",
-            "color_overlay": "#000000",
-            "overlay_opacity": 0
-          }
-        },
-        "collection_JnxhgW": {
-          "type": "collection",
-          "settings": {
-            "collection": "keychains-badges",
-            "title": "",
-            "description": "",
-            "overlay_content": true,
-            "color_text": "#000000",
-            "color_overlay": "#000000",
-            "overlay_opacity": 0
-          }
-        },
-        "collection_BtrwVP": {
-          "type": "collection",
-          "settings": {
-            "collection": "men-clothing",
-            "title": "",
-            "description": "",
-            "overlay_content": true,
-            "color_text": "#000000",
-            "color_overlay": "#000000",
-            "overlay_opacity": 0
-          }
-        },
-        "collection_H9rfXB": {
-          "type": "collection",
-          "settings": {
-            "collection": "scale-models",
-            "title": "",
-            "description": "",
-            "overlay_content": true,
-            "color_text": "#000000",
-            "color_overlay": "#000000",
-            "overlay_opacity": 0
-          }
-        }
-      },
-      "block_order": [
-        "collection_WPiacd",
-        "collection_RDePUh",
-        "collection_JnxhgW",
-        "collection_BtrwVP",
-        "collection_H9rfXB"
-      ],
-      "name": "t:sections.collection-list.name",
-      "settings": {
-        "card_style": "overlap",
-        "image_type": "collection",
-        "image_ratio": "square",
-        "show_products_count": false,
-        "show_view_all": false,
-        "columns": 4,
-        "carousel_on_desktop": true,
-        "columns_mobile": "1",
-        "swipe_on_mobile": true,
-        "heading": "Shop By category",
-        "heading_size": "title-md",
-        "heading_alignment": "text-left md:items-end md:flex-row",
-        "heading_tag": "h2",
-        "subheading": "",
-        "description": "",
-        "color_scheme": "",
-        "padding_top": 36,
-        "padding_bottom": 36,
-        "full_width": false
-      }
-    },
-    "image_with_text_overlay_inGhGP": {
-      "type": "image-with-text-overlay",
-      "blocks": {
-        "subheading_jUKPtW": {
-          "type": "subheading",
-          "settings": {
-            "subheading": "Choose Your Pick",
-            "subheading_size": "subtitle-md",
-            "secondary_color": true
-          }
-        },
-        "heading_QyYgWP": {
-          "type": "heading",
-          "settings": {
-            "heading": "All Merchandise",
-            "heading_size": "title-lg tracking-heading",
-            "heading_tag": "h2"
-          }
-        },
-        "button_UtCRHJ": {
-          "type": "button",
-          "settings": {
-            "button_label": "Shop Now",
-            "button_link": "shopify://collections/all",
-            "button_style": "primary",
-            "button_size": "md",
-            "button_external": false,
-            "button_icon": true
-          }
-        }
-      },
-      "block_order": [
-        "subheading_jUKPtW",
-        "heading_QyYgWP",
-        "button_UtCRHJ"
-      ],
-      "custom_css": [
-        ".banner__title {color: white !important;}"
-      ],
-      "name": "t:sections.image-with-text-overlay.name",
-      "settings": {
-        "transparent_header": false,
-        "image": "shopify://shop_images/Rectangle_45.webp",
-        "image_height": "650px",
-        "content_width": "small",
-        "content_position": "md:items-end md:justify-start",
-        "text_alignment": "left",
-        "image_height_mobile": "auto",
-        "content_position_mobile": "items-end justify-start",
-        "text_alignment_mobile": "left",
-        "color_scheme": "scheme-2",
-        "color_overlay": "#171717",
-        "overlay_opacity": 0,
-        "padding_top": 0,
-        "padding_bottom": 0,
-        "full_width": true,
-        "enable_parallax": true,
-        "parallax_direction": "vertical"
-      }
-    },
     "custom_section_ggk46J": {
       "type": "custom-section",
       "blocks": {
@@ -915,9 +761,164 @@
         "overlay_color": "#00000026",
         "overlay_style": "solid",
         "gradient_direction": "to top",
-        "padding_top": 10,
-        "padding_bottom": 0,
+        "padding_top": 40,
+        "padding_bottom": 40,
         "hide_on_mobile": false
+      }
+    },
+    "collection_list_nVNYjK": {
+      "type": "collection-list",
+      "blocks": {
+        "collection_WPiacd": {
+          "type": "collection",
+          "settings": {
+            "collection": "clothing-cap",
+            "title": "",
+            "description": "",
+            "overlay_content": false,
+            "color_text": "#000000",
+            "color_overlay": "#000000",
+            "overlay_opacity": 0
+          }
+        },
+        "collection_RDePUh": {
+          "type": "collection",
+          "settings": {
+            "collection": "mugs",
+            "title": "",
+            "description": "",
+            "overlay_content": true,
+            "color_text": "#000000",
+            "color_overlay": "#000000",
+            "overlay_opacity": 0
+          }
+        },
+        "collection_JnxhgW": {
+          "type": "collection",
+          "settings": {
+            "collection": "keychains-badges",
+            "title": "",
+            "description": "",
+            "overlay_content": true,
+            "color_text": "#000000",
+            "color_overlay": "#000000",
+            "overlay_opacity": 0
+          }
+        },
+        "collection_BtrwVP": {
+          "type": "collection",
+          "settings": {
+            "collection": "men-clothing",
+            "title": "",
+            "description": "",
+            "overlay_content": true,
+            "color_text": "#000000",
+            "color_overlay": "#000000",
+            "overlay_opacity": 0
+          }
+        },
+        "collection_H9rfXB": {
+          "type": "collection",
+          "settings": {
+            "collection": "scale-models",
+            "title": "",
+            "description": "",
+            "overlay_content": true,
+            "color_text": "#000000",
+            "color_overlay": "#000000",
+            "overlay_opacity": 0
+          }
+        }
+      },
+      "block_order": [
+        "collection_WPiacd",
+        "collection_RDePUh",
+        "collection_JnxhgW",
+        "collection_BtrwVP",
+        "collection_H9rfXB"
+      ],
+      "disabled": true,
+      "name": "t:sections.collection-list.name",
+      "settings": {
+        "card_style": "overlap",
+        "image_type": "collection",
+        "image_ratio": "square",
+        "show_products_count": false,
+        "show_view_all": false,
+        "columns": 4,
+        "carousel_on_desktop": true,
+        "columns_mobile": "1",
+        "swipe_on_mobile": true,
+        "heading": "Shop By category",
+        "heading_size": "title-md",
+        "heading_alignment": "text-left md:items-end md:flex-row",
+        "heading_tag": "h2",
+        "subheading": "",
+        "description": "",
+        "color_scheme": "",
+        "padding_top": 36,
+        "padding_bottom": 36,
+        "full_width": false
+      }
+    },
+    "image_with_text_overlay_inGhGP": {
+      "type": "image-with-text-overlay",
+      "blocks": {
+        "subheading_jUKPtW": {
+          "type": "subheading",
+          "settings": {
+            "subheading": "Choose Your Pick",
+            "subheading_size": "subtitle-md",
+            "secondary_color": true
+          }
+        },
+        "heading_QyYgWP": {
+          "type": "heading",
+          "settings": {
+            "heading": "All Merchandise",
+            "heading_size": "title-lg tracking-heading",
+            "heading_tag": "h2"
+          }
+        },
+        "button_UtCRHJ": {
+          "type": "button",
+          "settings": {
+            "button_label": "Shop Now",
+            "button_link": "shopify://collections/all",
+            "button_style": "primary",
+            "button_size": "md",
+            "button_external": false,
+            "button_icon": true
+          }
+        }
+      },
+      "block_order": [
+        "subheading_jUKPtW",
+        "heading_QyYgWP",
+        "button_UtCRHJ"
+      ],
+      "custom_css": [
+        ".banner__title {color: white !important;}"
+      ],
+      "name": "t:sections.image-with-text-overlay.name",
+      "settings": {
+        "transparent_header": false,
+        "image": "shopify://shop_images/Rectangle_45.webp",
+        "image_height": "650px",
+        "content_width": "small",
+        "content_position": "md:items-end md:justify-start",
+        "text_alignment": "left",
+        "image_height_mobile": "auto",
+        "content_position_mobile": "items-end justify-start",
+        "text_alignment_mobile": "left",
+        "color_scheme": "scheme-2",
+        "color_overlay": "#171717",
+        "overlay_opacity": 0,
+        "padding_top": 0,
+        "padding_bottom": 0,
+        "full_width": true,
+        "enable_parallax": true,
+        "parallax_direction": "vertical"
       }
     },
     "multicolumn_with_icons_hkK7iY": {
@@ -1398,9 +1399,9 @@
   "order": [
     "custom_section_EbFmEy",
     "slideshow",
+    "custom_section_ggk46J",
     "collection_list_nVNYjK",
     "image_with_text_overlay_inGhGP",
-    "custom_section_ggk46J",
     "multicolumn_with_icons_hkK7iY",
     "video_image_with_text_FVwbKM",
     "lookbook_Kz3PAH",

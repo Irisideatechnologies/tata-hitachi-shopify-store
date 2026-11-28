@@ -1599,12 +1599,13 @@
         "text_9W6gkW",
         "form_3PJeRf"
       ],
+      "custom_css": [],
       "name": "t:sections.newsletter.name",
       "settings": {
-        "content_width": "medium",
+        "content_width": "small",
         "text_alignment": "left",
         "text_alignment_mobile": "left",
-        "color_scheme": "",
+        "color_scheme": "scheme-5047e33b-a19a-4c39-b232-458559ba1d61",
         "padding_top": 90,
         "padding_bottom": 90,
         "narrow": true

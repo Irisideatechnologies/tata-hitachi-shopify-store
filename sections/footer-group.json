@@ -14,6 +14,14 @@
     "footer": {
       "type": "footer",
       "blocks": {
+        "brand_information_b7HiUK": {
+          "type": "brand_information",
+          "settings": {
+            "heading": "",
+            "text": "<p><strong>Tata Hitachi</strong> is a leading manufacturer of construction and mining equipment, offering advanced excavators, heavy machinery, and reliable engineering solutions designed for infrastructure development, industrial operations, and efficient performance across demanding work environments.</p>",
+            "opened": false
+          }
+        },
         "link_list_WWnqeQ": {
           "type": "link_list",
           "settings": {
@@ -52,6 +60,7 @@
         }
       },
       "block_order": [
+        "brand_information_b7HiUK",
         "link_list_WWnqeQ",
         "brand_information",
         "link_list-1",
@@ -59,7 +68,7 @@
       ],
       "settings": {
         "invert_newsletter_others": false,
-        "enable_newsletter": true,
+        "enable_newsletter": false,
         "newsletter_heading": "Let’s get in touch",
         "newsletter_heading_size": "md:title-sm",
         "newsletter_text": "",

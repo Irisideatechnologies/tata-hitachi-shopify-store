@@ -1,0 +1,778 @@
+  (function () {
+    var root = document.querySelector('[data-thcm-orders]');
+    if (!root || root.__thcmInit) return;
+    root.__thcmInit = true;
+
+    var auth = window.MAP_AUTH;
+    var api = window.THCM_API;
+    var isAdmin = !!(auth && auth.isLoggedIn && auth.isLoggedIn() && auth.isAdmin && auth.isAdmin());
+    var PAGE_SIZE = parseInt(root.getAttribute('data-page-size'), 10) || 10;
+    var EMPTY_TEXT = root.getAttribute('data-empty-text') || 'You have not placed any orders yet';
+    var SHOP_URL = root.getAttribute('data-shop-url') || '/collections/all';
+    var SHOP_LABEL = root.getAttribute('data-shop-label') || 'Shop now';
+    var SUMMARY_PAGE_LIMIT = 50;
+    var DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
+    var THCM_FOR_STORE_ORDERS = false;
+    var THCM_ALLOW_EMPTY_EPC = true;
+
+    var $ = function (sel) { return root.querySelector(sel); };
+    var listEl = $('[data-list]');
+    var pagerEl = $('[data-pager]');
+    var prevBtn = $('[data-prev]');
+    var nextBtn = $('[data-next]');
+    var rangeEl = $('[data-range]');
+    var toastsEl = $('[data-toasts]');
+    var accToggle = $('[data-acc-toggle]');
+
+    var state = {
+      filter: 'all',
+      orders: [],
+      pageInfo: {},
+      cursor: { after: '', before: '' },
+      summary: null,
+      requestId: 0,
+      day: '',
+      all: null,
+      dayOrders: [],
+      page: 0,
+      source: 'STORE',
+      sourceTotals: { STORE: null, MAP: null }
+    };
+
+    var STAGE_LABEL = {
+      pending: 'Awaiting approval',
+      approved: 'Approved',
+      shipped: 'Shipped',
+      delivered: 'Delivered',
+      cancelled: 'Cancelled'
+    };
+    var STEPS = ['Placed', 'Approved', 'Shipped', 'Delivered'];
+    var STEP_INDEX = { pending: 0, approved: 1, shipped: 2, delivered: 3 };
+
+    var dateFmt = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' });
+    var moneyFmt = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
+    var keyFmt = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Asia/Kolkata' });
+
+    // YYYY-MM-DD in IST (a fixed UTC+5:30 offset, so subtracting 24h is safe)
+    function keyOf(v) {
+      var d = new Date(v);
+      if (isNaN(d.getTime())) return '';
+      var parts = keyFmt.formatToParts(d), values = {};
+      parts.forEach(function (part) { if (part.type !== 'literal') values[part.type] = part.value; });
+      return values.year + '-' + values.month + '-' + values.day;
+    }
+    function todayKey() { return keyOf(new Date()); }
+    function shiftKey(key, amount) {
+      var p = key.split('-');
+      var d = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2], 12));
+      d.setUTCDate(d.getUTCDate() + amount);
+      return d.toISOString().slice(0, 10);
+    }
+    function yesterdayKey() { return shiftKey(todayKey(), -1); }
+    function resolveDay(day) {
+      if (day === 'today') return todayKey();
+      if (day === 'yesterday') return yesterdayKey();
+      return DAY_RE.test(day) ? day : '';
+    }
+    function keyLabel(key) {
+      var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(key);
+      return m ? dateFmt.format(new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], 6))) : key;
+    }
+
+    function el(tag, cls, text) {
+      var node = document.createElement(tag);
+      if (cls) node.className = cls;
+      if (text !== undefined && text !== null) node.textContent = String(text);
+      return node;
+    }
+
+    function lower(v) { return String(v == null ? '' : v).trim().toLowerCase(); }
+
+    function getMapNo(order) {
+      if (!order || !order.orderNote) return '';
+      var match = /MAP\s*NO[ \t]*:[ \t]*([^\r\n]*)/i.exec(String(order.orderNote));
+      return match ? match[1].trim() : '';
+    }
+
+    function titleCase(v) {
+      return String(v).replace(/[_-]+/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+    }
+
+    function money(v) {
+      var n = Number(v);
+      return isNaN(n) ? String(v == null ? '' : v) : moneyFmt.format(n);
+    }
+
+    function fmtDate(v) {
+      var d = new Date(v);
+      return isNaN(d.getTime()) ? '' : dateFmt.format(d);
+    }
+
+    function safeUrl(u) {
+      return /^https?:\/\//i.test(String(u || '')) ? String(u) : '';
+    }
+
+    function orderRequest(method, requestPath, body, options) {
+      return api.keyRequest(method, requestPath, body, options);
+    }
+
+    function orderNo(o) {
+      var orderNumber = String(o.orderNumber || '');
+      if (orderNumber) return orderNumber;
+      var name = String(o.name || '');
+      if (name.charAt(0) === '#') return name;
+      return o.shopifyOrderId ? String(o.shopifyOrderId) : (name || String(o.id || ''));
+    }
+
+    function classify(o) {
+      if (lower(o.status) === 'cancelled' || lower(o.stage) === 'cancelled') return 'cancelled';
+      if (lower(o.deliveryStatus) === 'delivered') return 'delivered';
+      if (lower(o.fulfillmentStatus) === 'fulfilled' || lower(o.stage) === 'fulfilled') return 'shipped';
+      var fin = lower(o.financialStatus);
+      if (fin === 'paid' || fin === 'partially_paid' || lower(o.stage) === 'paid') return 'approved';
+      return 'pending';
+    }
+
+    function paymentBadge(o) {
+      var fin = lower(o.financialStatus);
+      if (!fin || fin === 'pending') return ['Awaiting approval', 'amber'];
+      if (fin === 'paid') return ['Approved', 'green'];
+      if (fin === 'refunded') return ['Refunded', 'grey'];
+      if (fin === 'voided') return ['Voided', 'grey'];
+      if (fin === 'partially_paid') return ['Partially paid', 'amber'];
+      return [titleCase(fin), 'grey'];
+    }
+
+    function fulfillmentBadge(o) {
+      var f = lower(o.fulfillmentStatus);
+      if (!f) return ['Not shipped', 'grey'];
+      if (f === 'fulfilled') return [isAdmin ? 'Fulfilled' : 'Shipped', 'blue'];
+      if (f === 'restocked') return ['Restocked', 'grey'];
+      return [titleCase(f), 'blue'];
+    }
+
+    function deliveryBadge(o) {
+      var d = lower(o.deliveryStatus);
+      if (!d) return ['—', 'grey'];
+      if (d === 'delivered') return ['Delivered', 'green'];
+      return [titleCase(d), 'grey'];
+    }
+
+    function badgeGroup(label, pair) {
+      var wrap = el('div', 'thcm-badge-group');
+      wrap.appendChild(el('small', 'thcm-badge-group__label', label));
+      wrap.appendChild(el('span', 'thcm-badge thcm-badge--' + pair[1], pair[0]));
+      return wrap;
+    }
+
+    function stepper(o, stage) {
+      if (stage === 'cancelled') {
+        var box = el('div', 'thcm-cancelled');
+        box.setAttribute('role', 'status');
+        box.appendChild(el('strong', '', 'Cancelled'));
+        var when = fmtDate(o.closedAt || o.updatedAt);
+        if (when) box.appendChild(el('span', '', ' on ' + when));
+        return box;
+      }
+      var current = STEP_INDEX[stage];
+      var ol = el('ol', 'thcm-steps');
+      ol.setAttribute('aria-label', 'Order progress');
+      STEPS.forEach(function (label, i) {
+        var li = el('li', 'thcm-step' + (i < current ? ' is-done' : '') + (i === current ? ' is-current' : ''));
+        if (i === current) li.setAttribute('aria-current', 'step');
+        li.appendChild(el('span', 'thcm-step__dot'));
+        li.appendChild(el('span', 'thcm-step__label', label));
+        ol.appendChild(li);
+      });
+      return ol;
+    }
+
+    function itemsList(o) {
+      var ul = el('ul', 'thcm-items');
+      (Array.isArray(o.lineItems) ? o.lineItems : []).forEach(function (it) {
+        var li = el('li', 'thcm-item');
+        var main = el('div', 'thcm-item__main');
+        main.appendChild(el('span', 'thcm-item__title', (it.title || 'Item') + ' × ' + (it.quantity == null ? 1 : it.quantity)));
+        if (it.sku) main.appendChild(el('span', 'thcm-item__sku', 'SKU: ' + it.sku));
+        li.appendChild(main);
+        li.appendChild(el('span', 'thcm-item__price', money(it.price)));
+        ul.appendChild(li);
+      });
+      return ul;
+    }
+
+    var STAGE_TONE = { pending: 'amber', approved: 'green', shipped: 'blue', delivered: 'green', cancelled: 'red' };
+
+    function itemCount(o) {
+      var n = 0;
+      (Array.isArray(o.lineItems) ? o.lineItems : []).forEach(function (it) { n += Number(it.quantity == null ? 1 : it.quantity) || 0; });
+      return n;
+    }
+
+    // Collapsed header + expandable panel (THCM_ACC, assets/thcm-accordion.js)
+    function card(o) {
+      var stage = classify(o);
+
+      var no = el('span', 'thcm-acc__title thcm-card__no', 'Order ' + orderNo(o));
+      var metaParts = [];
+      var d = fmtDate(o.createdAt);
+      if (d) metaParts.push(d);
+      var count = itemCount(o);
+      metaParts.push(count + (count === 1 ? ' item' : ' items'));
+      var meta = el('span', 'thcm-acc__meta', metaParts.join(' · '));
+      var badge = el('span', 'thcm-acc__badge');
+      var stageLabel = stage === 'shipped' && isAdmin ? 'Fulfilled' : STAGE_LABEL[stage];
+      badge.appendChild(el('span', 'thcm-badge thcm-badge--' + STAGE_TONE[stage], stageLabel));
+      var amount = el('span', 'thcm-acc__amount thcm-card__total', money(o.totalPrice));
+
+      var body = el('div', 'thcm-acc__body');
+      body.appendChild(itemsList(o));
+
+      var badges = el('div', 'thcm-badges');
+      badges.appendChild(badgeGroup('Payment', paymentBadge(o)));
+      badges.appendChild(badgeGroup('Fulfillment', fulfillmentBadge(o)));
+      badges.appendChild(badgeGroup('Delivery', deliveryBadge(o)));
+      if (String(o.channel || '').toUpperCase() === 'MAP') badges.appendChild(badgeGroup('MAP No', [getMapNo(o) || '-', 'grey']));
+      body.appendChild(badges);
+
+      body.appendChild(stepper(o, stage));
+
+      var actions = el('div', 'thcm-actions');
+      var track = safeUrl(o.trackingUrl);
+      if (track) {
+        var a = el('a', 'thcm-btn thcm-btn--ghost');
+        a.href = track;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        var extra = [o.carrier, o.trackingNumber].filter(Boolean).join(' · ');
+        a.appendChild(document.createTextNode('Track shipment'));
+        if (extra) a.appendChild(el('span', 'thcm-btn__meta', extra));
+        actions.appendChild(a);
+      }
+      if (isAdmin && stage === 'pending' && o.shopifyOrderId) {
+        var approve = el('button', 'thcm-btn thcm-btn--primary thcm-btn--sm', 'Approve');
+        approve.type = 'button';
+        approve.setAttribute('aria-label', 'Approve order ' + orderNo(o));
+        approve.addEventListener('click', function (event) {
+          event.stopPropagation();
+          approveOrder(o, approve);
+        });
+        actions.appendChild(approve);
+      }
+      if (isAdmin && stage !== 'shipped' && stage !== 'delivered' && o.shopifyOrderId) {
+        var fulfill = el('button', 'thcm-btn thcm-btn--primary thcm-btn--sm', 'Mark as Fulfilled');
+        fulfill.type = 'button';
+        fulfill.setAttribute('aria-label', 'Mark order ' + orderNo(o) + ' as fulfilled');
+        var isPaid = lower(o.financialStatus) === 'paid';
+        fulfill.disabled = !isPaid;
+        if (!isPaid) fulfill.title = 'Only paid orders can be fulfilled';
+        fulfill.addEventListener('click', function (event) {
+          event.stopPropagation();
+          fulfillOrder(o, fulfill);
+        });
+        actions.appendChild(fulfill);
+      }
+      if (actions.children.length) body.appendChild(actions);
+
+      var c = window.THCM_ACC.build({ cls: 'thcm-card', head: [no, meta, badge, amount], panel: body, open: false });
+      c.setAttribute('data-stage', stage);
+      return c;
+    }
+
+    function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); }
+
+    function toast(msg, isError) {
+      var t = el('div', 'thcm-toast' + (isError ? ' thcm-toast--error' : ' thcm-toast--success'), msg);
+      toastsEl.appendChild(t);
+      setTimeout(function () { t.remove(); }, 4500);
+    }
+
+    function replaceOrder(updated) {
+      if (!updated) return;
+      var id = String(updated.shopifyOrderId || updated.id || '');
+      function replaceIn(items) {
+        if (!Array.isArray(items)) return;
+        items.forEach(function (item, index) {
+          var itemId = String(item.shopifyOrderId || item.id || '');
+          if (itemId === id) items[index] = Object.assign({}, item, updated);
+        });
+      }
+      replaceIn(state.orders);
+      replaceIn(state.allOrders);
+      replaceIn(state.dayOrders);
+    }
+
+    function approveOrder(order, button) {
+      if (!isAdmin || !order.shopifyOrderId || button.disabled) return;
+      button.disabled = true;
+      button.textContent = 'Approving…';
+      orderRequest('POST', '/api/admin/orders/' + encodeURIComponent(order.shopifyOrderId) + '/approve')
+        .then(function (body) {
+          if (body.denied) throw new Error('You are not authorized to approve orders.');
+          if (body.success === false) throw new Error(body.message || 'Could not approve this order.');
+          replaceOrder(body.data);
+          if (state.allOrders) state.summary = tally(state.allOrders);
+          toast('Order approved successfully!', false);
+          renderList();
+          renderChips();
+        })
+        .catch(function (err) {
+          if (err && err.handled) return;
+          button.disabled = false;
+          button.textContent = 'Approve';
+          toast((err && err.message) || 'Could not approve this order.', true);
+        });
+    }
+
+    function fulfillOrder(order, button) {
+      if (!isAdmin || !order.shopifyOrderId || button.disabled || lower(order.financialStatus) !== 'paid') return;
+      if (String(order.channel || '').toUpperCase() !== 'MAP') {
+        if (THCM_FOR_STORE_ORDERS) return;
+        if (!window.confirm('Mark order ' + orderNo(order) + ' as fulfilled?')) return;
+        button.disabled = true;
+        button.textContent = 'Fulfilling…';
+        return orderRequest('POST', '/api/admin/orders/' + encodeURIComponent(order.shopifyOrderId) + '/mark-fulfilled', {})
+          .then(function (body) {
+            if (body.denied) throw new Error('You are not authorized to fulfill orders.');
+            if (body.success === false) throw new Error(body.message || 'Could not fulfill this order.');
+            replaceOrder(body.data);
+            if (state.allOrders) state.summary = tally(state.allOrders);
+            toast('Order marked as fulfilled!', false);
+            renderList();
+            renderChips();
+          })
+          .catch(function (err) {
+            if (err && err.handled) return;
+            button.disabled = false;
+            button.textContent = 'Mark as Fulfilled';
+            toast((err && err.message) || 'Could not fulfill this order.', true);
+          });
+      }
+      if (!window.THCM_FULFILLMENT_MODAL) return;
+      window.THCM_FULFILLMENT_MODAL.open({
+        orderNumber: orderNo(order),
+        shopifyOrderId: String(order.shopifyOrderId),
+        mapNo: getMapNo(order),
+        channel: order.channel,
+        isShipping: order.isShipping === true,
+        allowEmptyEpc: THCM_ALLOW_EMPTY_EPC
+      }, button, function (values) {
+        return orderRequest('POST', '/api/admin/orders/' + encodeURIComponent(order.shopifyOrderId) + '/mark-fulfilled', values)
+          .then(function (body) {
+            if (body.denied) { var denied = new Error('You are not allowed to do this'); denied.status = 403; throw denied; }
+            if (body.success === false) { var failed = new Error(body.message || 'Please try again'); failed.status = body.status; throw failed; }
+            var updated = Object.assign({}, order, body.data || {});
+            replaceOrder(updated);
+            if (state.allOrders) state.summary = tally(state.allOrders);
+            toast('Tracking sent and order fulfilled', false);
+            renderList();
+            renderChips();
+          })
+          .catch(function (err) {
+            var failed = new Error('Tracking sent to MAP but fulfillment failed, click Retry');
+            failed.status = err && err.status;
+            throw failed;
+          });
+      });
+    }
+
+    function showSkeleton() {
+      clear(listEl);
+      pagerEl.hidden = true;
+      for (var i = 0; i < 3; i++) {
+        var s = el('div', 'thcm-card thcm-skel');
+        s.setAttribute('aria-hidden', 'true');
+        s.appendChild(el('span', 'thcm-skel__line thcm-skel__line--w40'));
+        s.appendChild(el('span', 'thcm-skel__line'));
+        s.appendChild(el('span', 'thcm-skel__line thcm-skel__line--w60'));
+        listEl.appendChild(s);
+      }
+      listEl.setAttribute('aria-busy', 'true');
+    }
+
+    function showError(msg) {
+      clear(listEl);
+      pagerEl.hidden = true;
+      listEl.removeAttribute('aria-busy');
+      var box = el('div', 'thcm-state thcm-state--error');
+      box.setAttribute('role', 'alert');
+      box.appendChild(el('p', 'thcm-state__text', msg));
+      var retry = el('button', 'thcm-btn thcm-btn--primary', 'Retry');
+      retry.type = 'button';
+      retry.addEventListener('click', function () { load(); });
+      box.appendChild(retry);
+      listEl.appendChild(box);
+    }
+
+    function showEmpty(filtered) {
+      clear(listEl);
+      var box = el('div', 'thcm-state');
+      if (filtered) {
+        box.appendChild(el('p', 'thcm-state__text', 'No orders in this tab.'));
+      } else if (state.day) {
+        var dk = resolveDay(state.day);
+        box.appendChild(el('p', 'thcm-state__text', state.day === 'today' ? 'No orders today' : state.day === 'yesterday' ? 'No orders yesterday' : 'No orders on ' + keyLabel(dk)));
+      } else {
+        box.appendChild(el('p', 'thcm-state__text', EMPTY_TEXT));
+        var a = el('a', 'thcm-btn thcm-btn--primary', SHOP_LABEL);
+        a.href = SHOP_URL;
+        box.appendChild(a);
+      }
+      listEl.appendChild(box);
+    }
+
+    function baseOrders() {
+      if (state.day) return state.dayOrders;
+      return state.filter !== 'all' && state.allOrders ? state.allOrders : state.orders;
+    }
+
+    function renderList() {
+      listEl.removeAttribute('aria-busy');
+      var shown = baseOrders().filter(function (o) { return state.filter === 'all' || classify(o) === state.filter; });
+      if (!shown.length) {
+        showEmpty(baseOrders().length > 0);
+      } else {
+        clear(listEl);
+        var slice = state.day ? shown.slice(state.page * PAGE_SIZE, (state.page + 1) * PAGE_SIZE) : shown;
+        slice.forEach(function (o) { listEl.appendChild(card(o)); });
+      }
+      renderPager(shown.length);
+    }
+
+    function renderPager(shownTotal) {
+      if (state.day) {
+        var pages = Math.ceil(shownTotal / PAGE_SIZE);
+        pagerEl.hidden = pages <= 1;
+        prevBtn.disabled = state.page <= 0;
+        nextBtn.disabled = state.page >= pages - 1;
+        var start = state.page * PAGE_SIZE;
+        rangeEl.textContent = shownTotal ? 'Showing ' + (start + 1) + '–' + Math.min(start + PAGE_SIZE, shownTotal) + ' of ' + shownTotal + ' orders' : '';
+        return;
+      }
+      if (state.filter !== 'all' && state.allOrders) {
+        pagerEl.hidden = true;
+        rangeEl.textContent = shownTotal ? 'Showing ' + shownTotal + ' matching orders' : '';
+        return;
+      }
+      var info = state.pageInfo || {};
+      var hasPrev = info.hasPreviousPage === true && !!info.previousCursor;
+      var hasNext = info.hasNextPage === true && !!info.nextCursor;
+      pagerEl.hidden = !hasPrev && !hasNext;
+      prevBtn.disabled = !hasPrev;
+      nextBtn.disabled = !hasNext;
+      var total = info.total;
+      rangeEl.textContent = (total != null ? 'Showing ' + state.orders.length + ' of ' + total + ' orders' : '');
+    }
+
+    function renderTabs() {
+      root.querySelectorAll('[data-filter]').forEach(function (b) {
+        var active = b.getAttribute('data-filter') === state.filter;
+        b.classList.toggle('is-active', active);
+        b.setAttribute('aria-selected', active ? 'true' : 'false');
+        b.tabIndex = active ? 0 : -1;
+      });
+    }
+
+    function renderChips() {
+      var s = state.day ? tally(state.dayOrders) : state.summary;
+      root.querySelectorAll('[data-chip]').forEach(function (chip) {
+        var key = chip.getAttribute('data-chip');
+        var n = chip.querySelector('[data-n]');
+        if (!n) return;
+        if (key === 'total' && !state.day && state.pageInfo && state.pageInfo.total != null) {
+          n.textContent = state.pageInfo.total;
+          return;
+        }
+        if (key === 'total') {
+          n.textContent = s ? s.total : (!state.day && state.pageInfo && state.pageInfo.total != null ? state.pageInfo.total : '–');
+        } else {
+          n.textContent = s ? s[key] : '–';
+        }
+      });
+    }
+
+    function email() {
+      var emp = auth && auth.getEmployee ? auth.getEmployee() : {};
+      return (emp && emp.email) || '';
+    }
+
+    function path(limit, cursor) {
+      // Dashboard Orders is API-key protected. Employee scope is supplied only as the
+      // authenticated employee's email; the API key is added by THCM_API.keyRequest.
+      var p = isAdmin ? '/api/admin/orders?limit=' + limit + '&channel=' + encodeURIComponent(state.source) : '/api/dashboard/orders?limit=' + limit + '&email=' + encodeURIComponent(email());
+      if (state.day) {
+        var day = resolveDay(state.day);
+        // Send the exact IST calendar-day instants so the database query does not depend on
+        // the backend host timezone.
+        var start = new Date(Date.UTC(+day.slice(0, 4), +day.slice(5, 7) - 1, +day.slice(8, 10), 0) - 330 * 60 * 1000);
+        var end = new Date(start.getTime() + 86400000 - 1);
+        p += '&fromDate=' + encodeURIComponent(start.toISOString()) + '&toDate=' + encodeURIComponent(end.toISOString());
+      }
+      // after and before are never sent together
+      if (cursor && cursor.after) p += '&after=' + encodeURIComponent(cursor.after);
+      else if (cursor && cursor.before) p += '&before=' + encodeURIComponent(cursor.before);
+      return p;
+    }
+
+    function parse(body) {
+      var data = Array.isArray(body.data) ? body.data : (body.data && Array.isArray(body.data.orders) ? body.data.orders : []);
+      return { orders: data, pageInfo: body.pageInfo || (body.data && body.data.pageInfo) || {} };
+    }
+
+    // Day mode: fetch every page once (capped), then filter, count and paginate in the browser
+    function loadDay() {
+      if (!email()) {
+        showError('Please sign in to see your orders.');
+        return;
+      }
+      var id = ++state.requestId;
+      showSkeleton();
+      var all = [];
+      function step(cursor) {
+        return orderRequest('GET', path(SUMMARY_PAGE_LIMIT, cursor)).then(function (body) {
+          if (id !== state.requestId) return;
+          if (body.denied) throw new Error('Orders could not be found for your account.');
+          if (body.success === false) throw new Error(body.message || 'Could not load your orders.');
+          var parsed = parse(body);
+          all = all.concat(parsed.orders);
+          var pi = parsed.pageInfo || {};
+          if (isAdmin && pi.total != null) {
+            state.sourceTotals[state.source] = pi.total;
+            renderSourceTabs();
+          }
+          if (pi.hasNextPage && pi.nextCursor) return step({ after: pi.nextCursor, before: '' });
+        });
+      }
+      step({ after: '', before: '' }).then(function () {
+        if (id !== state.requestId) return;
+        state.all = all;
+        applyDay();
+      }).catch(function (err) {
+        if (id !== state.requestId || (err && err.handled)) return;
+        showError((err && err.message) || 'Could not load your orders.');
+      });
+    }
+
+    function applyDay() {
+      var key = resolveDay(state.day);
+      state.dayOrders = state.all.filter(function (o) { return keyOf(o.createdAt) === key; });
+      state.page = 0;
+      renderList();
+      renderChips();
+    }
+
+    function load(cursor) {
+      if (state.day) { loadDay(); return; }
+      if (cursor) state.cursor = cursor;
+      if (!email()) {
+        showError('Please sign in to see your orders.');
+        return;
+      }
+      var id = ++state.requestId;
+      showSkeleton();
+      orderRequest('GET', path(PAGE_SIZE, state.cursor)).then(function (body) {
+        if (id !== state.requestId) return;
+        if (body.denied) { showError('Orders could not be found for your account.'); return; }
+        if (body.success === false) { showError(body.message || 'Could not load your orders.'); return; }
+        var parsed = parse(body);
+        state.orders = parsed.orders;
+        state.pageInfo = parsed.pageInfo;
+        if (isAdmin && state.pageInfo && state.pageInfo.total != null) {
+          state.sourceTotals[state.source] = state.pageInfo.total;
+          renderSourceTabs();
+        }
+        renderList();
+        renderChips();
+        if (!state.summary) loadSummary(id);
+      }).catch(function (err) {
+        if (id !== state.requestId || (err && err.handled)) return;
+        showError((err && err.message) || 'Could not load your orders.');
+      });
+    }
+
+    function tally(orders) {
+      var s = { total: 0, pending: 0, approved: 0, delivered: 0, cancelled: 0 };
+      orders.forEach(function (o) {
+        s.total++;
+        var stage = classify(o);
+        if (s[stage] !== undefined) s[stage]++;
+      });
+      return s;
+    }
+
+    // Chip counts need every order, not just the current page, so walk every backend page.
+    function loadSummary(id) {
+      var info = state.pageInfo || {};
+      if (!info.hasNextPage && !info.hasPreviousPage) {
+        state.allOrders = state.orders.slice();
+        state.summary = tally(state.orders);
+        renderChips();
+        return;
+      }
+      var all = [];
+      function step(cursor) {
+        return orderRequest('GET', path(SUMMARY_PAGE_LIMIT, cursor), null, { silent: true }).then(function (body) {
+          var parsed = parse(body);
+          all = all.concat(parsed.orders);
+          var pi = parsed.pageInfo || {};
+          if (pi.hasNextPage && pi.nextCursor) return step({ after: pi.nextCursor, before: '' });
+        });
+      }
+      step({ after: '', before: '' }).then(function () {
+        if (id !== state.requestId) return;
+        state.allOrders = all;
+        state.summary = tally(all);
+        if (state.pageInfo && state.pageInfo.total != null && state.pageInfo.total > all.length) state.summary.total = state.pageInfo.total;
+        renderChips();
+        if (state.filter !== 'all') renderList();
+      }).catch(function (err) {
+        if (id !== state.requestId) return;
+        console.error('THCM orders: summary failed', err);
+      });
+    }
+
+    root.querySelectorAll('[data-filter]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        state.filter = b.getAttribute('data-filter');
+        renderTabs();
+        renderList();
+      });
+    });
+
+    prevBtn.addEventListener('click', function () {
+      if (!state.day && state.filter !== 'all' && state.allOrders) return;
+      if (state.day) { if (state.page > 0) { state.page--; renderList(); } return; }
+      var c = state.pageInfo && state.pageInfo.previousCursor;
+      if (c) load({ after: '', before: c });
+    });
+    nextBtn.addEventListener('click', function () {
+      if (!state.day && state.filter !== 'all' && state.allOrders) return;
+      if (state.day) { state.page++; renderList(); return; }
+      var c = state.pageInfo && state.pageInfo.nextCursor;
+      if (c) load({ after: c, before: '' });
+    });
+
+    // ---- URL state (?tab= and ?day=) -----------------------------------
+    function setParam(name, value) {
+      try {
+        var u = new URL(window.location.href);
+        if (value) u.searchParams.set(name, value); else u.searchParams.delete(name);
+        window.history.replaceState(null, '', u.pathname + u.search + u.hash);
+      } catch (e) { /* URL state is a convenience only */ }
+    }
+    function getParam(name) {
+      try { return new URL(window.location.href).searchParams.get(name) || ''; } catch (e) { return ''; }
+    }
+
+    // ---- day filter ------------------------------------------------------
+    var dayInput = $('[data-day-input]');
+    var dayBtns = root.querySelectorAll('[data-day]');
+
+    function paintDay() {
+      dayBtns.forEach(function (b) {
+        var d = b.getAttribute('data-day');
+        var active = d === 'all' ? !state.day : state.day === d;
+        b.classList.toggle('is-active', active);
+        b.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+      dayInput.value = state.day ? resolveDay(state.day) : '';
+    }
+
+    function setDay(day, silent) {
+      state.day = day === 'all' ? '' : day;
+      state.filter = 'all';
+      state.page = 0;
+      state.all = null;
+      state.allOrders = null;
+      state.summary = null;
+      paintDay();
+      renderTabs();
+      setParam('day', state.day);
+      if (!silent) load(state.day ? undefined : { after: '', before: '' });
+    }
+
+    dayBtns.forEach(function (b) {
+      b.addEventListener('click', function () { setDay(b.getAttribute('data-day')); });
+    });
+    dayInput.addEventListener('change', function () {
+      if (DAY_RE.test(dayInput.value)) setDay(dayInput.value);
+      else setDay('all');
+    });
+
+    // ---- page tabs ---------------------------------------------------------
+    var mainTabs = root.querySelectorAll('[data-main-tab]');
+    var sourceTabs = root.querySelectorAll('[data-admin-source]');
+    var sourceTabsWrap = $('[data-admin-source-tabs]');
+    var panels = root.querySelectorAll('[data-panel]');
+    var myLoaded = false;
+    mainTabs.forEach(function (b) {
+      if (b.getAttribute('data-main-tab') === 'daily') b.hidden = false;
+    });
+
+    function renderSourceTabs() {
+      if (sourceTabsWrap) sourceTabsWrap.hidden = !isAdmin;
+      sourceTabs.forEach(function (b) {
+        var source = b.getAttribute('data-admin-source');
+        var active = source === state.source;
+        b.classList.toggle('is-active', active);
+        b.setAttribute('aria-selected', active ? 'true' : 'false');
+        var count = b.querySelector('[data-source-count]');
+        if (count) {
+          var total = state.sourceTotals[source];
+          count.textContent = total == null ? '' : '(' + total + ')';
+        }
+      });
+    }
+    sourceTabs.forEach(function (b) {
+      b.addEventListener('click', function () {
+        var next = b.getAttribute('data-admin-source');
+        if (!isAdmin || (next !== 'MAP' && next !== 'STORE') || next === state.source) return;
+        state.source = next;
+        state.cursor = { after: '', before: '' };
+        state.orders = [];
+        state.pageInfo = {};
+        state.allOrders = null;
+        state.summary = null;
+        renderSourceTabs();
+        renderChips();
+        // The source tabs sit above the main panels. If the user is on Daily Orders,
+        // switch to All Orders and let setTab perform the single initial request; if
+        // All Orders is already visible, reload its first page directly.
+        if (root.getAttribute('data-active-tab') !== 'my') setTab('my');
+        else load();
+      });
+    });
+
+    function setTab(tab, silent) {
+      if (tab !== 'daily' && tab !== 'my' && tab !== 'analytics') tab = 'my';
+      root.setAttribute('data-active-tab', tab);
+      mainTabs.forEach(function (b) {
+        var on = b.getAttribute('data-main-tab') === tab;
+        b.classList.toggle('is-active', on);
+        b.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      panels.forEach(function (pn) { pn.hidden = pn.getAttribute('data-panel') !== tab; });
+      if (!silent) setParam('tab', tab);
+      var wasMyTab = root.getAttribute('data-active-tab') === 'my';
+      if (tab === 'my' && (!myLoaded || !wasMyTab)) { myLoaded = true; load(); }
+      root.dispatchEvent(new CustomEvent('thcm:tab', { detail: { tab: tab } }));
+    }
+
+    mainTabs.forEach(function (b) {
+      b.addEventListener('click', function () { setTab(b.getAttribute('data-main-tab')); });
+    });
+
+    var initialDay = getParam('day');
+    if (initialDay === 'today' || initialDay === 'yesterday' || DAY_RE.test(initialDay)) setDay(initialDay, true);
+    else paintDay();
+    if (accToggle) window.THCM_ACC.bindToggle(accToggle, listEl);
+    renderTabs();
+    renderSourceTabs();
+    renderChips();
+    var wantTab = getParam('tab');
+    // Admin lands on Daily Orders, employees on All Orders
+    setTab(wantTab === 'analytics' && isAdmin ? 'analytics' : (wantTab === 'my' ? 'my' : (wantTab === 'daily' || isAdmin ? 'daily' : 'my')), true);
+    window.addEventListener('pageshow', function (event) {
+      if (event.persisted && root.getAttribute('data-active-tab') === 'my') load();
+    });
+  })();

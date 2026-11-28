@@ -194,13 +194,13 @@
   <div class="thcm-toasts" data-toasts aria-live="polite"></div>
 </section>
 
-{% render 'thcm-accordion-js' %}
+<script src="{{ 'thcm-accordion.js' | asset_url }}" defer></script>
 
 {%- unless request.design_mode -%}
   {% render 'thcm-fulfillment-modal' %}
-  {% render 'thcm-orders-js' %}
-  {% render 'thcm-orders-daily-js' %}
-  {% render 'thcm-order-analytics-js' %}
+  <script src="{{ 'thcm-orders.js' | asset_url }}" defer></script>
+  <script src="{{ 'thcm-orders-daily.js' | asset_url }}" defer></script>
+  <script src="{{ 'thcm-order-analytics.js' | asset_url }}" defer></script>
 {%- endunless -%}
 
 {% schema %}

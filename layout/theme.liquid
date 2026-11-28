@@ -20,7 +20,7 @@
     {%- comment %}theme-check-enable RemoteAsset{%- endcomment %}
 
     {% render 'map-auth-head' %}
-    {% render 'thcm-api' %}
+    <script src="{{ 'thcm-api.js' | asset_url }}"></script>
     {% render 'thcm-admin-links' %}
      {{ 'tata.css' | asset_url | stylesheet_tag }}
     <script src="{{ 'tata.js' | asset_url }}" defer></script>

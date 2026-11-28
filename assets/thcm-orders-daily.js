@@ -1,10 +1,3 @@
-{% doc %}
-  Employee-scoped Daily Orders integration. Every signed-in user, including an admin, uses the
-  authenticated /api/sap export history so this tab never displays all employees' orders.
-  The backend, not this script, enforces ownership.
-{% enddoc %}
-
-<script>
   (function () {
     var root = document.querySelector('[data-thcm-orders]');
     if (!root || root.__thcmDailyInit) return;
@@ -405,4 +398,3 @@
     root.addEventListener('thcm:tab', function (e) { if (e.detail && e.detail.tab === 'daily') start(); });
     if (root.getAttribute('data-active-tab') === 'daily') start();
   })();
-</script>

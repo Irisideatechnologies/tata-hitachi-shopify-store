@@ -1,6 +1,3 @@
-
-
-<script>
   window.THCM_ACC = (function () {
     var uid = 0;
     // Constant icon markup only (no API data)
@@ -78,4 +75,3 @@
 
     return { build: build, setOpen: setOpen, bindToggle: bindToggle };
   })();
-</script>

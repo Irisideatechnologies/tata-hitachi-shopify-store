@@ -1990,7 +1990,7 @@ html.map-locked:not(.shopify-design-mode) body > #thcm-loader.thcm-loader {
 }
 
 /* === Accordion (Orders page: All Orders cards, Daily Orders rows) ===
-   Markup and behaviour: snippets/thcm-accordion-js.liquid. */
+   Markup and behaviour: assets/thcm-accordion.js. */
 .thcm-acc-bar {
   display: flex;
   justify-content: flex-end;

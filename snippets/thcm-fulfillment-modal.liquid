@@ -1,4 +1,9 @@
-<dialog id="thcm-fulfillment-dialog" class="thcm-fulfillment-dialog color-scheme-1" aria-modal="true" aria-labelledby="thcm-fulfillment-title">
+<dialog
+  id="thcm-fulfillment-dialog"
+  class="thcm-fulfillment-dialog color-scheme-1"
+  aria-modal="true"
+  aria-labelledby="thcm-fulfillment-title"
+>
   <form method="dialog" class="thcm-fulfillment-dialog__panel" data-thcm-fulfillment-form novalidate>
     <h2 id="thcm-fulfillment-title">Fulfill Order <span data-thcm-display-number></span></h2>
     <p class="thcm-fulfillment-dialog__order">Order ID: <output data-thcm-order-id></output></p>
@@ -6,10 +11,27 @@
     <p class="thcm-fulfillment-dialog__hint" data-thcm-map-hint></p>
     <div data-thcm-tracking-fields>
       <label for="thcm-tracking-id">Tracking ID</label>
-      <input id="thcm-tracking-id" name="trackingId" type="text" maxlength="100" autocomplete="off" required aria-describedby="thcm-tracking-id-error">
+      <input
+        id="thcm-tracking-id"
+        name="trackingId"
+        type="text"
+        maxlength="100"
+        autocomplete="off"
+        required
+        aria-describedby="thcm-tracking-id-error"
+      >
       <p id="thcm-tracking-id-error" class="thcm-fulfillment-dialog__field-error" data-thcm-id-error></p>
       <label for="thcm-tracking-url">Tracking URL</label>
-      <input id="thcm-tracking-url" name="trackingUrl" type="url" maxlength="500" inputmode="url" autocomplete="url" required aria-describedby="thcm-tracking-url-error">
+      <input
+        id="thcm-tracking-url"
+        name="trackingUrl"
+        type="url"
+        maxlength="500"
+        inputmode="url"
+        autocomplete="url"
+        required
+        aria-describedby="thcm-tracking-url-error"
+      >
       <p id="thcm-tracking-url-error" class="thcm-fulfillment-dialog__field-error" data-thcm-url-error></p>
     </div>
     <p class="thcm-fulfillment-dialog__error" data-thcm-error role="alert" aria-live="assertive"></p>
@@ -20,22 +42,115 @@
   </form>
 </dialog>
 <style>
-  .thcm-fulfillment-dialog { width:min(calc(100% - 2rem),31rem); max-width:31rem; max-height:calc(100dvh - 2rem); margin:auto; padding:0; overflow:auto; border:1px solid rgb(var(--color-foreground-rgb,18 18 18)/.16); border-radius:1rem; color:rgb(var(--color-foreground-rgb,18 18 18)); background:rgb(var(--color-background-rgb,255 255 255)); box-shadow:0 1.5rem 4rem rgb(0 0 0/.2); }
-  .thcm-fulfillment-dialog::backdrop { background:rgb(0 0 0/.58); }
-  .thcm-fulfillment-dialog__panel { display:grid; gap:.25rem; padding:1.5rem 1.65rem 1.4rem; }
-  .thcm-fulfillment-dialog h2 { margin:0 0 .35rem; font-size:1.65rem; line-height:1.15; letter-spacing:-.02em; }
-  .thcm-fulfillment-dialog__order,.thcm-fulfillment-dialog__hint { margin:0; font-size:.9rem; line-height:1.45; }
-  .thcm-fulfillment-dialog__order + .thcm-fulfillment-dialog__order { margin-top:-.1rem; }
-  .thcm-fulfillment-dialog__hint { min-height:1.2em; color:#b3261e; }
-  .thcm-fulfillment-dialog label { margin-top:.65rem; font-size:.84rem; font-weight:600; line-height:1.25; }
-  .thcm-fulfillment-dialog__field-error,.thcm-fulfillment-dialog__error { min-height:.9rem; color:#b3261e; }
-  .thcm-fulfillment-dialog__field-error { margin:0; font-size:.78rem; }
-  .thcm-fulfillment-dialog__error { margin:.5rem 0 0; font-size:.88rem; }
-  .thcm-fulfillment-dialog input { width:100%; min-height:2.7rem; box-sizing:border-box; margin-top:.1rem; padding:.55rem .75rem; color:inherit; background:rgb(var(--color-background-rgb,255 255 255)); border:1px solid rgb(var(--color-foreground-rgb,18 18 18)/.25); border-radius:.45rem; outline:none; transition:border-color .2s,box-shadow .2s; }
-  .thcm-fulfillment-dialog input:focus { border-color:rgb(var(--color-foreground-rgb,18 18 18)/.8); box-shadow:0 0 0 .2rem rgb(var(--color-foreground-rgb,18 18 18)/.1); }
-  .thcm-fulfillment-dialog input[aria-invalid="true"] { border-color:#b3261e; }
-  .thcm-fulfillment-dialog__actions { display:flex; justify-content:flex-end; gap:.6rem; margin-top:.7rem; }
-  .thcm-fulfillment-dialog button { min-height:2.55rem; min-width:7rem; cursor:pointer; border-radius:.45rem; }
-  .thcm-fulfillment-dialog button:disabled { cursor:wait; opacity:.6; }
-  @media (max-width:480px) { .thcm-fulfillment-dialog { width:calc(100% - 1rem); max-height:calc(100dvh - 1rem); border-radius:1rem; } .thcm-fulfillment-dialog__panel { padding:1.25rem; } .thcm-fulfillment-dialog__actions { flex-direction:column-reverse; } .thcm-fulfillment-dialog button { width:100%; } }
+  .thcm-fulfillment-dialog {
+    width: min(calc(100% - 2rem), 31rem);
+    max-width: 31rem;
+    max-height: calc(100dvh - 2rem);
+    margin: auto;
+    padding: 0;
+    overflow: auto;
+    border: 1px solid rgb(var(--color-foreground-rgb, 18 18 18) / 0.16);
+    border-radius: 1rem;
+    color: rgb(var(--color-foreground-rgb, 18 18 18));
+    background: rgb(var(--color-background-rgb, 255 255 255));
+    box-shadow: 0 1.5rem 4rem rgb(0 0 0/0.2);
+  }
+  .thcm-fulfillment-dialog::backdrop {
+    background: rgb(0 0 0/0.58);
+  }
+  .thcm-fulfillment-dialog__panel {
+    display: grid;
+    gap: 0.25rem;
+    padding: 1.5rem 1.65rem 1.4rem;
+  }
+  .thcm-fulfillment-dialog h2 {
+    margin: 0 0 0.35rem;
+    font-size: 1.65rem;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  .thcm-fulfillment-dialog__order,
+  .thcm-fulfillment-dialog__hint {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+  .thcm-fulfillment-dialog__order + .thcm-fulfillment-dialog__order {
+    margin-top: -0.1rem;
+  }
+  .thcm-fulfillment-dialog__hint {
+    min-height: 1.2em;
+    color: #b3261e;
+  }
+  .thcm-fulfillment-dialog label {
+    margin-top: 0.65rem;
+    font-size: 0.84rem;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+  .thcm-fulfillment-dialog__field-error,
+  .thcm-fulfillment-dialog__error {
+    min-height: 0.9rem;
+    color: #b3261e;
+  }
+  .thcm-fulfillment-dialog__field-error {
+    margin: 0;
+    font-size: 0.78rem;
+  }
+  .thcm-fulfillment-dialog__error {
+    margin: 0.5rem 0 0;
+    font-size: 0.88rem;
+  }
+  .thcm-fulfillment-dialog input {
+    width: 100%;
+    min-height: 2.7rem;
+    box-sizing: border-box;
+    margin-top: 0.1rem;
+    padding: 0.55rem 0.75rem;
+    color: inherit;
+    background: rgb(var(--color-background-rgb, 255 255 255));
+    border: 1px solid rgb(var(--color-foreground-rgb, 18 18 18) / 0.25);
+    border-radius: 0.45rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .thcm-fulfillment-dialog input:focus {
+    border-color: rgb(var(--color-foreground-rgb, 18 18 18) / 0.8);
+    box-shadow: 0 0 0 0.2rem rgb(var(--color-foreground-rgb, 18 18 18) / 0.1);
+  }
+  .thcm-fulfillment-dialog input[aria-invalid='true'] {
+    border-color: #b3261e;
+  }
+  .thcm-fulfillment-dialog__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    margin-top: 0.7rem;
+  }
+  .thcm-fulfillment-dialog button {
+    min-height: 2.55rem;
+    min-width: 7rem;
+    cursor: pointer;
+    border-radius: 0.45rem;
+  }
+  .thcm-fulfillment-dialog button:disabled {
+    cursor: wait;
+    opacity: 0.6;
+  }
+  @media (max-width: 480px) {
+    .thcm-fulfillment-dialog {
+      width: calc(100% - 1rem);
+      max-height: calc(100dvh - 1rem);
+      border-radius: 1rem;
+    }
+    .thcm-fulfillment-dialog__panel {
+      padding: 1.25rem;
+    }
+    .thcm-fulfillment-dialog__actions {
+      flex-direction: column-reverse;
+    }
+    .thcm-fulfillment-dialog button {
+      width: 100%;
+    }
+  }
 </style>

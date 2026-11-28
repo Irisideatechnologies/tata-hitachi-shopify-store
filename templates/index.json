@@ -537,7 +537,7 @@
         "card_style": "overlap",
         "image_type": "collection",
         "image_ratio": "square",
-        "show_products_count": true,
+        "show_products_count": false,
         "show_view_all": false,
         "columns": 4,
         "carousel_on_desktop": true,

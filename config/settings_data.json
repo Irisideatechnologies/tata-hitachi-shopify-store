@@ -72,6 +72,7 @@
     "product_countdown": true,
     "product_quick_view": true,
     "product_title_truncation": true,
+    "product_title_line_limit": 1,
     "product_quick_add": true,
     "product_quick_add_by_size": false,
     "product_color_swatches": true,

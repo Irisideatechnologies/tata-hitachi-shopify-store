@@ -594,6 +594,7 @@
       "name": "t:sections.image-with-text-overlay.name",
       "settings": {
         "transparent_header": false,
+        "image": "shopify://shop_images/Rectangle_45.webp",
         "image_height": "650px",
         "content_width": "small",
         "content_position": "md:items-end md:justify-start",
@@ -601,7 +602,7 @@
         "image_height_mobile": "auto",
         "content_position_mobile": "items-end justify-start",
         "text_alignment_mobile": "left",
-        "color_scheme": "",
+        "color_scheme": "scheme-2",
         "color_overlay": "#171717",
         "overlay_opacity": 70,
         "padding_top": 0,

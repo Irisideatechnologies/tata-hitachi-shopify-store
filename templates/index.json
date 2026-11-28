@@ -1259,6 +1259,7 @@
         "image_ykWHmH",
         "image_WHqfHm"
       ],
+      "disabled": true,
       "name": "t:sections.image-gallery-with-text.presets.preset__1.name",
       "settings": {
         "layout": "text_first",
@@ -1479,6 +1480,7 @@
         "feed_AJGcMG",
         "feed_iJhEMt"
       ],
+      "disabled": true,
       "name": "t:sections.shop-the-feed.name",
       "settings": {
         "columns": 4,
@@ -1551,6 +1553,7 @@
         "counter_fnpGig",
         "counter_DjGxxq"
       ],
+      "disabled": true,
       "name": "t:sections.number-counter.name",
       "settings": {
         "gap": "large",

@@ -591,6 +591,9 @@
         "heading_QyYgWP",
         "button_UtCRHJ"
       ],
+      "custom_css": [
+        ".banner__title {color: white !important;}"
+      ],
       "name": "t:sections.image-with-text-overlay.name",
       "settings": {
         "transparent_header": false,

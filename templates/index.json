@@ -927,6 +927,41 @@
       "settings": {
         "collection": "",
         "products": [
+          "tata-hitachi-x-rare-rabbit-polo-t-shirt-maroon",
+          "tata-hitachi-x-rare-rabbit-polo-t-shirt-navy-blue",
+          "tata-hitachi-x-rare-rabbit-polo-t-shirt-peach",
+          "tata-hitachi-x-rare-rabbit-polo-t-shirt-royal-blue",
+          "tata-hitachi-x-rare-rabbit-polo-t-shirt-sky-blue",
+          "cap-white-and-orange-thcm",
+          "metal-keychain-wheel-loader",
+          "jack-jones-sling-bag-green-blue",
+          "bottle",
+          "sleeveless-jacket"
+        ],
+        "product_limit": 6,
+        "columns": 4,
+        "carousel_on_desktop": true,
+        "show_view_all": false,
+        "columns_mobile": "1",
+        "swipe_on_mobile": true,
+        "heading": "New Arrivals",
+        "heading_size": "title-md",
+        "heading_alignment": "text-left md:items-end md:flex-row",
+        "heading_tag": "h2",
+        "subheading": "",
+        "description": "",
+        "color_scheme": "",
+        "padding_top": 40,
+        "padding_bottom": 40,
+        "full_width": false
+      }
+    },
+    "featured_collection_9HMVwC": {
+      "type": "featured-collection",
+      "name": "t:sections.featured-collection.name",
+      "settings": {
+        "collection": "",
+        "products": [
           "eh5000-ac-3-scale-metal",
           "kids-t-shirt",
           "mini-hex-38u-scale-3-ton",
@@ -1252,6 +1287,7 @@
     "collection_list_nVNYjK",
     "image_with_text_overlay_inGhGP",
     "featured_collection_dnzx7Q",
+    "featured_collection_9HMVwC",
     "multicolumn_with_icons_hkK7iY",
     "video_image_with_text_FVwbKM",
     "lookbook_Kz3PAH"
